@@ -6,7 +6,7 @@
 - Member 3: Ching Qi Yan
 - Member 4: Edwin Oo Ming Hao (@edwinoo05)
 
-##Contact
+## Contact
 Email:alinone@gmail.com 
 
 ## Project Overview
