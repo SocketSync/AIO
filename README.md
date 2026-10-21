@@ -14,3 +14,9 @@ Email:alinone@gmail.com
 Briefly describe the purpose of the AIO project.
 
 ## Features
+<<<<<<< HEAD
+=======
+
+- Feature 1
+- Feature 2
+>>>>>>> a9f4a8ea5173450dadc955adc48a3f5c7a082fd2
