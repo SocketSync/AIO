@@ -8,3 +8,4 @@
 
 ## Contact
 - Email: team@example.com
+- Support: GitHub Issues
