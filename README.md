@@ -6,14 +6,11 @@ hahahahha this is my branch
 - Member 3: Ching Qi Yan (@chingqiyan)
 - Member 4: Edwin Oo Ming Hao (@edwinoo05)
 
-##Contact
+## Contact
 Email:alinone@gmail.com 
 
 ## Project Overview
 
 Briefly describe the purpose of the AIO project.
 
-## Features
-
-- Feature 1
-- Feature 2
+## Feature
