@@ -14,3 +14,7 @@ Email:alinone@gmail.com
 Briefly describe the purpose of the AIO project.
 
 ## Feature
+
+## Team Motto
+Team motto: Work hard, stay humble, make history.
+
