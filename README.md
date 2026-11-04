@@ -87,7 +87,7 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 ## 🛠️ Technology Stack
 | Component | Technology |
 |---|---|
-| 📱 Frontend / Mobile Web | React + Vite + Tailwind CSS / Modern Responsive UI |
+| 📱 Frontend / Mobile Web | React 18 + Vite + Tailwind CSS / Modern Responsive UI |
 | ⚙️ Backend | Server-side application |
 | 🗄️ Database | Cloud Database |
 | 🤖 AI Integration | External AI API |
@@ -96,6 +96,39 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 | 📋 Project Management | Jira |
 | 🔄 Methodology | Agile Development |
 | 🧪 Testing | Functional & Integration Testing |
+
+## 💻 Frontend Implementation & Quick Start
+
+The FinWise frontend implements the student onboarding and authentication flows with the exact Tailwind design specifications, typography (`Inter`), and Google Material Symbols.
+
+### 🚀 Running the Frontend
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start the Vite development server
+npm run dev
+
+# 3. Build optimized production bundle
+npm run build
+```
+
+The application features:
+- **Interactive Device Frame Simulator**: Switch between mobile smartphone frame view (iPhone/Android mockup) and full responsive layout.
+- **FinWise - Register (Step 1 of 2)**: Student registration with UTM campus verification, live 3-segment password strength meter with real-time criteria pills, and terms validation.
+- **FinWise - Setup Goals (Step 2 of 2)**: Campus allowance budget distribution sliders (food, study, savings) and goal selector.
+- **FinWise - Login**: Student login with password visibility toggle, remember device option, and interactive login loading animation.
+- **Simulated Auth Modals**:
+  - 🔐 **Touch ID / Face ID Biometric Simulation**: Animated fingerprint scan and verification.
+  - 🏛️ **UTM CIDOS Single Sign-On (ACID)**: Campus authentication gateway simulation.
+  - 🌐 **Google Workspace SSO**: Campus account selection (`@graduate.utm.my`).
+  - 🔑 **Forgot Password**: UTM student email recovery magic link dispatch.
+- **Student Dashboard Preview**: Demonstrates account state post-login with UTM allowance tracking, AI financial advice, and recent transactions.
+- **Standalone HTML Versions**:
+  - `login.html`: Open directly in any browser with zero installation.
+  - `register.html`: Open directly in any browser with zero installation.
+  - `setup-goals.html`: Companion goal configuration screen.
 
 ## 🏗️ System Architecture
 
