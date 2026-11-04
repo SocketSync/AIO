@@ -42,3 +42,4 @@ public class User {
         return "Student: " + fullName + " (" + email + ") - Campus: " + campus + " [Verified: " + isUtmVerified + "]";
     }
 }
+
