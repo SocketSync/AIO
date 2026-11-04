@@ -87,9 +87,9 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 ## 🛠️ Technology Stack
 | Component | Technology |
 |---|---|
-| 📱 Frontend / Mobile Web | React 18 + Vite + Tailwind CSS / Modern Responsive UI |
-| ⚙️ Backend | Server-side application |
-| 🗄️ Database | Cloud Database |
+| 📱 Mobile UI | HTML5, CSS3 (Pure Mobile Layout) |
+| ⚙️ Backend & Auth | PHP, Java, C++ |
+| 🗄️ Database | Cloud Database / MySQL |
 | 🤖 AI Integration | External AI API |
 | 🔧 Version Control | Git |
 | ☁️ Code Repository | GitHub |
@@ -97,30 +97,55 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 | 🔄 Methodology | Agile Development |
 | 🧪 Testing | Functional & Integration Testing |
 
-## 💻 Frontend Implementation & Quick Start
+## 💻 Pure Mobile App UI & Implementation
 
-The FinWise frontend implements the pure mobile app UI for the **Login** and **Register** pages, matching the exact Tailwind CSS configuration, typography (`Inter`), and Google Material Symbols design.
+The FinWise project implements a pure mobile app interface containing **only the Login and Register pages**, developed using neat, clean **HTML, CSS, PHP, Java, and C++** with zero heavy frameworks or complex build tools.
 
-### 🚀 Running the Frontend
+### 📱 Pages & Features
+- **FinWise - Login (`login.html` / `login.php`)**:
+  - Pure mobile layout view.
+  - Student Email / Matric ID input with UTM verified status badge.
+  - Password input with peek visibility toggle and forgot password trigger.
+  - Remember device checkbox and 256-bit AES security badge.
+  - Interactive login and Touch ID / Face ID biometric simulation buttons.
+  - UTM CIDOS SSO and Google Campus G-Suite quick access.
+  - Recent campus savings activity pill for Kolej Tuanku Canselor.
+  - One-click navigation to Register.
+- **FinWise - Register (`register.html` / `register.php`)**:
+  - Student Onboarding Step 1 of 2 with progress indicator.
+  - UTM Student Benefit delight card (FinWise Pro & AI Assistant).
+  - Institution selector (Universiti Teknologi Malaysia Skudai & KL).
+  - Full Name & Student Email inputs with Instant Perks badge.
+  - Live interactive password security strength meter (8+ chars, number, special symbol).
+  - Terms of Service & student verification agreement.
+  - UTM SSO and Google login buttons.
+  - One-click navigation to Login.
 
+### 🚀 How to View and Run
+
+#### 1. Open Directly in Any Browser (Zero Installation)
+Simply double-click or open:
+- `login.html`
+- `register.html`
+
+#### 2. Run with PHP (Built-in or XAMPP)
 ```bash
-# 1. Install dependencies
-npm install
+# Run with PHP built-in server
+php -S localhost:8000
+```
+Then navigate to `http://localhost:8000/login.php` in your browser.
 
-# 2. Start the Vite development server
-npm run dev
-
-# 3. Build optimized production bundle
-npm run build
+#### 3. Java Authentication Service (Optional Testing)
+```bash
+javac java/User.java java/AuthService.java
+java -cp java AuthService
 ```
 
-The application features:
-- **Pure Mobile App UI**: Dedicated mobile application view centered seamlessly for testing on desktop or full-screen on mobile devices.
-- **FinWise - Login**: Complete mobile login UI with student matric/email input, password visibility toggle, remember device option, biometric login action, and campus SSO integration.
-- **FinWise - Register**: Complete mobile registration UI (Student Onboarding Step 1 of 2), UTM benefit card, institution picker, live password security indicator, terms checkbox, and SSO fast-connect buttons.
-- **Standalone Pure HTML Files**:
-  - `login.html`: Pure HTML mobile login page (open directly in any browser).
-  - `register.html`: Pure HTML mobile registration page (open directly in any browser).
+#### 4. C++ Authentication Engine (Optional Testing)
+```bash
+g++ -o auth cpp/auth.cpp
+./auth
+```
 
 ## 🏗️ System Architecture
 

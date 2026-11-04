@@ -1,0 +1,71 @@
+/**
+ * FinWise - Pure Mobile App Styling
+ * Languages: HTML, CSS, PHP, Java, C++
+ */
+
+:root {
+  --primary: #00236f;
+  --primary-container: #1e3a8a;
+  --on-primary: #ffffff;
+  --secondary: #006c49;
+  --secondary-fixed: #6ffbbe;
+  --on-secondary-fixed: #002113;
+  --surface: #faf8ff;
+  --surface-low: #f4f3fa;
+  --surface-lowest: #ffffff;
+  --surface-high: #e9e7ef;
+  --on-surface: #1a1b21;
+  --on-surface-variant: #444651;
+  --text-muted: #64748B;
+  --growth-mint-subtle: #D1FAE5;
+  --border-neutral: #E2E8F0;
+  --error: #ba1a1a;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  background-color: #0f172a; /* Centered background on desktop */
+  font-family: var(--font-family);
+  color: var(--on-surface);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* Pure Mobile App Container */
+.mobile-app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: #0f172a;
+}
+
+.mobile-screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  background-color: var(--surface);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+}
+
+/* Scrollbar hide */
+::-webkit-scrollbar {
+  display: none;
+}
