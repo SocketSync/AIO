@@ -7,9 +7,8 @@
 # 💰 FinWise – AI-Powered Personal Finance Management App
 **👥 Group Name:** All In One  
 **📚 Course:** Application Development  
-**🏫 Institution:** Universiti Teknologi Malaysia (UTM)  
-**📱 Platform:** Cross-Platform Mobile Application  
-**📅 Project Date:** 29 October 2026
+**🏫 Institution:** Universiti Teknologi Malaysia (UTM) 
+**📱 Platform:** Cross-Platform Mobile Application
 
 -----------------------------------------------------------
 
@@ -31,7 +30,6 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 6. Improve financial awareness and encourage better financial planning among university students and young adults.
 
 ## ✨ Key Features
-
 ### 👤 1. User Authentication & Profile Management
 - User registration and login.
 - Secure authentication.
