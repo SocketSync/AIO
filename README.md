@@ -4,141 +4,158 @@
 - Member 2: Wong Sheng Yang（@shengyang19)
 - Member 3: Ching Qi Yan (@chingqiyan)
 - Member 4: Edwin Oo Ming Hao (@edwinoo05)
+# 💰 FinWise – AI-Powered Personal Finance Management App
+**👥 Group Name:** All In One  
+**📚 Course:** Application Development  
+**🏫 Institution:** Universiti Teknologi Malaysia (UTM)  
+**📱 Platform:** Cross-Platform Mobile Application  
+**📅 Project Date:** 29 October 2026
 
-# Community TimeBank ⏳
+-----------------------------------------------------------
 
-**A Community-Based Skill Exchange Platform Using Time Credits**
+## 📌 Project Overview
+FinWise is an AI-powered personal financial management mobile application designed to help university students and young working adults manage their income, expenses, budgets, and savings more effectively.
 
-## 📌 About the Project
+Many young people struggle to understand their spending habits, control unnecessary expenses, and plan their financial goals. Traditional expense-tracking applications mainly focus on recording transactions and displaying financial summaries, requiring users to analyze their financial situations manually.
 
-Community TimeBank is a web application designed to encourage skill sharing and mutual assistance within local communities.
+FinWise addresses these challenges by integrating financial management tools with Artificial Intelligence (AI) to provide meaningful financial insights and smarter planning capabilities.
 
-People have different skills, knowledge, and experiences that can benefit others. However, finding someone who can provide a particular skill or service is not always easy. Traditional service platforms often rely on monetary payments, which may not be suitable for every community interaction.
-
-Community TimeBank provides an alternative by allowing users to exchange services using **Time Credits instead of direct monetary payments**.
-
-For example, a user can spend one hour teaching someone how to use a smartphone and earn one Time Credit. The credit can then be used to request one hour of cooking lessons or another service from a different community member.
-
-The goal is to make skill sharing more accessible, organized, and convenient while encouraging cooperation within the community.
+Users can track daily transactions, manage budgets, monitor savings goals, forecast future cash flow, and simulate hypothetical financial scenarios through a single mobile application.
 
 ## 🎯 Project Objectives
+1. Develop a secure mobile application with user authentication and financial transaction management.
+2. Implement a dynamic budgeting system with spending limits and real-time budget alerts.
+3. Integrate an external AI API to generate personalized financial insights based on users' financial data.
+4. Develop a cash flow forecasting engine to estimate future income, expenses, and available balances.
+5. Build an interactive financial simulator to compare different hypothetical financial scenarios.
+6. Improve financial awareness and encourage better financial planning among university students and young adults.
 
-- Encourage skill sharing and mutual assistance among community members.
-- Provide a centralized platform to discover and exchange skills.
-- Introduce a time-based credit system for non-monetary service exchanges.
-- Simplify service requests and transaction tracking.
-- Promote community participation and knowledge sharing.
+## ✨ Key Features
 
-## ✨ Features
-
-### 👤 User Management
+### 👤 1. User Authentication & Profile Management
 - User registration and login.
+- Secure authentication.
 - Personal profile management.
-- View user information and available skills.
+- Individual financial data management.
 
-### 🛠️ Skill Listings
-- Publish skills and services that users can offer.
-- Browse available skills from other community members.
-- Search and filter services by category or keyword.
-- View service descriptions and provider information.
+### 💳 2. Transaction Management
+- Add, view, edit, and delete financial transactions.
+- Categorize income and expenses.
+- View transaction history.
+- Calculate total income, expenses, and remaining balance.
 
-### 🤝 Service Exchange
-- Submit requests for services.
-- Accept or reject incoming requests.
-- Track the status of service requests.
-- Confirm when a service has been completed.
+### 📊 3. Intelligent Budgeting
+- Create monthly budgets.
+- Set spending limits for different categories.
+- Monitor spending progress.
+- Receive alerts when approaching or exceeding budget limits.
+- View budget utilization through visual charts.
 
-### ⏳ Time Credit Wallet
-- Earn Time Credits by providing services.
-- Spend Time Credits when receiving services.
-- View current credit balance.
-- Review credit transactions and exchange history.
+### 🤖 4. AI-Powered Financial Insights
+- Analyze users' spending patterns.
+- Identify categories with high expenditure.
+- Generate personalized budgeting suggestions.
+- Provide understandable explanations of financial summaries.
+- Deliver recommendations based on verified financial data.
 
-**Time Credit Rule:** One hour of an eligible service equals one Time Credit.
+### 🎯 5. Savings Goal Planning
+- Create personalized savings goals.
+- Set target amounts and deadlines.
+- Track savings progress.
+- Calculate required monthly savings.
+- Monitor progress towards financial targets.
 
-Time Credits are used only within the platform and do not represent real money.
+### 🔮 6. Cash Flow Forecasting
+- Analyze historical income and expenses.
+- Consider known recurring transactions.
+- Estimate future financial balances.
+- Visualize projected cash flow trends.
+- Identify potential future budget shortages.
 
-### 📋 Transaction History
-- View completed and pending exchanges.
-- Track credits earned and spent.
-- Maintain records of completed services.
+### 🧮 7. Financial Scenario Simulation
+- Simulate hypothetical changes in income and expenses.
+- Compare different spending scenarios.
+- Estimate the impact of financial decisions on future balances.
+- Visualize differences between current and simulated financial situations.
 
-### 🛡️ Administrator Management
-- Manage user accounts.
-- Review and manage skill listings.
-- Monitor service requests and transactions.
-- Handle reported issues when necessary.
+## 🛠️ Technology Stack
+| Component | Technology |
+|---|---|
+| 📱 Mobile Development | Cross-platform mobile framework |
+| ⚙️ Backend | Server-side application |
+| 🗄️ Database | Cloud Database |
+| 🤖 AI Integration | External AI API |
+| 🔧 Version Control | Git |
+| ☁️ Code Repository | GitHub |
+| 📋 Project Management | Jira |
+| 🔄 Methodology | Agile Development |
+| 🧪 Testing | Functional & Integration Testing |
 
-## 🔄 How It Works
+*Specific frameworks, programming languages, and database services will be updated once finalized.*
 
-1. **Create an Account** — Register and set up a user profile.
-2. **Share Your Skills** — Publish skills or services you can provide.
-3. **Find a Service** — Search for skills offered by other community members.
-4. **Request an Exchange** — Submit a request and wait for the provider's response.
-5. **Complete the Service** — Both parties confirm that the agreed service has been completed.
-6. **Update Time Credits** — The system records the exchange and updates the relevant credit balances.
+## 🏗️ System Architecture
 
-### Example
+FinWise follows a client-server architecture integrated with an external AI service.
 
-| Activity | Time Credit |
-|---|---:|
-| Teach someone basic computer skills for 1 hour | +1 |
-| Learn cooking from another member for 1 hour | -1 |
-| Remaining balance after both transactions | 0 |
+```text
+       📱 Mobile Application
+                |
+                v
+        ⚙️ Backend Server
+                |
+        +-------+-------+
+        |               |
+        v               v
+   🗄️ Cloud         🤖 External
+    Database           AI API
+        |               |
+        v               v
+   User Data        AI Insights
+   Transactions     Recommendations
+   Budgets
+   Savings Goals
+```
 
-This system allows users to help one person and receive assistance from someone else, without requiring a direct one-to-one skill exchange.
+The mobile application communicates with the backend server to process user requests and retrieve financial information. The backend manages financial calculations, database operations, and AI API communication.
 
-## 👥 Target Users
+## 📅 Project Management
+FinWise adopts the Agile development methodology to organize development activities into manageable iterations.
 
-Community TimeBank is designed for:
+The team uses:
+- 📋 **Jira:** Sprint planning, task assignments, backlog management, and progress tracking.
+- 🔧 **Git:** Source code version control.
+- ☁️ **GitHub:** Code collaboration, repository management, and documentation.
+- 🔄 **Agile Sprints:** Incremental development, testing, and continuous improvement.
 
-- Students who want to share knowledge and learn practical skills.
-- Working adults who want to exchange skills with others.
-- Retirees who wish to share their knowledge and experience.
-- Community members who need help with everyday tasks.
-- Individuals interested in community cooperation and non-monetary exchanges.
+The project is planned around four development sprints, with each sprint focusing on specific application modules and system integration.
 
-## 💡 What Makes Community TimeBank Different?
+## 🧪 Testing Strategy
+| Testing Type | Purpose |
+|---|---|
+| Functional Testing | Verify that each feature works as expected. |
+| Authentication Testing | Verify registration, login, and access control. |
+| Integration Testing | Ensure mobile app, backend, database, and AI API communicate correctly. |
+| Calculation Testing | Verify budget calculations, savings targets, and cash flow forecasts. |
+| AI Response Testing | Evaluate the relevance and accuracy of AI-generated explanations. |
+| User Acceptance Testing | Collect feedback from UTM students and improve usability. |
 
-Unlike conventional service marketplaces that primarily focus on monetary transactions, Community TimeBank uses time as its exchange unit.
+## 🌱 Community Engagement
+FinWise targets university students and young adults, particularly the student community at Universiti Teknologi Malaysia (UTM).
 
-Its key concept is **giving one hour of help to earn the opportunity to receive help from another community member**.
+The team plans to conduct beta testing and collect feedback from students to understand their financial management challenges.
 
-The platform also organizes skill listings, service requests, credit balances, and transaction records in one place, making community exchanges easier to manage.
-
-## 🧰 Technology Stack
-
-The following technologies are potential choices for this project and may be updated as development progresses.
-
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** To be determined
-- **Database:** To be determined
-- **Version Control:** Git and GitHub
-
-## 🚧 Project Status
-
-**Status: In Development / Planned**
-
-Community TimeBank is an application development project. Features will be implemented progressively, starting with essential user management, skill listings, service requests, and time credit functionality.
+Feedback will be used to improve the application's usability, budgeting functions, and AI-generated financial insights.
 
 ## 🔮 Future Improvements
+- 🔗 Automated transaction importing through supported financial integrations.
+- 🎯 Personalized financial goal recommendations.
+- 📈 Advanced spending pattern detection.
+- 📑 Customizable financial reports.
+- 🔍 Improved forecasting using historical financial data.
+- 🌍 Multi-currency support.
+- 📊 Enhanced financial data visualization.
 
-Potential future enhancements include:
-
-- User ratings and reviews.
-- Notifications for service requests and status updates.
-- Community verification and reporting tools.
-- Improved skill recommendations.
-- Mobile-friendly interface enhancements.
-- Community activity statistics and reports.
-
-## 🌱 Vision
-
-Community TimeBank aims to demonstrate how technology can support community cooperation by making people's time, skills, and knowledge easier to share.
-
-**Share your skills. Earn time. Help your community.**
-
----
-
-*This project is developed for educational purposes as part of an Application Development course.*
+## ⚠️ Disclaimer
+FinWise is an academic application development project intended for educational and personal financial management purposes.
+AI-generated insights are provided for general financial awareness and planning. They should not be treated as professional financial advice.
 
