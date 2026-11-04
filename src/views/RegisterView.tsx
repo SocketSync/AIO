@@ -1,67 +1,22 @@
-import React, { useState, useId } from 'react';
-import { ScreenType } from '../types';
+import React, { useState } from 'react';
 
 interface RegisterViewProps {
-  onNavigate: (screen: ScreenType) => void;
-  onOpenUtmSso: () => void;
-  onOpenGoogleSso: () => void;
-  onShowToast: (title: string, description?: string, type?: 'success' | 'info' | 'error') => void;
+  onNavigateToLogin: () => void;
 }
 
-export const RegisterView: React.FC<RegisterViewProps> = ({
-  onNavigate,
-  onOpenUtmSso,
-  onOpenGoogleSso,
-  onShowToast,
-}) => {
-  const [fullName, setFullName] = useState('Yeoh Kean Shen');
-  const [email, setEmail] = useState('keanshen@graduate.utm.my');
-  const [password, setPassword] = useState('UtmFin2025!');
+export const RegisterView: React.FC<RegisterViewProps> = ({ onNavigateToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [termsAgreed, setTermsAgreed] = useState(true);
-  const fullNameInputId = useId();
-  const emailInputId = useId();
-  const passwordInputId = useId();
-  const termsInputId = useId();
-
-  // Real-time password strength calculation
-  const hasMinLength = password.length >= 8;
-  const hasNumber = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  const criteriaMetCount = [hasMinLength, hasNumber, hasSpecialChar].filter(Boolean).length;
-  
-  const strengthLabel = 
-    password.length === 0 ? 'Enter Password' :
-    criteriaMetCount === 3 ? 'Strong Password' :
-    criteriaMetCount === 2 ? 'Medium Strength' : 'Weak Password';
-
-  const isUtmDomain = email.toLowerCase().endsWith('@graduate.utm.my') || email.toLowerCase().endsWith('@utm.my');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!termsAgreed) {
-      onShowToast('Action Required', 'Please accept terms and conditions to proceed.', 'error');
-      return;
-    }
-    if (!hasMinLength) {
-      onShowToast('Password too short', 'Password must have at least 8 characters.', 'error');
-      return;
-    }
-
-    onShowToast('Student Profile Created!', 'Proceeding to Step 2: Goal Setup...', 'success');
-    onNavigate('setup-goals');
-  };
 
   return (
-    <div className="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col w-full">
-      {/* Fixed Header */}
-      <header className="sticky top-0 w-full z-40 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div className="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="fixed top-0 w-full max-w-[430px] z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         <div className="h-14 px-margin flex items-center justify-between">
           <button
-            aria-label="Go back to login"
-            onClick={() => onNavigate('login')}
+            aria-label="Go back"
+            onClick={onNavigateToLogin}
             className="min-w-[44px] min-h-[44px] -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors"
+            type="button"
           >
             <span className="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
@@ -74,8 +29,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative w-full bg-surface pb-safe">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col relative w-full bg-surface pt-14 pb-safe">
         <div className="flex flex-col w-full pb-space-xl">
           {/* Progress Header & Context Banner */}
           <div className="px-margin pt-space-md pb-space-sm flex flex-col gap-space-sm">
@@ -86,12 +41,10 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
               </span>
               <span className="font-label-md text-label-md text-text-muted">Step 1 of 2</span>
             </div>
-
             {/* Step Progress Bar */}
             <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
               <div className="h-full bg-secondary w-1/2 rounded-full transition-all duration-300"></div>
             </div>
-
             {/* Intro Text */}
             <div className="mt-space-xs">
               <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
@@ -119,14 +72,14 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           </div>
 
           {/* Registration Form */}
-          <form className="px-margin flex flex-col gap-space-md" onSubmit={handleSubmit}>
+          <form className="px-margin flex flex-col gap-space-md" id="registrationForm" onSubmit={(e) => { e.preventDefault(); onNavigateToLogin(); }}>
             {/* Campus Picker (Defaults to UTM) */}
             <div className="flex flex-col gap-1.5">
-              <div className="font-label-md text-label-md text-text-muted flex items-center justify-between">
+              <label className="font-label-md text-label-md text-text-muted flex items-center justify-between">
                 <span>Campus / Institution</span>
                 <span className="text-secondary font-medium text-label-sm">Verified Partner</span>
-              </div>
-              <div className="relative bg-surface-container-lowest rounded-xl p-space-sm flex items-center gap-3 shadow-sm border border-outline-variant/30">
+              </label>
+              <div className="relative bg-surface-container-lowest rounded-xl p-space-sm flex items-center gap-3 shadow-sm">
                 <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0 text-primary">
                   <span className="material-symbols-outlined text-[20px]">account_balance</span>
                 </div>
@@ -140,21 +93,17 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
             {/* Full Name Input */}
             <div className="flex flex-col gap-1.5">
-              <label className="font-label-md text-label-md text-text-muted" htmlFor={fullNameInputId}>
-                Full Name (as per Student ID)
-              </label>
-              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow border border-outline-variant/30">
+              <label className="font-label-md text-label-md text-text-muted" htmlFor="fullName">Full Name (as per Student ID)</label>
+              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow">
                 <div className="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                   <span className="material-symbols-outlined text-[20px]">person</span>
                 </div>
                 <input
-                  id={fullNameInputId}
                   className="w-full py-3.5 pr-space-md bg-transparent font-body-md text-body-md text-text-primary placeholder:text-outline focus:outline-none"
+                  id="fullName"
                   placeholder="e.g. Yeoh Kean Shen"
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
+                  defaultValue="Yeoh Kean Shen"
                 />
               </div>
             </div>
@@ -162,27 +111,21 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             {/* Student Email Input */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label className="font-label-md text-label-md text-text-muted" htmlFor={emailInputId}>
-                  University / Student Email
-                </label>
-                {isUtmDomain && (
-                  <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary bg-growth-mint-subtle px-2 py-0.5 rounded-full animate-fade-in">
-                    <span className="material-symbols-outlined text-[12px]">bolt</span> Instant Perks
-                  </span>
-                )}
+                <label className="font-label-md text-label-md text-text-muted" htmlFor="email">University / Student Email</label>
+                <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary bg-growth-mint-subtle px-2 py-0.5 rounded-full">
+                  <span className="material-symbols-outlined text-[12px]">bolt</span> Instant Perks
+                </span>
               </div>
-              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow border border-outline-variant/30">
+              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow">
                 <div className="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                   <span className="material-symbols-outlined text-[20px]">school</span>
                 </div>
                 <input
-                  id={emailInputId}
                   className="w-full py-3.5 pr-space-md bg-transparent font-body-md text-body-md text-text-primary placeholder:text-outline focus:outline-none"
+                  id="email"
                   placeholder="keanshen@graduate.utm.my"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  defaultValue="keanshen@graduate.utm.my"
                 />
               </div>
               <p className="font-body-sm text-body-sm text-text-muted flex items-center gap-1 pl-1">
@@ -193,25 +136,22 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
             {/* Password Input with Live Interactive Visual Meter */}
             <div className="flex flex-col gap-1.5">
-              <label className="font-label-md text-label-md text-text-muted" htmlFor={passwordInputId}>
-                Create Password
-              </label>
-              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow border border-outline-variant/30">
+              <label className="font-label-md text-label-md text-text-muted" htmlFor="password">Create Password</label>
+              <div className="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm focus-within:shadow-md transition-shadow">
                 <div className="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                   <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
                 <input
-                  id={passwordInputId}
                   className="w-full py-3.5 pr-10 bg-transparent font-body-md text-body-md text-text-primary placeholder:text-outline focus:outline-none tracking-wider"
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  defaultValue="UtmFin2025!"
                 />
                 <button
-                  type="button"
                   aria-label="Toggle password visibility"
                   className="absolute right-3 text-text-muted hover:text-text-primary flex items-center justify-center p-1"
+                  id="togglePassword"
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <span className="material-symbols-outlined text-[20px]">
@@ -224,53 +164,24 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
               <div className="bg-surface-container-low rounded-xl p-space-sm flex flex-col gap-2 mt-1">
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm text-text-muted">Security Strength</span>
-                  <span className={`font-label-sm text-label-sm font-semibold ${
-                    criteriaMetCount === 3 ? 'text-secondary' : criteriaMetCount === 2 ? 'text-amber-600' : 'text-error'
-                  }`}>
-                    {strengthLabel}
-                  </span>
+                  <span className="font-label-sm text-label-sm text-secondary font-semibold">Strong Password</span>
                 </div>
                 {/* 3 Segment Bar */}
                 <div className="grid grid-cols-3 gap-1.5">
-                  <div className={`h-1.5 rounded-full transition-colors ${
-                    criteriaMetCount >= 1 
-                      ? criteriaMetCount === 1 ? 'bg-error' : criteriaMetCount === 2 ? 'bg-amber-500' : 'bg-secondary'
-                      : 'bg-surface-container-high'
-                  }`}></div>
-                  <div className={`h-1.5 rounded-full transition-colors ${
-                    criteriaMetCount >= 2 
-                      ? criteriaMetCount === 2 ? 'bg-amber-500' : 'bg-secondary'
-                      : 'bg-surface-container-high'
-                  }`}></div>
-                  <div className={`h-1.5 rounded-full transition-colors ${
-                    criteriaMetCount === 3 ? 'bg-secondary' : 'bg-surface-container-high'
-                  }`}></div>
+                  <div className="h-1.5 rounded-full bg-secondary"></div>
+                  <div className="h-1.5 rounded-full bg-secondary"></div>
+                  <div className="h-1.5 rounded-full bg-secondary"></div>
                 </div>
                 {/* Criteria Pills */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className={`inline-flex items-center gap-1 font-label-sm text-label-sm transition-colors ${
-                    hasMinLength ? 'text-secondary' : 'text-text-muted'
-                  }`}>
-                    <span className="material-symbols-outlined text-[14px]">
-                      {hasMinLength ? 'check' : 'radio_button_unchecked'}
-                    </span>
-                    8+ Characters
+                  <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+                    <span className="material-symbols-outlined text-[14px]">check</span> 8+ Characters
                   </span>
-                  <span className={`inline-flex items-center gap-1 font-label-sm text-label-sm transition-colors ${
-                    hasNumber ? 'text-secondary' : 'text-text-muted'
-                  }`}>
-                    <span className="material-symbols-outlined text-[14px]">
-                      {hasNumber ? 'check' : 'radio_button_unchecked'}
-                    </span>
-                    Contains Number
+                  <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+                    <span className="material-symbols-outlined text-[14px]">check</span> Contains Number
                   </span>
-                  <span className={`inline-flex items-center gap-1 font-label-sm text-label-sm transition-colors ${
-                    hasSpecialChar ? 'text-secondary' : 'text-text-muted'
-                  }`}>
-                    <span className="material-symbols-outlined text-[14px]">
-                      {hasSpecialChar ? 'check' : 'radio_button_unchecked'}
-                    </span>
-                    Special Symbol
+                  <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+                    <span className="material-symbols-outlined text-[14px]">check</span> Special Symbol
                   </span>
                 </div>
               </div>
@@ -278,29 +189,21 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
             {/* Terms Checkbox */}
             <div className="flex items-start gap-3 mt-1">
-              <label className="relative flex items-center cursor-pointer pt-0.5" htmlFor={termsInputId}>
-                <input
-                  id={termsInputId}
-                  type="checkbox"
-                  checked={termsAgreed}
-                  onChange={(e) => setTermsAgreed(e.target.checked)}
-                  className="peer sr-only"
-                />
+              <label className="relative flex items-center cursor-pointer pt-0.5">
+                <input defaultChecked className="peer sr-only" id="termsCheck" type="checkbox" />
                 <div className="w-5 h-5 bg-surface-container-high rounded peer-checked:bg-primary flex items-center justify-center transition-colors">
-                  <span className={`material-symbols-outlined text-on-primary text-[16px] transition-opacity ${termsAgreed ? 'opacity-100' : 'opacity-0'}`}>
-                    check
-                  </span>
+                  <span className="material-symbols-outlined text-on-primary text-[16px] peer-checked:opacity-100 opacity-0 transition-opacity">check</span>
                 </div>
               </label>
-              <label htmlFor={termsInputId} className="font-body-sm text-body-sm text-text-muted cursor-pointer select-none">
-                I agree to the <a className="text-primary font-semibold hover:underline" href="#terms" onClick={(e) => { e.preventDefault(); onShowToast('UTM Terms of Service', 'FinWise operates under student data privacy guidelines.'); }}>Terms of Service</a>, <a className="text-primary font-semibold hover:underline" href="#privacy" onClick={(e) => { e.preventDefault(); onShowToast('UTM Privacy Policy', 'Financial data is protected with 256-bit encryption.'); }}>Privacy Policy</a>, and consent to student verification.
+              <label className="font-body-sm text-body-sm text-text-muted cursor-pointer select-none" htmlFor="termsCheck">
+                I agree to the <a className="text-primary font-semibold hover:underline" href="#">Terms of Service</a>, <a className="text-primary font-semibold hover:underline" href="#">Privacy Policy</a>, and consent to student verification.
               </label>
             </div>
 
             {/* Primary Action Button */}
             <button
               type="submit"
-              className="w-full mt-space-sm h-12 bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all cursor-pointer"
+              className="w-full mt-space-sm h-12 bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-transform"
             >
               <span>Continue to Setup Goals</span>
               <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -319,8 +222,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             {/* UTM SSO Instant Connect Button */}
             <button
               type="button"
-              onClick={onOpenUtmSso}
-              className="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-between px-space-md shadow-sm active:scale-[0.99] transition-transform border border-outline-variant/30 cursor-pointer text-left"
+              onClick={onNavigateToLogin}
+              className="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-between px-space-md shadow-sm active:scale-[0.99] transition-transform text-left"
             >
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary font-bold font-headline-sm text-xs">
@@ -334,8 +237,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             {/* Google Button */}
             <button
               type="button"
-              onClick={onOpenGoogleSso}
-              className="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-center gap-3 px-space-md shadow-sm active:scale-[0.99] transition-transform border border-outline-variant/30 cursor-pointer"
+              onClick={onNavigateToLogin}
+              className="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-center gap-3 px-space-md shadow-sm active:scale-[0.99] transition-transform"
             >
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4"></path>
@@ -367,7 +270,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                 </p>
               </div>
               <span className="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold">
-                <span className="material-symbols-outlined text-[14px]">shield</span> Secure
+                <span className="material-symbols-outlined text-[14px]">format_image_left</span> Secure
               </span>
             </div>
           </div>
@@ -378,8 +281,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
               Already have an account?{' '}
               <button
                 type="button"
-                onClick={() => onNavigate('login')}
-                className="text-primary font-semibold hover:underline cursor-pointer"
+                className="text-primary font-semibold hover:underline"
+                onClick={onNavigateToLogin}
               >
                 Log In
               </button>

@@ -99,7 +99,7 @@ Users can track daily transactions, manage budgets, monitor savings goals, forec
 
 ## 💻 Frontend Implementation & Quick Start
 
-The FinWise frontend implements the student onboarding and authentication flows with the exact Tailwind design specifications, typography (`Inter`), and Google Material Symbols.
+The FinWise frontend implements the pure mobile app UI for the **Login** and **Register** pages, matching the exact Tailwind CSS configuration, typography (`Inter`), and Google Material Symbols design.
 
 ### 🚀 Running the Frontend
 
@@ -115,20 +115,12 @@ npm run build
 ```
 
 The application features:
-- **Interactive Device Frame Simulator**: Switch between mobile smartphone frame view (iPhone/Android mockup) and full responsive layout.
-- **FinWise - Register (Step 1 of 2)**: Student registration with UTM campus verification, live 3-segment password strength meter with real-time criteria pills, and terms validation.
-- **FinWise - Setup Goals (Step 2 of 2)**: Campus allowance budget distribution sliders (food, study, savings) and goal selector.
-- **FinWise - Login**: Student login with password visibility toggle, remember device option, and interactive login loading animation.
-- **Simulated Auth Modals**:
-  - 🔐 **Touch ID / Face ID Biometric Simulation**: Animated fingerprint scan and verification.
-  - 🏛️ **UTM CIDOS Single Sign-On (ACID)**: Campus authentication gateway simulation.
-  - 🌐 **Google Workspace SSO**: Campus account selection (`@graduate.utm.my`).
-  - 🔑 **Forgot Password**: UTM student email recovery magic link dispatch.
-- **Student Dashboard Preview**: Demonstrates account state post-login with UTM allowance tracking, AI financial advice, and recent transactions.
-- **Standalone HTML Versions**:
-  - `login.html`: Open directly in any browser with zero installation.
-  - `register.html`: Open directly in any browser with zero installation.
-  - `setup-goals.html`: Companion goal configuration screen.
+- **Pure Mobile App UI**: Dedicated mobile application view centered seamlessly for testing on desktop or full-screen on mobile devices.
+- **FinWise - Login**: Complete mobile login UI with student matric/email input, password visibility toggle, remember device option, biometric login action, and campus SSO integration.
+- **FinWise - Register**: Complete mobile registration UI (Student Onboarding Step 1 of 2), UTM benefit card, institution picker, live password security indicator, terms checkbox, and SSO fast-connect buttons.
+- **Standalone Pure HTML Files**:
+  - `login.html`: Pure HTML mobile login page (open directly in any browser).
+  - `register.html`: Pure HTML mobile registration page (open directly in any browser).
 
 ## 🏗️ System Architecture
 

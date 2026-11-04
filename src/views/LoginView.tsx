@@ -1,60 +1,44 @@
 import React, { useState } from 'react';
-import { ScreenType } from '../types';
 
 interface LoginViewProps {
-  onNavigate: (screen: ScreenType) => void;
-  onOpenBiometric: () => void;
-  onOpenUtmSso: () => void;
-  onOpenGoogleSso: () => void;
-  onOpenForgotPassword: () => void;
-  onShowToast: (title: string, description?: string, type?: 'success' | 'info' | 'error') => void;
-  onLoginSuccess: (email: string) => void;
+  onNavigateToRegister: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({
-  onNavigate,
-  onOpenBiometric,
-  onOpenUtmSso,
-  onOpenGoogleSso,
-  onOpenForgotPassword,
-  onShowToast,
-  onLoginSuccess,
-}) => {
-  const [studentId, setStudentId] = useState('yeoh.k@graduate.utm.my');
-  const [password, setPassword] = useState('SecretStudentPass99');
+export const LoginView: React.FC<LoginViewProps> = ({ onNavigateToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [biometricText, setBiometricText] = useState<'idle' | 'scanning' | 'success'>('idle');
+  const [loginState, setLoginState] = useState<'idle' | 'loading' | 'success'>('idle');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentId || !password) {
-      onShowToast('Missing Fields', 'Please enter your student credentials.', 'error');
-      return;
-    }
-
-    setIsLoggingIn(true);
+    setLoginState('loading');
     setTimeout(() => {
-      setLoginSuccess(true);
-      onShowToast('Authentication Successful', 'Opening campus financial vault...', 'success');
+      setLoginState('success');
       setTimeout(() => {
-        setIsLoggingIn(false);
-        setLoginSuccess(false);
-        onLoginSuccess(studentId);
-      }, 1000);
+        setLoginState('idle');
+      }, 1800);
     }, 1000);
   };
 
+  const simulateBiometrics = () => {
+    setBiometricText('scanning');
+    setTimeout(() => {
+      setBiometricText('success');
+      setTimeout(() => {
+        setBiometricText('idle');
+      }, 1500);
+    }, 900);
+  };
+
   return (
-    <div className="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col w-full">
+    <div className="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 w-full z-40 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 w-full max-w-[430px] z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         <div className="h-14 px-margin flex items-center justify-between">
           <button
             aria-label="Go back"
             className="min-w-[44px] min-h-[44px] -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors"
-            onClick={() => onNavigate('register')}
+            onClick={onNavigateToRegister}
             type="button"
           >
             <span className="material-symbols-outlined text-[24px]">arrow_back</span>
@@ -68,11 +52,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col relative w-full bg-surface pb-safe">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col relative w-full bg-surface pt-14 pb-safe">
         <div className="flex flex-col w-full px-margin pb-space-xl">
-          {/* Ambient Glow & Student Context Mascot/Card */}
-          <div className="relative w-full overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm mb-space-md mt-space-xs border border-outline-variant/30">
+          {/* Subtle Ambient Glow & Student Context Mascot/Illustration */}
+          <div className="relative w-full overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm mb-space-md mt-space-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-space-sm">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm">
@@ -96,8 +80,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
               </div>
             </div>
 
-            {/* Motivational Campus Snippet */}
-            <div className="mt-space-md bg-surface-container-lowest p-space-sm rounded-lg flex items-center gap-space-sm shadow-sm border border-outline-variant/20">
+            {/* Motivational campus snippet */}
+            <div className="mt-space-md bg-surface-container-lowest p-space-sm rounded-lg flex items-center gap-space-sm shadow-sm">
               <span className="material-symbols-outlined text-secondary text-[20px]">school</span>
               <div className="min-w-0 flex-1">
                 <p className="font-label-sm text-label-sm text-secondary font-semibold uppercase tracking-wider">
@@ -120,7 +104,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
 
           {/* Form Container */}
-          <form className="flex flex-col gap-space-md w-full" onSubmit={handleLogin}>
+          <form className="flex flex-col gap-space-md w-full" id="finwise-login-form" onSubmit={handleLogin}>
             {/* Student Email / Matric ID Input Field */}
             <div className="flex flex-col gap-1.5">
               <label className="font-label-md text-label-md text-text-muted flex items-center justify-between" htmlFor="student-id-input">
@@ -129,7 +113,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   <span className="material-symbols-outlined text-[12px]">check_circle</span> UTM Verified
                 </span>
               </label>
-              <div className="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm focus-within:shadow-md transition-shadow border border-outline-variant/30">
+              <div className="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm focus-within:shadow-md transition-shadow">
                 <div className="absolute left-3 flex items-center pointer-events-none text-text-muted">
                   <span className="material-symbols-outlined text-[20px]">badge</span>
                 </div>
@@ -139,8 +123,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   placeholder="yeoh.k@graduate.utm.my"
                   required
                   type="text"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
+                  defaultValue="yeoh.k@graduate.utm.my"
                 />
               </div>
             </div>
@@ -151,13 +134,13 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 <label className="font-label-md text-label-md text-text-muted" htmlFor="password-input">Password</label>
                 <button
                   className="font-label-md text-label-md text-primary font-semibold hover:underline"
-                  onClick={onOpenForgotPassword}
+                  onClick={() => alert('Password reset magic link has been forwarded to your registered UTM student address.')}
                   type="button"
                 >
                   Forgot Password?
                 </button>
               </div>
-              <div className="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm focus-within:shadow-md transition-shadow border border-outline-variant/30">
+              <div className="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm focus-within:shadow-md transition-shadow">
                 <div className="absolute left-3 flex items-center pointer-events-none text-text-muted">
                   <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
@@ -167,8 +150,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
                   placeholder="••••••••••••"
                   required
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  defaultValue="SecretStudentPass99"
                 />
                 <button
                   aria-label="Toggle password view"
@@ -188,8 +170,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <div className="flex items-center justify-between pt-0.5">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  defaultChecked
                   className="w-4 h-4 rounded text-primary-container accent-primary cursor-pointer"
                   id="remember-me-checkbox"
                   type="checkbox"
@@ -205,23 +186,21 @@ export const LoginView: React.FC<LoginViewProps> = ({
             {/* Primary Action CTA */}
             <div className="flex flex-col gap-space-sm pt-space-xs">
               <button
-                className="w-full min-h-[48px] bg-primary text-on-primary rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all cursor-pointer disabled:opacity-80"
+                className="w-full min-h-[48px] bg-primary text-on-primary rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all"
                 id="login-btn"
                 type="submit"
-                disabled={isLoggingIn}
+                disabled={loginState !== 'idle'}
               >
-                {isLoggingIn ? (
-                  loginSuccess ? (
-                    <>
-                      <span className="material-symbols-outlined text-[18px]">check</span>
-                      <span>Welcome, Yeoh!</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">refresh</span>
-                      <span>Opening Campus Vault...</span>
-                    </>
-                  )
+                {loginState === 'loading' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[18px] animate-spin">refresh</span>
+                    <span>Opening Campus Vault...</span>
+                  </>
+                ) : loginState === 'success' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[18px]">check</span>
+                    <span>Welcome, Yeoh!</span>
+                  </>
                 ) : (
                   <>
                     <span>Log In</span>
@@ -232,13 +211,27 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
               {/* Biometric Fast Pass */}
               <button
-                className="w-full min-h-[46px] bg-surface-container-high text-primary rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors active:scale-[0.99] cursor-pointer border border-outline-variant/30"
+                className="w-full min-h-[46px] bg-surface-container-high text-primary rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors active:scale-[0.99]"
                 id="biometric-btn"
-                onClick={onOpenBiometric}
+                onClick={simulateBiometrics}
                 type="button"
               >
-                <span className="material-symbols-outlined text-[22px] text-secondary">fingerprint</span>
-                <span>Log in with Touch ID / Face ID</span>
+                {biometricText === 'scanning' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[20px] animate-spin text-secondary">sync</span>
+                    <span>Authenticating biometric sensor...</span>
+                  </>
+                ) : biometricText === 'success' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+                    <span>Identity Verified!</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[22px] text-secondary">fingerprint</span>
+                    <span>Log in with Touch ID / Face ID</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -255,8 +248,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="grid grid-cols-2 gap-space-sm">
             {/* UTM Student SSO Option */}
             <button
-              className="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 group border border-outline-variant/30 cursor-pointer"
-              onClick={onOpenUtmSso}
+              className="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 group"
+              onClick={() => alert("Connecting to UTM Single Sign-On Gateway (CIDOS)...")}
               type="button"
             >
               <div className="w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary-fixed transition-colors">
@@ -270,8 +263,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
             {/* Google Account Fast SSO */}
             <button
-              className="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 group border border-outline-variant/30 cursor-pointer"
-              onClick={onOpenGoogleSso}
+              className="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 group"
+              onClick={() => alert("Redirecting to Google Campus Account Selection...")}
               type="button"
             >
               <div className="w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center group-hover:bg-surface-container transition-colors">
@@ -288,10 +281,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
 
           {/* Recent Campus Activity Pill (Delight/Engagement) */}
-          <div 
-            onClick={() => onShowToast('UTM Saver Leaderboard', 'Yeoh is currently in the 90th percentile of savers at KTC!', 'info')}
-            className="mt-space-lg bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors border border-outline-variant/30"
-          >
+          <div className="mt-space-lg bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between">
             <div className="flex items-center gap-space-sm min-w-0">
               <div className="w-8 h-8 rounded-full bg-growth-mint-subtle flex items-center justify-center text-secondary shrink-0">
                 <span className="material-symbols-outlined text-[16px]">savings</span>
@@ -309,8 +299,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
             <p className="font-body-md text-body-md text-text-muted">
               Don't have an account?{' '}
               <button
-                className="text-primary font-label-lg text-label-lg font-bold hover:underline ml-1 cursor-pointer"
-                onClick={() => onNavigate('register')}
+                className="text-primary font-label-lg text-label-lg font-bold hover:underline ml-1"
+                onClick={onNavigateToRegister}
                 type="button"
               >
                 Sign Up
