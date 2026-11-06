@@ -1,0 +1,17 @@
+# Compiled class files
+*.class
+
+# Executables
+*.exe
+*.o
+*.out
+
+# PHP temporary & session files
+*.log
+.phpunit.result.cache
+
+# Editor directories and files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
