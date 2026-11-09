@@ -1,0 +1,13 @@
+<resources>
+    <!-- Base Application Theme -->
+    <style name="Theme.FinWise" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Brand Colors -->
+        <item name="colorPrimary">#00236F</item>
+        <item name="colorPrimaryVariant">#1E3A8A</item>
+        <item name="colorSecondary">#006C49</item>
+        <item name="android:statusBarColor">#FAF8FF</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">#FAF8FF</item>
+    </style>
+</resources>
+

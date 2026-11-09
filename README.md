@@ -1,144 +1,159 @@
-# AIO (ALL IN ONE)
-## Team Members
-- Member 1: Yeoh Keng Wei (@kwei05)
-- Member 2: Wong Sheng Yang（@shengyang19)
-- Member 3: Ching Qi Yan (@chingqiyan)
-- Member 4: Edwin Oo Ming Hao (@edwinoo05)
-
-# Community TimeBank ⏳
-
-**A Community-Based Skill Exchange Platform Using Time Credits**
-
-## 📌 About the Project
-
-Community TimeBank is a web application designed to encourage skill sharing and mutual assistance within local communities.
-
-People have different skills, knowledge, and experiences that can benefit others. However, finding someone who can provide a particular skill or service is not always easy. Traditional service platforms often rely on monetary payments, which may not be suitable for every community interaction.
-
-Community TimeBank provides an alternative by allowing users to exchange services using **Time Credits instead of direct monetary payments**.
-
-For example, a user can spend one hour teaching someone how to use a smartphone and earn one Time Credit. The credit can then be used to request one hour of cooking lessons or another service from a different community member.
-
-The goal is to make skill sharing more accessible, organized, and convenient while encouraging cooperation within the community.
-
-## 🎯 Project Objectives
-
-- Encourage skill sharing and mutual assistance among community members.
-- Provide a centralized platform to discover and exchange skills.
-- Introduce a time-based credit system for non-monetary service exchanges.
-- Simplify service requests and transaction tracking.
-- Promote community participation and knowledge sharing.
-
-## ✨ Features
-
-### 👤 User Management
-- User registration and login.
-- Personal profile management.
-- View user information and available skills.
-
-### 🛠️ Skill Listings
-- Publish skills and services that users can offer.
-- Browse available skills from other community members.
-- Search and filter services by category or keyword.
-- View service descriptions and provider information.
-
-### 🤝 Service Exchange
-- Submit requests for services.
-- Accept or reject incoming requests.
-- Track the status of service requests.
-- Confirm when a service has been completed.
-
-### ⏳ Time Credit Wallet
-- Earn Time Credits by providing services.
-- Spend Time Credits when receiving services.
-- View current credit balance.
-- Review credit transactions and exchange history.
-
-**Time Credit Rule:** One hour of an eligible service equals one Time Credit.
-
-Time Credits are used only within the platform and do not represent real money.
-
-### 📋 Transaction History
-- View completed and pending exchanges.
-- Track credits earned and spent.
-- Maintain records of completed services.
-
-### 🛡️ Administrator Management
-- Manage user accounts.
-- Review and manage skill listings.
-- Monitor service requests and transactions.
-- Handle reported issues when necessary.
-
-## 🔄 How It Works
-
-1. **Create an Account** — Register and set up a user profile.
-2. **Share Your Skills** — Publish skills or services you can provide.
-3. **Find a Service** — Search for skills offered by other community members.
-4. **Request an Exchange** — Submit a request and wait for the provider's response.
-5. **Complete the Service** — Both parties confirm that the agreed service has been completed.
-6. **Update Time Credits** — The system records the exchange and updates the relevant credit balances.
-
-### Example
-
-| Activity | Time Credit |
-|---|---:|
-| Teach someone basic computer skills for 1 hour | +1 |
-| Learn cooking from another member for 1 hour | -1 |
-| Remaining balance after both transactions | 0 |
-
-This system allows users to help one person and receive assistance from someone else, without requiring a direct one-to-one skill exchange.
-
-## 👥 Target Users
-
-Community TimeBank is designed for:
-
-- Students who want to share knowledge and learn practical skills.
-- Working adults who want to exchange skills with others.
-- Retirees who wish to share their knowledge and experience.
-- Community members who need help with everyday tasks.
-- Individuals interested in community cooperation and non-monetary exchanges.
-
-## 💡 What Makes Community TimeBank Different?
-
-Unlike conventional service marketplaces that primarily focus on monetary transactions, Community TimeBank uses time as its exchange unit.
-
-Its key concept is **giving one hour of help to earn the opportunity to receive help from another community member**.
-
-The platform also organizes skill listings, service requests, credit balances, and transaction records in one place, making community exchanges easier to manage.
-
-## 🧰 Technology Stack
-
-The following technologies are potential choices for this project and may be updated as development progresses.
-
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** To be determined
-- **Database:** To be determined
-- **Version Control:** Git and GitHub
-
-## 🚧 Project Status
-
-**Status: In Development / Planned**
-
-Community TimeBank is an application development project. Features will be implemented progressively, starting with essential user management, skill listings, service requests, and time credit functionality.
-
-## 🔮 Future Improvements
-
-Potential future enhancements include:
-
-- User ratings and reviews.
-- Notifications for service requests and status updates.
-- Community verification and reporting tools.
-- Improved skill recommendations.
-- Mobile-friendly interface enhancements.
-- Community activity statistics and reports.
-
-## 🌱 Vision
-
-Community TimeBank aims to demonstrate how technology can support community cooperation by making people's time, skills, and knowledge easier to share.
-
-**Share your skills. Earn time. Help your community.**
+# 💰 FinWise – AI-Powered Personal Financial Management Mobile Application
+**👥 Group Name:** All In One (AIO)  
+**📚 Course:** Application Development (Semester 3)  
+**🏫 Institution:** Universiti Teknologi Malaysia (UTM), Skudai Campus  
+**📱 Platform:** Native Android Application (Java SDK)  
 
 ---
 
-*This project is developed for educational purposes as part of an Application Development course.*
+## 👥 Team Members
+- **Member 1:** Yeoh Keng Wei ([@kwei05](https://github.com/kwei05))
+- **Member 2:** Wong Sheng Yang ([@shengyang19](https://github.com/shengyang19))
+- **Member 3:** Ching Qi Yan ([@chingqiyan](https://github.com/chingqiyan))
+- **Member 4:** Edwin Oo Ming Hao ([@edwinoo05](https://github.com/edwinoo05))
 
+---
+
+## 📌 Project Overview
+**FinWise** is an AI-powered personal financial management Android application designed specifically to empower university students and young adults in managing their income, semester allowance, campus meal spending, and personal savings.
+
+Unlike generic budgeting apps, FinWise integrates a campus financial context (UTM Skudai Campus, Arked meal spending patterns, semester runway forecasts) and an AI Copilot engine to provide actionable, student-tailored insights.
+
+---
+
+## 🛠️ Technology Stack & Strict Language Compliance
+
+| Layer | Language / Technology | Purpose |
+|---|---|---|
+| **📱 Mobile Client** | **Java (Android SDK Native)** | Native Android UI built **100% programmatically in Java** (Activities, Fragments, RecyclerView, Custom Views). **No WebViews, no JavaScript, no Kotlin, no Flutter.** |
+| **⚙️ Backend API** | **PHP 8.0+** | RESTful backend, authentication, PDO prepared statements, password hashing, secure OTP verification, and 60s throttling. |
+| **🗄️ Database** | **MySQL 5.7+ / 8.0+ / MariaDB** | Relational data persistence with strict foreign keys and indexes. |
+| **📧 Email Delivery** | **HTML & PHP SMTP** | Multipart HTML verification email templates dispatched over SSL/TLS sockets. |
+| **🧮 Simulation Module** | **C++ (C++17)** | High-performance financial simulation, semester runway projections, and Monte Carlo algorithms. |
+
+---
+
+## 🏗️ Project Architecture & Repository Structure
+
+```text
+AIO/
+├── FinWiseAndroid/                  # Complete Native Android Studio Project
+│   ├── app/
+│   │   ├── build.gradle             # Android build configuration
+│   │   ├── proguard-rules.pro
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml  # Platform configuration & permissions
+│   │       ├── java/com/finwise/app/
+│   │       │   ├── activities/      # LoginActivity, RegisterActivity, VerificationActivity,
+│   │       │   │                    # ForgotPasswordActivity, MainActivity
+│   │       │   ├── fragments/       # HomeFragment, BudgetFragment, InsightsFragment,
+│   │       │   │                    # SimulatorFragment, AddTransactionDialogFragment
+│   │       │   ├── adapters/        # TransactionAdapter (Programmatic RecyclerView)
+│   │       │   ├── models/          # User, Transaction, DashboardData, ApiResponse
+│   │       │   ├── network/         # ApiClient (pure Java HttpURLConnection), AuthService, DashboardService
+│   │       │   ├── ui/              # ThemeColors, ViewFactory, OutflowTrendBarView, BottomNavBarView
+│   │       │   └── utils/           # ValidationUtils, SessionManager, CountdownManager, SecurityUtils
+│   │       └── res/values/          # strings.xml, styles.xml
+│   ├── build.gradle
+│   ├── settings.gradle
+│   ├── gradlew.bat
+│   └── gradle.properties
+│
+├── backend/                         # Pure PHP REST Backend
+│   ├── api/                         # login.php, register.php, verify_email.php, resend_otp.php,
+│   │                                # forgot_password.php, dashboard.php, logout.php
+│   ├── config/                      # database.php (PDO), smtp.php (SMTP credentials)
+│   ├── database/                    # finwise_db.sql (MySQL schema & seed data)
+│   ├── includes/                    # authentication.php, validation.php, email_service.php,
+│   │                                # otp_service.php, security.php
+│   └── templates/                   # verification_email.html (HTML email template)
+│
+├── cpp/                             # C++ Financial Calculation & Simulation Engine
+│   ├── FinancialSimulator.h         # Simulation interface & data structures
+│   └── FinancialSimulator.cpp       # Runway forecasting & compound interest math
+│
+└── docs/                            # Comprehensive Project Documentation
+    ├── ANDROID_SETUP_GUIDE.md       # Android Studio installation & APK build guide
+    ├── BACKEND_DEPLOYMENT.md        # PHP backend & MySQL setup guide
+    └── TESTING_REPORT.md            # Comprehensive 16-point authentication & UI test report
+```
+
+---
+
+## 📱 Implemented Android Application Screens
+
+1. **Screen 1: Login (`LoginActivity.java`)**
+   - UTM Portal Sync badge & Semester Allowance card.
+   - Dynamic form validation, password show/hide toggle.
+   - Remember device preference with 256-bit AES badge.
+   - UTM CIDOS SSO & Google Campus login options.
+   - Biometric touch ID / face ID integration flow.
+
+2. **Screen 2: Registration (`RegisterActivity.java`)**
+   - Full student registration (Full Name, Student Email, Matric ID, Passwords).
+   - Validation for duplicate email, password complexity, and confirmation match.
+   - Backend dispatch generating 6-digit OTP code.
+
+3. **Screen 3: Email Verification (`VerificationActivity.java`)**
+   - 6-digit OTP code validation against server bcrypt hash.
+   - Strict 60-second resend restriction enforced via server timestamps and Android Handler.
+   - Expiration checking (10-minute validity) and max attempt throttle.
+
+4. **Screen 4: Home Dashboard (`MainActivity.java` & `HomeFragment.java`)**
+   - Header with notification modal and student profile dialog with logout.
+   - AI Copilot banner with interactive preview.
+   - Total Available Balance Bento Hero card with privacy toggle.
+   - Smart Spend Alert widget with demonstration quick transfer.
+   - 7-Day Outflow Trend interactive bar chart.
+   - Recent Transactions RecyclerView with category badges.
+   - 5-item native bottom navigation bar.
+
+5. **Screen 5: Forgot Password (`ForgotPasswordActivity.java`)**
+   - Email a 6-digit reset code, verify it, and set a new password through the password-reset API.
+   - Server-enforced 60-second resend limit with an on-screen countdown.
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Backend Setup
+1. Import `backend/database/finwise_db.sql` into MySQL.
+2. Start the configured development API and mail server:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File .\backend\start-dev-server.ps1
+   ```
+   The script securely prompts for your Gmail address, Gmail App Password (hidden input), and MySQL settings. Create an App Password in your Google account first; never put it in source code or send it in chat. The script runs PHP with real SMTP delivery enabled and does not store the credentials. If TLS certificate verification fails on Windows, configure PHP's `openssl.cafile` with a current CA bundle; do not disable certificate verification.
+
+### 2. Android Studio Setup
+1. Open the `FinWiseAndroid` folder in Android Studio.
+2. In `ApiClient.java`, verify the base URL (`http://10.0.2.2:8000/backend/api/` for emulator).
+3. Connect an Android device or start an emulator (API 26+).
+4. Click **Run > Run 'app'** or build the APK via `gradlew assembleDebug`.
+
+---
+
+## 📅 Development Roadmap (4 Sprints)
+
+- **✅ Sprint 1 – Android Foundation & Authentication (Completed):**
+  - Native Android project setup & programmatic UI framework.
+  - Complete Login, Registration, Email Verification, and Forgot Password flows.
+  - 60-second OTP resend restriction with timestamp persistence.
+  - PHP REST API and MySQL database structure.
+  - Full Dashboard layout with balance hero, outflow trend chart, and transactions.
+  - C++ simulation module architecture.
+
+- **⏳ Sprint 2 – Financial Management:**
+  - Add, edit, delete real-time transactions.
+  - Category management & monthly spending limits.
+  - Dynamic budget utilization alerts.
+  - Savings goal tracker with milestone calculations.
+
+- **⏳ Sprint 3 – AI & Financial Intelligence:**
+  - Gemini AI API integration for conversational Copilot.
+  - Receipt OCR parser.
+  - Spending anomaly detection.
+  - JNI bindings connecting C++ `FinancialSimulator` into Android.
+
+- **⏳ Sprint 4 – Integration & Testing:**
+  - End-to-end user acceptance testing with UTM students.
+  - Performance profiling, security auditing, and release APK signing.
