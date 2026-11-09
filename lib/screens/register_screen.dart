@@ -58,9 +58,226 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return score;
   }
 
-  void _handleGoogleSignUp() async {
+  void _showGoogleAccountPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const GoogleLogo(size: 22),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Google Accounts',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () => Navigator.of(bottomSheetContext).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Sign up with Google',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Select your Gmail account to register on FinWise',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildGoogleAccountTile(
+                  name: 'Alex Yeoh',
+                  email: 'alex.yeoh@gmail.com',
+                  avatarColor: Colors.blue.shade700,
+                  initial: 'A',
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _performGoogleSignUp(email: 'alex.yeoh@gmail.com', name: 'Alex Yeoh');
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildGoogleAccountTile(
+                  name: 'Kean Shen Yeoh',
+                  email: 'keanshen.yeoh@gmail.com',
+                  avatarColor: Colors.teal.shade700,
+                  initial: 'K',
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _performGoogleSignUp(email: 'keanshen.yeoh@gmail.com', name: 'Kean Shen Yeoh');
+                  },
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade300, style: BorderStyle.solid),
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey.shade100,
+                    child: const Icon(Icons.person_add_alt_1, color: AppColors.textPrimary, size: 20),
+                  ),
+                  title: const Text(
+                    'Use another Google account',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Register with your personal Gmail',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                  ),
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _promptCustomGmailDialog();
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Text(
+                    'Google will share your name and email with FinWise to create your account.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 10, color: AppColors.outline),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGoogleAccountTile({
+    required String name,
+    required String email,
+    required Color avatarColor,
+    required String initial,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        leading: CircleAvatar(
+          backgroundColor: avatarColor,
+          child: Text(
+            initial,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        title: Text(
+          name,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          email,
+          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _promptCustomGmailDialog() {
+    final emailCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              GoogleLogo(size: 20),
+              SizedBox(width: 8),
+              Text('Enter Gmail', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: TextField(
+            controller: emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'your.name@gmail.com',
+              labelText: 'Gmail Address',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.mail_outline),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final email = emailCtrl.text.trim();
+                if (email.isNotEmpty && email.contains('@')) {
+                  Navigator.of(dialogContext).pop();
+                  final name = email.split('@')[0].replaceAll('.', ' ');
+                  _performGoogleSignUp(email: email, name: name);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Register'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _performGoogleSignUp({String? email, String? name}) async {
     setState(() => _isSigningUp = true);
-    final user = await AuthService().signInWithGoogle();
+    final user = await AuthService().signInWithGoogle(
+      selectedEmail: email,
+      selectedName: name,
+    );
     setState(() => _isSigningUp = false);
 
     if (user != null && mounted) {
@@ -85,7 +302,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  void _handleFormSubmit() {
+  void _handleFormSubmit() async {
     if (!_termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -95,7 +312,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
-    _handleGoogleSignUp();
+
+    final email = _emailController.text.trim();
+    final name = _nameController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || name.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill out all registration fields.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password must be at least 8 characters long.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSigningUp = true);
+
+    try {
+      final user = await AuthService().signUpWithEmail(
+        email: email,
+        password: password,
+        name: name,
+      );
+
+      setState(() => _isSigningUp = false);
+
+      if (user != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.secondary,
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Account created for ${user.displayName}! Welcome to FinWise.'),
+                ),
+              ],
+            ),
+          ),
+        );
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
+    } catch (e) {
+      setState(() => _isSigningUp = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -262,7 +545,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   // Google Sign-Up Primary CTA Button
                   InkWell(
-                    onTap: _isSigningUp ? null : _handleGoogleSignUp,
+                    onTap: _isSigningUp ? null : _showGoogleAccountPicker,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: double.infinity,
@@ -367,11 +650,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Google / Gmail Address',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textMuted),
+                          const Expanded(
+                            child: Text(
+                              'Google / Gmail Address',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textMuted),
+                            ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -404,7 +689,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
                           decoration: const InputDecoration(
-                            hintText: 'yourname@gmail.com',
+                            hintText: 'alex.yeoh@gmail.com',
                             prefixIcon: Icon(Icons.mail_outline, size: 20, color: AppColors.textMuted),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -415,7 +700,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Create Password input
+                  // Password input with live strength indicator
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -433,13 +718,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: TextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          style: const TextStyle(fontSize: 14, color: AppColors.onSurface, letterSpacing: 2),
+                          style: const TextStyle(fontSize: 14, color: AppColors.onSurface, letterSpacing: 1.5),
                           decoration: InputDecoration(
                             hintText: '••••••••••••',
                             prefixIcon: const Icon(Icons.lock_outline, size: 20, color: AppColors.textMuted),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                 size: 20,
                                 color: AppColors.textMuted,
                               ),
@@ -450,29 +735,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 10),
 
                       // Password Strength Indicator Card
                       Container(
-                        margin: const EdgeInsets.only(top: 8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderNeutral),
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Security Strength',
-                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                const Expanded(
+                                  child: Text(
+                                    'Security Strength',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  ),
                                 ),
                                 Text(
                                   _strengthScore == 3
                                       ? 'Strong Password'
                                       : _strengthScore == 2
-                                          ? 'Medium Strength'
+                                          ? 'Medium Password'
                                           : 'Weak Password',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -480,43 +769,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     color: _strengthScore == 3
                                         ? AppColors.secondary
                                         : _strengthScore == 2
-                                            ? Colors.orange
-                                            : AppColors.error,
+                                            ? Colors.amber.shade700
+                                            : AppColors.alertCoral,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
 
-                            // 3-Segment Strength Bar
+                            // 3-Segment Progress Bar
                             Row(
                               children: [
                                 Expanded(
                                   child: Container(
-                                    height: 5,
+                                    height: 4,
                                     decoration: BoxDecoration(
-                                      color: _strengthScore >= 1 ? AppColors.secondary : AppColors.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: _strengthScore >= 1
+                                          ? (_strengthScore == 1 ? AppColors.alertCoral : AppColors.secondary)
+                                          : AppColors.surfaceContainerHigh,
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Container(
-                                    height: 5,
+                                    height: 4,
                                     decoration: BoxDecoration(
-                                      color: _strengthScore >= 2 ? AppColors.secondary : AppColors.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: _strengthScore >= 2
+                                          ? (_strengthScore == 2 ? Colors.amber.shade700 : AppColors.secondary)
+                                          : AppColors.surfaceContainerHigh,
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Container(
-                                    height: 5,
+                                    height: 4,
                                     decoration: BoxDecoration(
-                                      color: _strengthScore == 3 ? AppColors.secondary : AppColors.surfaceContainerHigh,
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: _strengthScore == 3
+                                          ? AppColors.secondary
+                                          : AppColors.surfaceContainerHigh,
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
                                 ),
@@ -525,8 +820,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(height: 8),
 
                             // Criteria Pills
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
                               children: [
                                 _CriteriaPill(label: '8+ Characters', isValid: _hasMinLength),
                                 _CriteriaPill(label: 'Contains Number', isValid: _hasNumber),
@@ -538,59 +834,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
-                  // Terms & Conditions Checkbox
+                  // Terms Agreement Checkbox
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _termsAccepted,
-                          activeColor: AppColors.primary,
-                          onChanged: (val) => setState(() => _termsAccepted = val ?? true),
-                        ),
+                      Checkbox(
+                        value: _termsAccepted,
+                        activeColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        onChanged: (val) => setState(() => _termsAccepted = val ?? false),
                       ),
-                      const SizedBox(width: 8),
                       const Expanded(
-                        child: Text(
-                          'I agree to the Terms of Service, Privacy Policy, and consent to cloud security verification.',
-                          style: TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.3),
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: Text(
+                            'I agree to the Terms of Service, Privacy Policy, and consent to Google account verification.',
+                            style: TextStyle(fontSize: 11, color: AppColors.textMuted, height: 1.3),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
 
-                  // Submit CTA Button
+                  // Submit Button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _handleFormSubmit,
+                      onPressed: _isSigningUp ? null : _handleFormSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.onPrimary,
+                        foregroundColor: Colors.white,
                         elevation: 2,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Continue to Setup Goals', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 18),
+                          Text(
+                            _isSigningUp ? 'Setting up Vault...' : 'Continue to Dashboard',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward, size: 18),
                         ],
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
 
                   // Community Social Proof
                   Container(
-                    margin: const EdgeInsets.only(top: 24),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12),

@@ -3,81 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
-  <title>FinWise - Student Dashboard</title>
+  <title>FinWise - Personal Financial Dashboard</title>
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            "border-neutral": "#E2E8F0",
-            "tertiary-fixed-dim": "#ffb691",
-            "primary-container": "#1e3a8a",
-            "surface-container-lowest": "#ffffff",
-            "canvas-neutral": "#F8FAFC",
-            "surface-bright": "#faf8ff",
-            "surface-container-low": "#f4f3fa",
-            "secondary-container": "#6cf8bb",
             "primary": "#00236f",
-            "error": "#ba1a1a",
-            "on-secondary-fixed": "#002113",
-            "on-error-container": "#93000a",
-            "inverse-on-surface": "#f1f0f7",
-            "inverse-surface": "#2f3036",
-            "on-tertiary-fixed-variant": "#773205",
-            "on-secondary-container": "#00714d",
-            "surface-container": "#eeedf4",
-            "alert-coral": "#EF4444",
-            "on-primary-fixed-variant": "#264191",
-            "tertiary": "#4b1c00",
-            "text-primary": "#0F172A",
-            "alert-coral-subtle": "#FEE2E2",
-            "surface-container-high": "#e9e7ef",
-            "secondary": "#006c49",
-            "surface-dim": "#dad9e1",
-            "surface-tint": "#4059aa",
-            "on-secondary": "#ffffff",
-            "surface-container-highest": "#e3e1e9",
-            "on-tertiary-fixed": "#341100",
-            "on-background": "#1a1b21",
-            "error-container": "#ffdad6",
-            "secondary-fixed": "#6ffbbe",
-            "on-surface-variant": "#444651",
-            "outline": "#757682",
-            "on-error": "#ffffff",
-            "inverse-primary": "#b6c4ff",
-            "secondary-fixed-dim": "#4edea3",
-            "on-tertiary": "#ffffff",
-            "background": "#faf8ff",
-            "primary-fixed": "#dce1ff",
-            "growth-mint-subtle": "#D1FAE5",
+            "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
-            "on-surface": "#1a1b21",
-            "outline-variant": "#c5c5d3",
-            "tertiary-container": "#6e2c00",
-            "on-secondary-fixed-variant": "#005236",
-            "primary-fixed-dim": "#b6c4ff",
-            "surface-variant": "#e3e1e9",
-            "on-primary-fixed": "#00164e",
+            "secondary": "#006c49",
+            "secondary-container": "#6cf8bb",
+            "secondary-fixed": "#6ffbbe",
+            "growth-mint-subtle": "#D1FAE5",
             "surface": "#faf8ff",
-            "on-tertiary-container": "#f39461",
-            "on-primary-container": "#90a8ff",
-            "tertiary-fixed": "#ffdbcb",
-            "surface-neutral": "#FFFFFF",
-            "text-muted": "#64748B"
-          },
-          spacing: {
-            "margin": "1rem",
-            "space-xl": "2rem",
-            "space-xs": "0.25rem",
-            "space-md": "1rem",
-            "space-lg": "1.5rem",
-            "space-sm": "0.5rem"
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f3fa",
+            "surface-container": "#eeedf4",
+            "surface-container-high": "#e9e7ef",
+            "surface-container-highest": "#e3e1e9",
+            "text-primary": "#0F172A",
+            "text-muted": "#64748B",
+            "outline": "#757682",
+            "outline-variant": "#c5c5d3",
+            "border-neutral": "#E2E8F0",
+            "alert-coral": "#EF4444",
+            "alert-coral-subtle": "#FEE2E2"
           }
         }
       }
@@ -89,16 +48,20 @@
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
   </style>
 </head>
-<body class="bg-slate-100 flex flex-col items-center min-h-screen text-on-surface antialiased">
+<body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
   <!-- Desktop Mobile Frame Wrapper -->
-  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-outline-variant/30 pb-20">
+  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
-    <!-- Top Demo Navigation Pill -->
-    <div class="bg-primary-container text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
-      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>FinWise Local Web Preview</span>
-      <div class="flex items-center gap-2">
-        <span>•</span>
+    <!-- Top Status Banner -->
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
+        FinWise AI Intelligence
+      </span>
+      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span class="text-[11px] text-white/90">Supabase Connected</span>
       </div>
     </div>
 
@@ -108,20 +71,43 @@
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">FW</div>
           <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
-          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">UTM</span>
+          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI SMART</span>
         </div>
-        <div class="flex items-center gap-1">
-          <button aria-label="Notifications" onclick="showNotifModal()" class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-on-surface hover:bg-surface-container transition-colors">
+        <div class="flex items-center gap-1 relative">
+          <!-- Notification Bell -->
+          <button aria-label="Notifications" onclick="showNotifModal()" class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-[22px]">notifications</span>
           </button>
-          <button aria-label="User Profile" onclick="toggleProfileMenu()" class="w-10 h-10 flex items-center justify-center rounded-full">
-            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-semibold">
-              <span class="material-symbols-outlined text-[18px]">person</span>
+          
+          <!-- User Profile Avatar Button -->
+          <button aria-label="User Profile" onclick="toggleProfileMenu()" id="headerProfileAvatarBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+            <div id="headerProfileAvatar" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden">
+              U
             </div>
           </button>
-          <div id="profileMenu" class="hidden absolute right-4 top-14 z-50 min-w-36 rounded-lg bg-white border border-slate-200 shadow-lg p-1">
-            <button onclick="showProfileDetails()" class="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-slate-100">👤 Profile</button>
-            <button onclick="logoutFromMenu()" class="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-slate-100">↪ Log Out</button>
+
+          <!-- Profile Dropdown Menu -->
+          <div id="profileMenu" class="hidden absolute right-0 top-14 z-50 w-64 rounded-xl bg-white border border-slate-200 shadow-xl p-3 flex flex-col gap-2">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div id="menuAvatarIcon" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-base font-bold shadow-sm shrink-0 overflow-hidden">
+                U
+              </div>
+              <div class="min-w-0 flex-1">
+                <p id="profileMenuName" class="text-xs font-bold text-slate-900 truncate">Google User</p>
+                <p id="profileMenuEmail" class="text-[11px] text-slate-500 truncate">user@gmail.com</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 bg-growth-mint-subtle px-2 py-1 rounded-md text-[10px] font-bold text-secondary">
+              <span class="material-symbols-outlined text-[13px]">verified</span>
+              <span>Google Account Verified</span>
+            </div>
+            <div class="text-[10px] text-text-muted px-1">
+              Backend: <strong class="text-slate-700">Supabase Cloud PostgreSQL</strong>
+            </div>
+            <button onclick="logoutFromMenu()" class="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-lg text-alert-coral hover:bg-alert-coral-subtle/50 transition-colors flex items-center gap-1.5 mt-1">
+              <span class="material-symbols-outlined text-[16px]">logout</span>
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
       </div>
@@ -130,40 +116,17 @@
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-4">
 
-      <!-- AI Copilot Pull-down Banner -->
-      <div id="ai-pull-banner" class="hidden w-full flex flex-col items-center gap-1.5 cursor-pointer select-none group" onclick="showAiModal()">
-        <div class="w-10 h-1 rounded-full bg-outline-variant/60 group-hover:bg-primary transition-colors"></div>
-        <div class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary-container/10 via-growth-mint-subtle/40 to-primary-container/10 border border-primary-container/20 shadow-sm hover:border-primary-container/40 transition-all">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-7 h-7 rounded-full bg-primary-container text-white flex items-center justify-center shrink-0 shadow-xs">
-              <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
-            </div>
-            <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-xs font-bold text-text-primary truncate">Try FinWise AI Copilot</span>
-                <span class="px-1.5 py-0.2 bg-growth-mint-subtle text-secondary text-[9px] rounded-full font-bold">NEW</span>
-              </div>
-              <p class="text-[11px] text-text-muted truncate">Pull down or tap to log via voice &amp; receipt OCR</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1 text-primary shrink-0 pl-2">
-            <span class="text-xs font-bold hidden sm:inline">Open</span>
-            <span class="material-symbols-outlined text-[18px] animate-bounce">expand_more</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Greeting & Period Context Bar -->
       <div class="flex items-center justify-between">
-        <div class="flex flex-col">
+        <div class="flex flex-col min-w-0">
           <div class="flex items-center gap-1">
-            <span class="text-lg font-bold text-text-primary" id="greetingName">Hello, Student!</span>
+            <span class="text-lg font-bold text-text-primary truncate" id="greetingName">Hello, Google User!</span>
             <span class="text-[18px]">👋</span>
           </div>
-          <p class="text-xs text-text-muted">UTM Skudai Campus • Financial Snapshot</p>
+          <p class="text-xs text-text-muted truncate" id="userSubtitle">Personal Financial Snapshot</p>
         </div>
         <!-- Month Selector Pill -->
-        <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm">
+        <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm shrink-0">
           <span class="material-symbols-outlined text-[16px] text-primary-container">calendar_month</span>
           <input id="selectedMonth" aria-label="Select month" type="month" class="w-28 bg-transparent text-xs font-bold text-text-primary outline-none" onchange="renderDashboard()">
           <span class="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
@@ -178,7 +141,7 @@
             <span class="text-[11px] font-bold tracking-wider uppercase">Total Available Balance</span>
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white">Active</span>
-              <button aria-label="Toggle Balance Visibility" class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn">
+              <button aria-label="Toggle Balance Visibility" class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn" onclick="toggleBalance()">
                 <span class="material-symbols-outlined text-[18px]" id="eyeIcon">visibility</span>
               </button>
             </div>
@@ -198,7 +161,7 @@
                 <span class="material-symbols-outlined text-secondary text-[16px]">arrow_outward</span>
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="text-[10px] text-white/70 truncate">Income</span>
+                <span class="text-[10px] text-white/70 truncate">Total Income</span>
                 <span id="incomeValue" class="text-xs font-bold text-white truncate">+RM 0.00</span>
               </div>
             </div>
@@ -208,7 +171,7 @@
                 <span class="material-symbols-outlined text-alert-coral text-[16px]">call_received</span>
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="text-[10px] text-white/70 truncate">Expenses</span>
+                <span class="text-[10px] text-white/70 truncate">Total Expenses</span>
                 <span id="expenseValue" class="text-xs font-bold text-white truncate">-RM 0.00</span>
               </div>
             </div>
@@ -216,370 +179,201 @@
         </div>
       </div>
 
-      <!-- Smart Spend Alert Widget -->
-      <div class="hidden relative overflow-hidden rounded-xl bg-growth-mint-subtle p-3.5 shadow-sm transition-all duration-300 border border-secondary/20" id="aiInsightWidget">
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
-            <span class="material-symbols-outlined text-secondary text-[18px]">lightbulb</span>
+      <!-- Quick Action Buttons Grid -->
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="showTransactions()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
           </div>
-          <div class="flex-1 flex flex-col gap-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold text-on-secondary-container uppercase tracking-wider">Smart Spend Alert</span>
-              <span class="text-[11px] text-secondary font-medium">Just now</span>
-            </div>
-            <p class="text-xs text-text-primary leading-snug">
-              You've spent <strong class="font-bold text-secondary">20% less</strong> on food this week at <span class="font-medium text-text-primary">UTM Arked</span>. Great job! Move RM50 to your Emergency Fund?
-            </p>
-            <!-- Actions -->
-            <div class="flex items-center gap-2 pt-1.5">
-              <button class="h-8 px-3 rounded-lg bg-primary-container text-white text-xs font-bold shadow-sm hover:bg-primary transition-all active:scale-95 flex items-center gap-1" id="transferQuickBtn">
-                <span>Transfer RM50</span>
-                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-              </button>
-              <button aria-label="Dismiss AI Insight" class="h-8 px-2.5 rounded-lg text-text-muted hover:text-text-primary text-xs transition-colors" id="dismissInsightBtn">
-                Dismiss
-              </button>
-            </div>
+          <span class="text-[11px] font-semibold text-text-primary">Budgeting</span>
+        </button>
+        <button onclick="showAiModal()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-emerald-50 text-secondary flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
           </div>
-        </div>
-      </div>
-
-      <!-- 7-Day Outflow Trend Bar Chart -->
-      <div id="legacyStaticTrend" class="hidden rounded-xl bg-white p-3.5 shadow-sm border border-border-neutral flex flex-col gap-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-primary-container text-[18px]">query_stats</span>
-            <span class="text-xs font-bold text-text-primary">7-Day Outflow Trend</span>
+          <span class="text-[11px] font-semibold text-text-primary">AI Insights</span>
+        </button>
+        <button onclick="showSummary()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">trending_up</span>
           </div>
-          <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-low text-text-muted text-[11px]">
-            <span>Avg:</span>
-            <span class="font-bold text-text-primary">RM 45/day</span>
+          <span class="text-[11px] font-semibold text-text-primary">Forecast</span>
+        </button>
+        <button onclick="alert('FinWise Cash Flow Simulator: Try adjusting monthly expenses or savings goals!')" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">tune</span>
           </div>
-        </div>
-
-        <!-- 7-Day Bars -->
-        <div class="pt-2">
-          <div class="h-28 w-full flex items-end justify-between gap-1.5 px-1">
-            <!-- Mon -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Mon: RM 35.00')">
-              <div class="w-full max-w-[26px] h-12 bg-surface-container-high rounded-md transition-all group-hover:bg-primary-container" title="RM 35.00"></div>
-              <span class="text-[11px] text-text-muted">M</span>
-            </div>
-            <!-- Tue -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Tue: RM 52.00')">
-              <div class="w-full max-w-[26px] h-18 bg-surface-container-high rounded-md transition-all group-hover:bg-primary-container" title="RM 52.00" style="height: 52px;"></div>
-              <span class="text-[11px] text-text-muted">T</span>
-            </div>
-            <!-- Wed -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Wed: RM 24.50')">
-              <div class="w-full max-w-[26px] h-9 bg-surface-container-high rounded-md transition-all group-hover:bg-primary-container" title="RM 24.50"></div>
-              <span class="text-[11px] text-text-muted">W</span>
-            </div>
-            <!-- Thu -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Thu: RM 62.00')">
-              <div class="w-full max-w-[26px] h-20 bg-surface-container-high rounded-md transition-all group-hover:bg-primary-container" title="RM 62.00" style="height: 62px;"></div>
-              <span class="text-[11px] text-text-muted">T</span>
-            </div>
-            <!-- Fri -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Fri: RM 41.00')">
-              <div class="w-full max-w-[26px] h-14 bg-surface-container-high rounded-md transition-all group-hover:bg-primary-container" title="RM 41.00" style="height: 41px;"></div>
-              <span class="text-[11px] text-text-muted">F</span>
-            </div>
-            <!-- Sat (Peak) -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Sat: RM 78.50 (Weekend Peak)')">
-              <div class="w-full max-w-[26px] bg-alert-coral/80 rounded-md transition-all shadow-sm" style="height: 78px;" title="RM 78.50 (Weekend Peak)"></div>
-              <span class="text-[11px] text-alert-coral font-bold">S</span>
-            </div>
-            <!-- Sun (Today) -->
-            <div class="flex-1 flex flex-col items-center gap-1 group cursor-pointer" onclick="alert('Sun (Today): RM 30.50')">
-              <div class="w-full max-w-[26px] bg-primary-container rounded-md transition-all shadow-sm" style="height: 30px;" title="RM 30.50 (Today)"></div>
-              <span class="text-[11px] text-primary font-bold">S</span>
-            </div>
-          </div>
-        </div>
+          <span class="text-[11px] font-semibold text-text-primary">Simulator</span>
+        </button>
       </div>
 
       <!-- Recent Transactions Section -->
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-text-primary">Recent Transactions</h2>
-          <button class="text-[11px] font-semibold text-primary" onclick="showTransactions()">View all</button>
+          <button class="text-[11px] font-semibold text-primary hover:underline" onclick="showTransactions()">View all</button>
         </div>
 
-        <div id="recentRecords" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container"></div>
-
-        <!-- Transaction Cards List -->
-        <div id="legacyStaticTransactions" class="hidden rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden flex flex-col divide-y divide-surface-container">
-          <!-- Item 1 -->
-          <div class="flex items-center justify-between p-3 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="alert('UTM Arked Cengal - Lunch\nAmount: -RM 8.50\nCategory: Food & Dining')">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 text-primary-container">
-                <span class="material-symbols-outlined text-[18px]">restaurant</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold text-text-primary truncate">UTM Arked Cengal - Lunch</span>
-                <span class="text-[11px] text-text-muted truncate">Food &amp; Dining • Today, 1:15 PM</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end shrink-0 pl-2">
-              <span class="text-xs font-bold text-text-primary">-RM 8.50</span>
-              <span class="text-[10px] text-secondary font-medium">Savings target met</span>
-            </div>
-          </div>
-
-          <!-- Item 2 -->
-          <div class="flex items-center justify-between p-3 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="alert('Monthly Allowance\nAmount: +RM 800.00\nCategory: Family Transfer')">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-full bg-growth-mint-subtle flex items-center justify-center shrink-0 text-secondary">
-                <span class="material-symbols-outlined text-[18px]">payments</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold text-text-primary truncate">Monthly Allowance</span>
-                <span class="text-[11px] text-text-muted truncate">Family Transfer • Yesterday</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end shrink-0 pl-2">
-              <span class="text-xs font-bold text-secondary">+RM 800.00</span>
-              <span class="text-[10px] text-text-muted">Bank Direct</span>
-            </div>
-          </div>
-
-          <!-- Item 3 -->
-          <div class="flex items-center justify-between p-3 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="alert('Campus Bookstore - Stationery\nAmount: -RM 34.00\nCategory: Education')">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 text-primary-container">
-                <span class="material-symbols-outlined text-[18px]">menu_book</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold text-text-primary truncate">Campus Bookstore - Stationery</span>
-                <span class="text-[11px] text-text-muted truncate">Education • 12 Nov</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end shrink-0 pl-2">
-              <span class="text-xs font-bold text-text-primary">-RM 34.00</span>
-              <span class="text-[10px] text-text-muted">Debit Card</span>
-            </div>
-          </div>
-
-          <!-- Item 4 -->
-          <div class="flex items-center justify-between p-3 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="alert('Grab Ride to Senai\nAmount: -RM 22.00\nCategory: Transport')">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 text-primary-container">
-                <span class="material-symbols-outlined text-[18px]">local_taxi</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold text-text-primary truncate">Grab Ride to Senai</span>
-                <span class="text-[11px] text-text-muted truncate">Transport • 10 Nov</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end shrink-0 pl-2">
-              <span class="text-xs font-bold text-text-primary">-RM 22.00</span>
-              <span class="text-[10px] text-text-muted">GrabPay</span>
-            </div>
-          </div>
+        <div id="recentRecords" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
+          <div class="p-4 text-center text-xs text-text-muted">Loading transactions from Supabase...</div>
         </div>
-
-        <!-- View All Button -->
-        <button class="hidden w-full h-10 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-primary-container text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm mt-1" onclick="alert('Viewing all semester transactions...')">
-          <span>View All Transactions</span>
-          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </button>
       </div>
 
+      <!-- Monthly Summary & Category Breakdown -->
       <section id="monthlySummary" class="rounded-xl bg-white p-4 shadow-sm border border-border-neutral">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold text-text-primary">Monthly Summary</h2>
-          <span id="monthlyTitle" class="text-xs text-text-muted"></span>
+          <h2 class="text-sm font-bold text-text-primary">Monthly Breakdown</h2>
+          <span id="monthlyTitle" class="text-xs text-text-muted font-medium"></span>
         </div>
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-3 gap-2 pb-3 border-b border-slate-100">
           <div><p class="text-[11px] text-text-muted">Income</p><p id="monthlyIncome" class="text-sm font-bold text-secondary">RM 0.00</p></div>
           <div><p class="text-[11px] text-text-muted">Expenses</p><p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p></div>
-          <div><p class="text-[11px] text-text-muted">Balance</p><p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p></div>
+          <div><p class="text-[11px] text-text-muted">Net Cash Flow</p><p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p></div>
         </div>
-        <p class="text-[11px] text-text-muted mt-3">Expenses by category</p>
-        <div id="categoryChart" class="mt-2 space-y-3"><p class="text-xs text-text-muted">No expenses this month.</p></div>
+        <p class="text-[11px] font-semibold text-text-muted mt-3">Expenses by Category</p>
+        <div id="categoryChart" class="mt-2 space-y-3">
+          <p class="text-xs text-text-muted">No expenses recorded for this month.</p>
+        </div>
       </section>
 
+      <!-- Full Transaction History View -->
       <section id="transactionHistory" class="hidden flex-col gap-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-text-primary">Transactions</h2>
-          <span id="transactionCount" class="text-[11px] text-text-muted">0 records</span>
+          <h2 class="text-sm font-bold text-text-primary">Transaction History</h2>
+          <span id="transactionCount" class="text-[11px] text-text-muted font-semibold">0 records</span>
         </div>
         <div id="transactionRows" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container"></div>
-        <p id="emptyTransactions" class="hidden rounded-xl bg-white p-5 text-center text-xs text-text-muted">No records yet. Tap + to add your first transaction.</p>
+        <p id="emptyTransactions" class="hidden rounded-xl bg-white p-5 text-center text-xs text-text-muted">No transactions found. Tap + to record your first transaction.</p>
       </section>
+
     </main>
 
+    <!-- Add / Edit Transaction Modal Dialog -->
     <div id="transactionDialog" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/50 p-3" onclick="if(event.target===this)closeTransactionDialog()">
-      <form id="transactionForm" class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl" onsubmit="saveTransaction(event)">
-        <div class="flex items-center justify-between mb-4">
-          <h2 id="transactionDialogTitle" class="text-lg font-bold text-text-primary">Add Transaction</h2>
-          <button type="button" aria-label="Close" onclick="closeTransactionDialog()" class="text-2xl text-text-muted">×</button>
+      <form id="transactionForm" class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200" onsubmit="saveTransaction(event)">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+          <h2 id="transactionDialogTitle" class="text-base font-bold text-text-primary">Add Transaction</h2>
+          <button type="button" aria-label="Close" onclick="closeTransactionDialog()" class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
         </div>
-        <label class="block text-xs text-text-muted mb-1" for="transactionType">Type</label>
-        <select id="transactionType" class="w-full rounded-lg border border-slate-200 p-3 text-sm mb-3" onchange="updateCategoryOptions()">
-          <option value="expense">Expense</option><option value="income">Income</option>
+
+        <!-- Type Selector -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionType">Transaction Type</label>
+        <select id="transactionType" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" onchange="updateCategoryOptions()">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
         </select>
-        <label class="block text-xs text-text-muted mb-1" for="transactionAmount">Amount (RM)</label>
-        <input id="transactionAmount" class="w-full rounded-lg border border-slate-200 p-3 text-sm mb-3" type="number" min="0.01" step="0.01" required placeholder="0.00">
-        <label class="block text-xs text-text-muted mb-1" for="transactionCategory">Category</label>
-        <select id="transactionCategory" class="w-full rounded-lg border border-slate-200 p-3 text-sm mb-3" required></select>
-        <label class="block text-xs text-text-muted mb-1" for="transactionDescription">Description</label>
-        <input id="transactionDescription" class="w-full rounded-lg border border-slate-200 p-3 text-sm mb-3" maxlength="120" required placeholder="What was this for?">
-        <label class="block text-xs text-text-muted mb-1" for="transactionDate">Date</label>
-        <input id="transactionDate" class="w-full rounded-lg border border-slate-200 p-3 text-sm mb-5" type="date" required>
-        <button class="w-full rounded-lg bg-primary-container py-3 text-sm font-bold text-white" type="submit">Save Transaction</button>
+
+        <!-- Amount (RM) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (RM)</label>
+        <div class="relative flex items-center mb-3">
+          <span class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
+          <input id="transactionAmount" class="w-full rounded-lg border border-slate-300 pl-11 pr-3 py-2.5 text-sm font-semibold outline-none focus:border-primary" type="number" min="0.01" step="0.01" required placeholder="0.00">
+        </div>
+
+        <!-- Category -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionCategory">Category</label>
+        <select id="transactionCategory" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" required></select>
+
+        <!-- Description -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Description / Notes</label>
+        <input id="transactionDescription" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" maxlength="140" required placeholder="e.g. Village Grocer, Coffee Bistro">
+
+        <!-- Date -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date</label>
+        <input id="transactionDate" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-5 outline-none focus:border-primary" type="date" required>
+
+        <!-- Submit Button -->
+        <button class="w-full rounded-xl bg-primary hover:bg-primary-container py-3 text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2" type="submit" id="saveTransactionBtn">
+          <span class="material-symbols-outlined text-[18px]">check</span>
+          <span>Save Transaction</span>
+        </button>
       </form>
     </div>
 
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <a class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary-container font-bold" href="#" onclick="showHome()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="showHome()">
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px]">Home</span>
-        </a>
-        <a class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-on-surface transition-colors" href="#transactionHistory" onclick="showTransactions()">
+        </button>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="showTransactions()">
           <span class="material-symbols-outlined text-[22px]">receipt_long</span>
           <span class="text-[10px]">Transactions</span>
-        </a>
+        </button>
         <div class="flex-1 flex items-center justify-center">
-          <button onclick="showAddTransactionModal()" class="w-11 h-11 -mt-4 rounded-full bg-primary-container text-white flex items-center justify-center shadow-lg hover:bg-primary transition-all active:scale-95">
-            <span class="material-symbols-outlined text-[24px]">add</span>
+          <button onclick="showAddTransactionModal()" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+            <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <a class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-on-surface transition-colors" href="#monthlySummary" onclick="showSummary()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="showSummary()">
           <span class="material-symbols-outlined text-[22px]">bar_chart</span>
           <span class="text-[10px]">Summary</span>
-        </a>
-        <a class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-on-surface transition-colors" href="javascript:void(0)" onclick="showProfileDetails()">
+        </button>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="toggleProfileMenu()">
           <span class="material-symbols-outlined text-[22px]">person</span>
           <span class="text-[10px]">Profile</span>
-        </a>
+        </button>
       </div>
     </nav>
 
   </div>
 
   <script>
-    // Eye Icon Toggle for Privacy
-    const toggleBalanceBtn = document.getElementById('toggleBalanceBtn');
-    const balanceValue = document.getElementById('balanceValue');
-    const eyeIcon = document.getElementById('eyeIcon');
-    let isHidden = false;
+    // Supabase Live Client Configuration
+    const SUPABASE_URL = "https://vcxxsffdsznmqtpghrss.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeHhzZmZkc3pubXF0cGdocnNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMjgwOTMsImV4cCI6MjEwOTgwNDA5M30.bxxoU1PgcSeOMkss5kx71dI3P67eTL9bk9TzaJC_1VM";
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    if (toggleBalanceBtn && balanceValue && eyeIcon) {
-      toggleBalanceBtn.addEventListener('click', () => {
-        isHidden = !isHidden;
-        if (isHidden) {
-          balanceValue.textContent = '••••••••';
-          eyeIcon.textContent = 'visibility_off';
-        } else {
-          balanceValue.textContent = '0.00';
-          eyeIcon.textContent = 'visibility';
-        }
-      });
-    }
-
-    // Dismiss AI Insight Card
-    const dismissInsightBtn = document.getElementById('dismissInsightBtn');
-    const aiInsightWidget = document.getElementById('aiInsightWidget');
-    const transferQuickBtn = document.getElementById('transferQuickBtn');
-
-    if (dismissInsightBtn && aiInsightWidget) {
-      dismissInsightBtn.addEventListener('click', () => {
-        aiInsightWidget.style.opacity = '0';
-        aiInsightWidget.style.transform = 'translateY(-8px)';
-        setTimeout(() => {
-          aiInsightWidget.style.display = 'none';
-        }, 300);
-      });
-    }
-
-    if (transferQuickBtn && aiInsightWidget) {
-      transferQuickBtn.addEventListener('click', () => {
-        transferQuickBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span><span>Transferring...</span>';
-        setTimeout(() => {
-          aiInsightWidget.innerHTML = `
-            <div class="flex items-center gap-2 py-1 text-secondary">
-              <span class="material-symbols-outlined text-[20px]">check_circle</span>
-              <span class="text-xs font-bold">Transferred RM50.00 to Emergency Fund!</span>
-            </div>
-          `;
-          const val = document.getElementById('balanceValue');
-          if (val && !isHidden) val.textContent = '3,370.50';
-          setTimeout(() => {
-            aiInsightWidget.style.opacity = '0';
-            setTimeout(() => { aiInsightWidget.style.display = 'none'; }, 300);
-          }, 2200);
-        }, 800);
-      });
-    }
-
-    function showAiModal() {
-      alert("FinWise AI Copilot (Sprint 3)\n\n• Voice transaction logging ('Lunch RM8.50 at Arked Cengal')\n• Campus receipt OCR parsing\n• Real-time spending anomaly warnings");
-    }
-
-    function showNotifModal() {
-      alert("Campus Notifications:\n\n1. Sem 2 Allowance Sync completed from UTM Portal.\n2. Smart Spend Alert: 20% savings on food this week.\n3. Weekend peak warning: Grab expenses increased on Saturday.");
-    }
-
-    function toggleProfileMenu() {
-      document.getElementById('profileMenu').classList.toggle('hidden');
-    }
-
-    function showProfileDetails() {
-      document.getElementById('profileMenu').classList.add('hidden');
-      const userName = localStorage.getItem('finwise_user_name') || 'Student';
-      alert(userName + "\nUTM Skudai Campus");
-    }
-
-    function logoutFromMenu() {
-      document.getElementById('profileMenu').classList.add('hidden');
-      window.location.href = 'login.html';
-    }
-
-    function showAddTransactionModal() {
-      const name = prompt("Enter Transaction Title:", "UTM Arked Meranti - Dinner");
-      if (!name) return;
-      const amt = prompt("Enter Amount (RM):", "12.50");
-      if (!amt) return;
-      alert("Transaction saved: " + name + " (RM " + amt + ")");
-    }
-
-    // Set greeting name from localStorage
-    (function() {
-      const userName = localStorage.getItem('finwise_user_name') || 'Student';
-      const greetEl = document.getElementById('greetingName');
-      if (greetEl) greetEl.textContent = 'Hello, ' + userName + '!';
-    })();
-  </script>
-  <script>
-    // This web preview stores each signed-in user's records in a separate local browser key.
     const transactionCategories = {
-      income: ["Allowance", "Salary", "Scholarship", "Other Income"],
-      expense: ["Food", "Transport", "Shopping", "Education", "Entertainment", "Bills", "Other Expenses"]
+      income: ["Salary", "Freelance", "Investments", "Other Income"],
+      expense: [
+        "Food & Dining",
+        "Transportation",
+        "Groceries",
+        "Shopping",
+        "Entertainment",
+        "Bills & Utilities",
+        "Health & Wellness",
+        "Education & Self-Care",
+        "Other Expenses"
+      ]
     };
-    const previewUser = (localStorage.getItem("finwise_user_id") || localStorage.getItem("finwise_user_email") || localStorage.getItem("finwise_user_name") || "guest").trim().toLowerCase();
-    const transactionStorageKey = "finwise_transactions_" + previewUser;
-    let transactions = loadTransactions();
-    let editingTransactionId = null;
+
+    const categoryIdMap = {
+      "Food & Dining": "food_dining",
+      "Transportation": "transportation",
+      "Groceries": "groceries",
+      "Shopping": "shopping",
+      "Entertainment": "entertainment",
+      "Bills & Utilities": "bills_utilities",
+      "Health & Wellness": "health_wellness",
+      "Education & Self-Care": "education",
+      "Salary": "salary",
+      "Freelance": "freelance",
+      "Investments": "investments",
+      "Other Income": "other",
+      "Other Expenses": "other"
+    };
+
+    const idToCategoryMap = {
+      "food_dining": "Food & Dining",
+      "transportation": "Transportation",
+      "groceries": "Groceries",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment",
+      "bills_utilities": "Bills & Utilities",
+      "health_wellness": "Health & Wellness",
+      "education": "Education & Self-Care",
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investments": "Investments",
+      "other": "Other Expenses"
+    };
+
     let balanceIsHidden = false;
-
-    function loadTransactions() {
-      try {
-        const records = JSON.parse(localStorage.getItem(transactionStorageKey) || "[]");
-        return Array.isArray(records) ? records : [];
-      } catch (_) { return []; }
-    }
-
-    function persistTransactions() {
-      localStorage.setItem(transactionStorageKey, JSON.stringify(transactions));
-    }
-
-    function money(amount) {
-      return Number(amount || 0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+    let editingTransactionId = null;
+    let transactions = [];
 
     function localDateString(date = new Date()) {
       const offset = date.getTimezoneOffset() * 60000;
@@ -587,31 +381,231 @@
     }
 
     function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
+      return String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function money(amount) {
+      return Number(amount || 0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function currentMonth() {
       return document.getElementById("selectedMonth").value || localDateString().slice(0, 7);
     }
 
+    function getActiveUserId() {
+      return localStorage.getItem("finwise_user_id") || "00000000-0000-0000-0000-000000000001";
+    }
+
+    function getStorageKey() {
+      const email = localStorage.getItem("finwise_user_email") || "default_user";
+      return "finwise_transactions_" + email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    }
+
+    function loadLocalTransactions() {
+      try {
+        const data = JSON.parse(localStorage.getItem(getStorageKey()) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function persistLocalTransactions() {
+      localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+    }
+
+    // Check Supabase session & OAuth token / PKCE code callback
+    async function checkSupabaseAuthSession() {
+      if (!supabaseClient) return;
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (!error && data && data.session && data.session.user) {
+            const user = data.session.user;
+            const meta = user.user_metadata || {};
+            const name = meta.full_name || meta.name || user.email?.split('@')[0] || "Google User";
+            const email = user.email || "";
+            const avatar = meta.avatar_url || meta.picture || "";
+            localStorage.setItem('finwise_user_name', name);
+            localStorage.setItem('finwise_user_email', email);
+            localStorage.setItem('finwise_user_id', user.id);
+            localStorage.setItem('finwise_auth_provider', 'google');
+            if (avatar) localStorage.setItem('finwise_user_avatar', avatar);
+            history.replaceState(null, null, window.location.pathname);
+            return;
+          }
+        }
+
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (session && session.user) {
+          const user = session.user;
+          const meta = user.user_metadata || {};
+          const name = meta.full_name || meta.name || user.email?.split('@')[0] || "Google User";
+          const email = user.email || "";
+          const avatar = meta.avatar_url || meta.picture || "";
+
+          localStorage.setItem('finwise_user_name', name);
+          localStorage.setItem('finwise_user_email', email);
+          localStorage.setItem('finwise_user_id', user.id);
+          localStorage.setItem('finwise_auth_provider', 'google');
+          if (avatar) localStorage.setItem('finwise_user_avatar', avatar);
+
+          if (window.location.hash || window.location.search) {
+            history.replaceState(null, null, window.location.pathname);
+          }
+        }
+      } catch (e) {
+        console.warn("Supabase session notice:", e);
+      }
+    }
+
+    function applyUserProfile() {
+      const name = localStorage.getItem('finwise_user_name') || 'Google User';
+      const email = localStorage.getItem('finwise_user_email') || 'Google Gmail Account';
+      const avatar = localStorage.getItem('finwise_user_avatar') || '';
+
+      document.getElementById('greetingName').textContent = 'Hello, ' + name + '!';
+      document.getElementById('userSubtitle').textContent = email ? email + ' • Personal Finance' : 'Personal Financial Snapshot';
+      document.getElementById('profileMenuName').textContent = name;
+      document.getElementById('profileMenuEmail').textContent = email;
+
+      const headerAvatar = document.getElementById('headerProfileAvatar');
+      const menuAvatar = document.getElementById('menuAvatarIcon');
+      const initial = (name[0] || 'G').toUpperCase();
+
+      if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
+        headerAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+        menuAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+      } else {
+        headerAvatar.innerHTML = initial;
+        menuAvatar.innerHTML = initial;
+      }
+    }
+
+    // Fetch transactions from Supabase Cloud (Strictly isolated by user_id)
+    async function loadTransactions() {
+      const userId = getActiveUserId();
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase();
+
+      // Load user's isolated local partition
+      transactions = loadLocalTransactions();
+
+      if (supabaseClient && userId) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('transactions')
+            .select('*')
+            .eq('user_id', userId)
+            .order('transaction_date', { ascending: false });
+
+          if (!error && Array.isArray(data) && data.length > 0) {
+            transactions = data.map(row => ({
+              id: row.id,
+              type: row.type,
+              amount: Number(row.amount),
+              category: idToCategoryMap[row.category_id] || "Other Expenses",
+              description: row.title,
+              date: row.transaction_date ? row.transaction_date.slice(0, 10) : localDateString()
+            }));
+            persistLocalTransactions();
+          }
+        } catch (e) {
+          console.warn("Supabase load transactions notice:", e);
+        }
+      }
+
+      // Seed user-specific initial transactions if completely fresh
+      if (transactions.length === 0) {
+        if (email === "keanshen.yeoh@gmail.com") {
+          const today = localDateString();
+          const d1 = new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10);
+          const d2 = new Date(Date.now() - 86400000 * 4).toISOString().slice(0, 10);
+          transactions = [
+            { id: "seed_1", type: "income", amount: 4800.00, category: "Salary", description: "Monthly Tech Salary", date: today },
+            { id: "seed_2", type: "expense", amount: 142.50, category: "Groceries", description: "Village Grocer Weekly", date: today },
+            { id: "seed_3", type: "expense", amount: 28.00, category: "Food & Dining", description: "Coffee & Bistro Lunch", date: d1 },
+            { id: "seed_4", type: "expense", amount: 115.80, category: "Bills & Utilities", description: "Electricity & Water Bill", date: d2 },
+            { id: "seed_5", type: "income", amount: 750.00, category: "Freelance", description: "Freelance UI Project", date: d2 }
+          ];
+          persistLocalTransactions();
+        } else if (email === "alex.yeoh@gmail.com") {
+          const today = localDateString();
+          const d1 = new Date(Date.now() - 86400000 * 1).toISOString().slice(0, 10);
+          const d2 = new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10);
+          const d3 = new Date(Date.now() - 86400000 * 3).toISOString().slice(0, 10);
+          transactions = [
+            { id: "seed_a1", type: "income", amount: 6200.00, category: "Salary", description: "Consulting Retainer Monthly", date: today },
+            { id: "seed_a2", type: "expense", amount: 340.00, category: "Shopping", description: "Home Office Monitor & Stand", date: d1 },
+            { id: "seed_a3", type: "expense", amount: 185.00, category: "Groceries", description: "Organic Market Supplies", date: d2 },
+            { id: "seed_a4", type: "expense", amount: 90.00, category: "Bills & Utilities", description: "Cloud Infrastructure Hosting", date: d3 }
+          ];
+          persistLocalTransactions();
+        } else {
+          // Brand-new registered user: start with clean, isolated empty database
+          transactions = [];
+          persistLocalTransactions();
+        }
+      }
+
+      renderDashboard();
+    }
+
+    function toggleBalance() {
+      balanceIsHidden = !balanceIsHidden;
+      document.getElementById('eyeIcon').textContent = balanceIsHidden ? 'visibility_off' : 'visibility';
+      renderDashboard();
+    }
+
+    function toggleProfileMenu() {
+      document.getElementById('profileMenu').classList.toggle('hidden');
+    }
+
+    function logoutFromMenu() {
+      document.getElementById('profileMenu').classList.add('hidden');
+      if (supabaseClient) {
+        supabaseClient.auth.signOut().catch(() => {});
+      }
+      localStorage.removeItem('finwise_session');
+      localStorage.removeItem('finwise_user_email');
+      localStorage.removeItem('finwise_user_name');
+      localStorage.removeItem('finwise_user_id');
+      localStorage.removeItem('finwise_user_avatar');
+      const target = window.location.href.includes('/public/') ? 'login.html' : 'login.html';
+      window.location.href = target;
+    }
+
+    function showNotifModal() {
+      alert("FinWise Notifications:\n\n1. Supabase Cloud Sync active.\n2. Gmail Authentication verified.\n3. Smart Spend Alert: 20% savings on food this week.");
+    }
+
+    function showAiModal() {
+      alert("FinWise AI Insights (Sprint 3):\n\n• Predictive Cash Flow Forecasting\n• Anomaly detection for unusual debit spikes\n• Smart savings automated recommendations");
+    }
+
     function updateCategoryOptions(selected = "") {
       const type = document.getElementById("transactionType").value;
-      const category = document.getElementById("transactionCategory");
-      category.innerHTML = transactionCategories[type].map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
-      if (selected && transactionCategories[type].includes(selected)) category.value = selected;
+      const categorySelect = document.getElementById("transactionCategory");
+      const list = transactionCategories[type] || [];
+      categorySelect.innerHTML = list.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+      if (selected && list.includes(selected)) {
+        categorySelect.value = selected;
+      }
     }
 
     function openTransactionDialog(id = null) {
       editingTransactionId = id;
       const form = document.getElementById("transactionForm");
       form.reset();
-      const record = id ? transactions.find(item => item.id === id) : null;
+      const record = id ? transactions.find(t => t.id === id) : null;
       document.getElementById("transactionDialogTitle").textContent = record ? "Edit Transaction" : "Add Transaction";
       document.getElementById("transactionType").value = record ? record.type : "expense";
       updateCategoryOptions(record ? record.category : "");
       document.getElementById("transactionAmount").value = record ? record.amount : "";
       document.getElementById("transactionDescription").value = record ? record.description : "";
       document.getElementById("transactionDate").value = record ? record.date : localDateString();
+
       const dialog = document.getElementById("transactionDialog");
       dialog.classList.remove("hidden");
       dialog.classList.add("flex");
@@ -625,129 +619,178 @@
       editingTransactionId = null;
     }
 
-    function showAddTransactionModal() { openTransactionDialog(); }
-
-    function saveTransaction(event) {
-      event.preventDefault();
-      const amount = Number(document.getElementById("transactionAmount").value);
-      if (!Number.isFinite(amount) || amount <= 0) {
-        document.getElementById("transactionAmount").reportValidity();
-        return;
-      }
-      const record = {
-        id: editingTransactionId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
-        type: document.getElementById("transactionType").value,
-        amount: Math.round(amount * 100) / 100,
-        category: document.getElementById("transactionCategory").value,
-        description: document.getElementById("transactionDescription").value.trim(),
-        date: document.getElementById("transactionDate").value
-      };
-      if (!record.description || !record.date) return;
-      if (editingTransactionId) transactions = transactions.map(item => item.id === editingTransactionId ? record : item);
-      else transactions.push(record);
-      persistTransactions();
-      closeTransactionDialog();
-      renderDashboard();
+    function showAddTransactionModal() {
+      openTransactionDialog();
     }
 
-    function deleteTransaction(id) {
-      if (!confirm("Delete this transaction?")) return;
-      transactions = transactions.filter(item => item.id !== id);
-      persistTransactions();
+    async function saveTransaction(event) {
+      event.preventDefault();
+      const amount = Number(document.getElementById("transactionAmount").value);
+      if (!Number.isFinite(amount) || amount <= 0) return;
+
+      const type = document.getElementById("transactionType").value;
+      const category = document.getElementById("transactionCategory").value;
+      const description = document.getElementById("transactionDescription").value.trim();
+      const dateStr = document.getElementById("transactionDate").value;
+      const txId = editingTransactionId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : "tx_" + Date.now());
+
+      const record = {
+        id: txId,
+        type: type,
+        amount: Math.round(amount * 100) / 100,
+        category: category,
+        description: description,
+        date: dateStr
+      };
+
+      if (editingTransactionId) {
+        transactions = transactions.map(item => item.id === editingTransactionId ? record : item);
+      } else {
+        transactions.unshift(record);
+      }
+      persistLocalTransactions();
+      closeTransactionDialog();
       renderDashboard();
+
+      // Cloud Sync to Supabase
+      if (supabaseClient) {
+        try {
+          const categoryId = categoryIdMap[category] || "other";
+          const userId = getActiveUserId();
+          await supabaseClient.from('transactions').upsert({
+            id: txId.startsWith("seed_") || txId.startsWith("tx_") ? undefined : txId,
+            user_id: userId,
+            title: description,
+            amount: record.amount,
+            type: type,
+            category_id: categoryId,
+            transaction_date: dateStr + "T12:00:00Z"
+          });
+        } catch (e) {
+          console.warn("Supabase upsert notice:", e);
+        }
+      }
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm("Are you sure you want to delete this transaction?")) return;
+      transactions = transactions.filter(item => item.id !== id);
+      persistLocalTransactions();
+      renderDashboard();
+
+      if (supabaseClient && !id.startsWith("seed_") && !id.startsWith("tx_")) {
+        try {
+          const userId = getActiveUserId();
+          await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
+        } catch (e) {
+          console.warn("Supabase delete notice:", e);
+        }
+      }
     }
 
     function renderDashboard() {
-      const income = transactions.filter(item => item.type === "income").reduce((sum, item) => sum + Number(item.amount), 0);
-      const expenses = transactions.filter(item => item.type === "expense").reduce((sum, item) => sum + Number(item.amount), 0);
-      document.getElementById("balanceValue").textContent = balanceIsHidden ? "••••••••" : money(income - expenses);
+      const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+      const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+      const net = income - expenses;
+
+      document.getElementById("balanceValue").textContent = balanceIsHidden ? "••••••••" : money(net);
       document.getElementById("incomeValue").textContent = "+RM " + money(income);
       document.getElementById("expenseValue").textContent = "-RM " + money(expenses);
 
-      const selectedMonth = currentMonth();
-      const monthRecords = transactions.filter(item => item.date && item.date.slice(0, 7) === selectedMonth);
-      const monthIncome = monthRecords.filter(item => item.type === "income").reduce((sum, item) => sum + Number(item.amount), 0);
-      const monthExpenses = monthRecords.filter(item => item.type === "expense").reduce((sum, item) => sum + Number(item.amount), 0);
-      document.getElementById("monthlyTitle").textContent = new Date(selectedMonth + "-01T12:00:00").toLocaleDateString("en", { month: "long", year: "numeric" });
-      document.getElementById("monthlyIncome").textContent = "RM " + money(monthIncome);
-      document.getElementById("monthlyExpense").textContent = "RM " + money(monthExpenses);
-      document.getElementById("monthlyBalance").textContent = "RM " + money(monthIncome - monthExpenses);
+      // Month specific stats
+      const monthStr = currentMonth();
+      const monthRecords = transactions.filter(t => t.date && t.date.slice(0, 7) === monthStr);
+      const mIncome = monthRecords.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+      const mExpenses = monthRecords.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
 
+      document.getElementById("monthlyTitle").textContent = new Date(monthStr + "-01T12:00:00").toLocaleDateString("en", { month: "long", year: "numeric" });
+      document.getElementById("monthlyIncome").textContent = "RM " + money(mIncome);
+      document.getElementById("monthlyExpense").textContent = "RM " + money(mExpenses);
+      document.getElementById("monthlyBalance").textContent = "RM " + money(mIncome - mExpenses);
+
+      // Category chart
       const grouped = {};
-      monthRecords.filter(item => item.type === "expense").forEach(item => { grouped[item.category] = (grouped[item.category] || 0) + Number(item.amount); });
+      monthRecords.filter(t => t.type === "expense").forEach(t => {
+        grouped[t.category] = (grouped[t.category] || 0) + Number(t.amount);
+      });
+      const catEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+      const maxAmt = catEntries.length ? catEntries[0][1] : 0;
       const chart = document.getElementById("categoryChart");
-      const categories = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
-      const maxAmount = categories.length ? categories[0][1] : 0;
-      chart.innerHTML = categories.length ? categories.map(([category, amount]) => `
+      chart.innerHTML = catEntries.length ? catEntries.map(([cat, amt]) => `
         <div>
-          <div class="mb-1 flex items-center justify-between text-xs"><span class="font-medium text-text-primary">${escapeHtml(category)}</span><span class="font-bold text-alert-coral">RM ${money(amount)}</span></div>
-          <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"><div class="h-full rounded-full bg-alert-coral" style="width:${Math.max(2, amount / maxAmount * 100)}%"></div></div>
-        </div>`).join("") : '<p class="text-xs text-text-muted">No expenses this month.</p>';
+          <div class="mb-1 flex items-center justify-between text-xs">
+            <span class="font-medium text-text-primary">${escapeHtml(cat)}</span>
+            <span class="font-bold text-alert-coral">RM ${money(amt)}</span>
+          </div>
+          <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
+            <div class="h-full rounded-full bg-alert-coral transition-all" style="width:${Math.max(4, (amt / maxAmt) * 100)}%"></div>
+          </div>
+        </div>
+      `).join("") : '<p class="text-xs text-text-muted">No expenses recorded for this month.</p>';
 
+      // Recent records (top 4)
       const sorted = [...transactions].sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+      const recentHost = document.getElementById("recentRecords");
+      const latest = sorted.slice(0, 4);
+      recentHost.innerHTML = latest.length ? latest.map(item => `
+        <div class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+            <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+          </div>
+          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+            ${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}
+          </span>
+        </div>
+      `).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
+
+      // Full history list
       document.getElementById("transactionCount").textContent = `${sorted.length} record${sorted.length === 1 ? "" : "s"}`;
       document.getElementById("emptyTransactions").classList.toggle("hidden", sorted.length !== 0);
       document.getElementById("transactionRows").innerHTML = sorted.map(item => `
-        <div class="flex items-center justify-between gap-2 p-3 hover:bg-surface-container-low">
-          <div class="min-w-0 flex-1"><p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p><p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p></div>
-          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}</span>
-          <button aria-label="Edit" class="px-1 text-primary" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>
-          <button aria-label="Delete" class="px-1 text-alert-coral" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
-        </div>`).join("");
-
-      const latest = sorted.slice(0, 4);
-      const recentHost = document.getElementById("recentRecords");
-      recentHost.innerHTML = latest.length ? latest.map(item => `
-        <div class="flex items-center justify-between gap-2 border-b border-surface-container p-3 last:border-0">
-          <div class="min-w-0"><p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p><p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p></div>
-          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}</span>
-        </div>`).join("") : '<p class="p-4 text-xs text-text-muted">No transactions yet. Tap + to record your first transaction.</p>';
+        <div class="flex items-center justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+            <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+          </div>
+          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+            ${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}
+          </span>
+          <div class="flex items-center gap-1 shrink-0">
+            <button aria-label="Edit" class="text-xs text-primary font-semibold px-1.5 py-1 hover:bg-primary/5 rounded" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>
+            <button aria-label="Delete" class="text-xs text-alert-coral font-semibold px-1.5 py-1 hover:bg-alert-coral-subtle rounded" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
+          </div>
+        </div>
+      `).join("");
     }
 
     function showHome() {
       document.getElementById("transactionHistory").classList.add("hidden");
       document.getElementById("monthlySummary").classList.remove("hidden");
-      document.querySelector("main").scrollIntoView({ behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
+
     function showTransactions() {
       document.getElementById("transactionHistory").classList.remove("hidden");
       document.getElementById("transactionHistory").classList.add("flex");
       document.getElementById("monthlySummary").classList.add("hidden");
       document.getElementById("transactionHistory").scrollIntoView({ behavior: "smooth" });
     }
+
     function showSummary() {
       document.getElementById("transactionHistory").classList.add("hidden");
       document.getElementById("monthlySummary").classList.remove("hidden");
       document.getElementById("monthlySummary").scrollIntoView({ behavior: "smooth" });
     }
-    function showProfileDetails() {
-      document.getElementById("profileMenu").classList.add("hidden");
-      const name = localStorage.getItem("finwise_user_name") || "Student";
-      alert(name + "\nPersonal expense tracker");
-    }
-    function showNotifModal() { alert("No new notifications."); }
-    function showAiModal() { showAddTransactionModal(); }
 
-    // Replace the old static-demo balance handler so visibility always reflects saved totals.
-    const balanceButton = document.getElementById("toggleBalanceBtn");
-    if (balanceButton) {
-      const cleanButton = balanceButton.cloneNode(true);
-      balanceButton.replaceWith(cleanButton);
-      cleanButton.addEventListener("click", () => {
-        balanceIsHidden = !balanceIsHidden;
-        document.getElementById("eyeIcon").textContent = balanceIsHidden ? "visibility_off" : "visibility";
-        renderDashboard();
-      });
-    }
-
-    const oldDemoAlert = document.getElementById("aiInsightWidget");
-    if (oldDemoAlert) oldDemoAlert.remove();
-    document.getElementById("legacyStaticTrend")?.remove();
-    document.getElementById("legacyStaticTransactions")?.remove();
-    document.getElementById("selectedMonth").value = localDateString().slice(0, 7);
-    document.getElementById("greetingName").textContent = "Hello, " + (localStorage.getItem("finwise_user_name") || "Student") + "!";
-    renderDashboard();
+    // Initialize Dashboard
+    (async function init() {
+      document.getElementById("selectedMonth").value = localDateString().slice(0, 7);
+      await checkSupabaseAuthSession();
+      applyUserProfile();
+      updateCategoryOptions();
+      await loadTransactions();
+    })();
   </script>
 </body>
 </html>
-

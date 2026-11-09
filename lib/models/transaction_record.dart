@@ -73,19 +73,38 @@ class TransactionRecord {
     };
   }
 
+  Map<String, dynamic> toSupabaseMap() {
+    final map = <String, dynamic>{
+      'user_id': userId,
+      'title': title,
+      'amount': amount,
+      'type': type == TransactionType.income ? 'income' : 'expense',
+      'category_id': categoryId,
+      'transaction_date': date.toIso8601String(),
+      'notes': notes,
+    };
+    // Include valid UUIDs if already assigned
+    if (id.isNotEmpty && !id.startsWith('mock_')) {
+      map['id'] = id;
+    }
+    return map;
+  }
+
   factory TransactionRecord.fromJson(Map<String, dynamic> json) {
     return TransactionRecord(
-      id: json['id'] as String,
-      userId: json['user_id'] as String? ?? 'default_user',
-      title: json['title'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      id: (json['id'] ?? '').toString(),
+      userId: (json['user_id'] ?? 'default_user').toString(),
+      title: (json['title'] ?? '') as String,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       type: (json['type'] == 'income')
           ? TransactionType.income
           : TransactionType.expense,
-      categoryId: json['category_id'] as String? ?? 'other',
-      date: json['date'] != null
-          ? DateTime.parse(json['date'] as String)
-          : DateTime.now(),
+      categoryId: (json['category_id'] ?? 'other').toString(),
+      date: json['transaction_date'] != null
+          ? DateTime.parse(json['transaction_date'] as String)
+          : (json['date'] != null
+              ? DateTime.parse(json['date'] as String)
+              : DateTime.now()),
       notes: json['notes'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -96,4 +115,3 @@ class TransactionRecord {
     );
   }
 }
-

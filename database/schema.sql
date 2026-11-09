@@ -88,11 +88,10 @@ CREATE POLICY "Profiles are insertable by owner"
     ON public.profiles FOR INSERT
     WITH CHECK (auth.uid() = id);
 
--- 8. RLS Policies for Categories (Default categories readable by all authenticated users)
-DROP POLICY IF EXISTS "Categories readable by authenticated users" ON public.categories;
-CREATE POLICY "Categories readable by authenticated users"
+-- 8. RLS Policies for Categories (Default categories readable by all users)
+DROP POLICY IF EXISTS "Categories readable by all" ON public.categories;
+CREATE POLICY "Categories readable by all"
     ON public.categories FOR SELECT
-    TO authenticated
     USING (true);
 
 -- 9. RLS Policies for Transactions (Strict User Isolation)
@@ -123,7 +122,7 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS set_profiles_updated_at ON public.profiles;
 CREATE TRIGGER set_profiles_updated_at
@@ -137,3 +136,27 @@ CREATE TRIGGER set_transactions_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- 11. Auto-create User Profile on Google Auth Signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, email, display_name, avatar_url)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.email, 'user@finwise.app'),
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1), 'FinWise Member'),
+        NEW.raw_user_meta_data->>'avatar_url'
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
+        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_new_user();
