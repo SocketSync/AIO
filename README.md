@@ -1,159 +1,159 @@
-# AIO (ALL IN ONE)
-## Team Members
-- Member 1: Yeoh Keng Wei (@kwei05)
-- Member 2: Wong Sheng Yang（@shengyang19)
-- Member 3: Ching Qi Yan (@chingqiyan)
-- Member 4: Edwin Oo Ming Hao (@edwinoo05)
-# 💰 FinWise – AI-Powered Personal Finance Management App
-**👥 Group Name:** All In One  
-**📚 Course:** Application Development  
-**🏫 Institution:** Universiti Teknologi Malaysia (UTM) 
-**📱 Platform:** Cross-Platform Mobile Application
+# 💰 FinWise – AI-Powered Personal Financial Management Mobile Application
+**👥 Group Name:** All In One (AIO)  
+**📚 Course:** Application Development (Semester 3)  
+**🏫 Institution:** Universiti Teknologi Malaysia (UTM), Skudai Campus  
+**📱 Platform:** Native Android Application (Java SDK)  
 
------------------------------------------------------------
+---
+
+## 👥 Team Members
+- **Member 1:** Yeoh Keng Wei ([@kwei05](https://github.com/kwei05))
+- **Member 2:** Wong Sheng Yang ([@shengyang19](https://github.com/shengyang19))
+- **Member 3:** Ching Qi Yan ([@chingqiyan](https://github.com/chingqiyan))
+- **Member 4:** Edwin Oo Ming Hao ([@edwinoo05](https://github.com/edwinoo05))
+
+---
 
 ## 📌 Project Overview
-FinWise is an AI-powered personal financial management mobile application designed to help university students and young working adults manage their income, expenses, budgets, and savings more effectively.
+**FinWise** is an AI-powered personal financial management Android application designed specifically to empower university students and young adults in managing their income, semester allowance, campus meal spending, and personal savings.
 
-Many young people struggle to understand their spending habits, control unnecessary expenses, and plan their financial goals. Traditional expense-tracking applications mainly focus on recording transactions and displaying financial summaries, requiring users to analyze their financial situations manually.
+Unlike generic budgeting apps, FinWise integrates a campus financial context (UTM Skudai Campus, Arked meal spending patterns, semester runway forecasts) and an AI Copilot engine to provide actionable, student-tailored insights.
 
-FinWise addresses these challenges by integrating financial management tools with Artificial Intelligence (AI) to provide meaningful financial insights and smarter planning capabilities.
+---
 
-Users can track daily transactions, manage budgets, monitor savings goals, forecast future cash flow, and simulate hypothetical financial scenarios through a single mobile application.
+## 🛠️ Technology Stack & Strict Language Compliance
 
-## 🎯 Project Objectives
-1. Develop a secure mobile application with user authentication and financial transaction management.
-2. Implement a dynamic budgeting system with spending limits and real-time budget alerts.
-3. Integrate an external AI API to generate personalized financial insights based on users' financial data.
-4. Develop a cash flow forecasting engine to estimate future income, expenses, and available balances.
-5. Build an interactive financial simulator to compare different hypothetical financial scenarios.
-6. Improve financial awareness and encourage better financial planning among university students and young adults.
+| Layer | Language / Technology | Purpose |
+|---|---|---|
+| **📱 Mobile Client** | **Java (Android SDK Native)** | Native Android UI built **100% programmatically in Java** (Activities, Fragments, RecyclerView, Custom Views). **No WebViews, no JavaScript, no Kotlin, no Flutter.** |
+| **⚙️ Backend API** | **PHP 8.0+** | RESTful backend, authentication, PDO prepared statements, password hashing, secure OTP verification, and 60s throttling. |
+| **🗄️ Database** | **MySQL 5.7+ / 8.0+ / MariaDB** | Relational data persistence with strict foreign keys and indexes. |
+| **📧 Email Delivery** | **HTML & PHP SMTP** | Multipart HTML verification email templates dispatched over SSL/TLS sockets. |
+| **🧮 Simulation Module** | **C++ (C++17)** | High-performance financial simulation, semester runway projections, and Monte Carlo algorithms. |
 
-## ✨ Key Features
-### 👤 1. User Authentication & Profile Management
-- User registration and login.
-- Secure authentication.
-- Personal profile management.
-- Individual financial data management.
+---
 
-### 💳 2. Transaction Management
-- Add, view, edit, and delete financial transactions.
-- Categorize income and expenses.
-- View transaction history.
-- Calculate total income, expenses, and remaining balance.
-
-### 📊 3. Intelligent Budgeting
-- Create monthly budgets.
-- Set spending limits for different categories.
-- Monitor spending progress.
-- Receive alerts when approaching or exceeding budget limits.
-- View budget utilization through visual charts.
-
-### 🤖 4. AI-Powered Financial Insights
-- Analyze users' spending patterns.
-- Identify categories with high expenditure.
-- Generate personalized budgeting suggestions.
-- Provide understandable explanations of financial summaries.
-- Deliver recommendations based on verified financial data.
-
-### 🎯 5. Savings Goal Planning
-- Create personalized savings goals.
-- Set target amounts and deadlines.
-- Track savings progress.
-- Calculate required monthly savings.
-- Monitor progress towards financial targets.
-
-### 🔮 6. Cash Flow Forecasting
-- Analyze historical income and expenses.
-- Consider known recurring transactions.
-- Estimate future financial balances.
-- Visualize projected cash flow trends.
-- Identify potential future budget shortages.
-
-### 🧮 7. Financial Scenario Simulation
-- Simulate hypothetical changes in income and expenses.
-- Compare different spending scenarios.
-- Estimate the impact of financial decisions on future balances.
-- Visualize differences between current and simulated financial situations.
-
-## 🛠️ Technology Stack
-| Component | Technology |
-|---|---|
-| 📱 Mobile Development | Cross-platform mobile framework |
-| ⚙️ Backend | Server-side application |
-| 🗄️ Database | Cloud Database |
-| 🤖 AI Integration | External AI API |
-| 🔧 Version Control | Git |
-| ☁️ Code Repository | GitHub |
-| 📋 Project Management | Jira |
-| 🔄 Methodology | Agile Development |
-| 🧪 Testing | Functional & Integration Testing |
-
-*Specific frameworks, programming languages, and database services will be updated once finalized.*
-
-## 🏗️ System Architecture
-
-FinWise follows a client-server architecture integrated with an external AI service.
+## 🏗️ Project Architecture & Repository Structure
 
 ```text
-       📱 Mobile Application
-                |
-                v
-        ⚙️ Backend Server
-                |
-        +-------+-------+
-        |               |
-        v               v
-   🗄️ Cloud         🤖 External
-    Database           AI API
-        |               |
-        v               v
-   User Data        AI Insights
-   Transactions     Recommendations
-   Budgets
-   Savings Goals
+AIO/
+├── FinWiseAndroid/                  # Complete Native Android Studio Project
+│   ├── app/
+│   │   ├── build.gradle             # Android build configuration
+│   │   ├── proguard-rules.pro
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml  # Platform configuration & permissions
+│   │       ├── java/com/finwise/app/
+│   │       │   ├── activities/      # LoginActivity, RegisterActivity, VerificationActivity,
+│   │       │   │                    # ForgotPasswordActivity, MainActivity
+│   │       │   ├── fragments/       # HomeFragment, BudgetFragment, InsightsFragment,
+│   │       │   │                    # SimulatorFragment, AddTransactionDialogFragment
+│   │       │   ├── adapters/        # TransactionAdapter (Programmatic RecyclerView)
+│   │       │   ├── models/          # User, Transaction, DashboardData, ApiResponse
+│   │       │   ├── network/         # ApiClient (pure Java HttpURLConnection), AuthService, DashboardService
+│   │       │   ├── ui/              # ThemeColors, ViewFactory, OutflowTrendBarView, BottomNavBarView
+│   │       │   └── utils/           # ValidationUtils, SessionManager, CountdownManager, SecurityUtils
+│   │       └── res/values/          # strings.xml, styles.xml
+│   ├── build.gradle
+│   ├── settings.gradle
+│   ├── gradlew.bat
+│   └── gradle.properties
+│
+├── backend/                         # Pure PHP REST Backend
+│   ├── api/                         # login.php, register.php, verify_email.php, resend_otp.php,
+│   │                                # forgot_password.php, dashboard.php, logout.php
+│   ├── config/                      # database.php (PDO), smtp.php (SMTP credentials)
+│   ├── database/                    # finwise_db.sql (MySQL schema & seed data)
+│   ├── includes/                    # authentication.php, validation.php, email_service.php,
+│   │                                # otp_service.php, security.php
+│   └── templates/                   # verification_email.html (HTML email template)
+│
+├── cpp/                             # C++ Financial Calculation & Simulation Engine
+│   ├── FinancialSimulator.h         # Simulation interface & data structures
+│   └── FinancialSimulator.cpp       # Runway forecasting & compound interest math
+│
+└── docs/                            # Comprehensive Project Documentation
+    ├── ANDROID_SETUP_GUIDE.md       # Android Studio installation & APK build guide
+    ├── BACKEND_DEPLOYMENT.md        # PHP backend & MySQL setup guide
+    └── TESTING_REPORT.md            # Comprehensive 16-point authentication & UI test report
 ```
 
-The mobile application communicates with the backend server to process user requests and retrieve financial information. The backend manages financial calculations, database operations, and AI API communication.
+---
 
-## 📅 Project Management
-FinWise adopts the Agile development methodology to organize development activities into manageable iterations.
+## 📱 Implemented Android Application Screens
 
-The team uses:
-- 📋 **Jira:** Sprint planning, task assignments, backlog management, and progress tracking.
-- 🔧 **Git:** Source code version control.
-- ☁️ **GitHub:** Code collaboration, repository management, and documentation.
-- 🔄 **Agile Sprints:** Incremental development, testing, and continuous improvement.
+1. **Screen 1: Login (`LoginActivity.java`)**
+   - UTM Portal Sync badge & Semester Allowance card.
+   - Dynamic form validation, password show/hide toggle.
+   - Remember device preference with 256-bit AES badge.
+   - UTM CIDOS SSO & Google Campus login options.
+   - Biometric touch ID / face ID integration flow.
 
-The project is planned around four development sprints, with each sprint focusing on specific application modules and system integration.
+2. **Screen 2: Registration (`RegisterActivity.java`)**
+   - Full student registration (Full Name, Student Email, Matric ID, Passwords).
+   - Validation for duplicate email, password complexity, and confirmation match.
+   - Backend dispatch generating 6-digit OTP code.
 
-## 🧪 Testing Strategy
-| Testing Type | Purpose |
-|---|---|
-| Functional Testing | Verify that each feature works as expected. |
-| Authentication Testing | Verify registration, login, and access control. |
-| Integration Testing | Ensure mobile app, backend, database, and AI API communicate correctly. |
-| Calculation Testing | Verify budget calculations, savings targets, and cash flow forecasts. |
-| AI Response Testing | Evaluate the relevance and accuracy of AI-generated explanations. |
-| User Acceptance Testing | Collect feedback from UTM students and improve usability. |
+3. **Screen 3: Email Verification (`VerificationActivity.java`)**
+   - 6-digit OTP code validation against server bcrypt hash.
+   - Strict 60-second resend restriction enforced via server timestamps and Android Handler.
+   - Expiration checking (10-minute validity) and max attempt throttle.
 
-## 🌱 Community Engagement
-FinWise targets university students and young adults, particularly the student community at Universiti Teknologi Malaysia (UTM).
+4. **Screen 4: Home Dashboard (`MainActivity.java` & `HomeFragment.java`)**
+   - Header with notification modal and student profile dialog with logout.
+   - AI Copilot banner with interactive preview.
+   - Total Available Balance Bento Hero card with privacy toggle.
+   - Smart Spend Alert widget with demonstration quick transfer.
+   - 7-Day Outflow Trend interactive bar chart.
+   - Recent Transactions RecyclerView with category badges.
+   - 5-item native bottom navigation bar.
 
-The team plans to conduct beta testing and collect feedback from students to understand their financial management challenges.
+5. **Screen 5: Forgot Password (`ForgotPasswordActivity.java`)**
+   - Email a 6-digit reset code, verify it, and set a new password through the password-reset API.
+   - Server-enforced 60-second resend limit with an on-screen countdown.
 
-Feedback will be used to improve the application's usability, budgeting functions, and AI-generated financial insights.
+---
 
-## 🔮 Future Improvements
-- 🔗 Automated transaction importing through supported financial integrations.
-- 🎯 Personalized financial goal recommendations.
-- 📈 Advanced spending pattern detection.
-- 📑 Customizable financial reports.
-- 🔍 Improved forecasting using historical financial data.
-- 🌍 Multi-currency support.
-- 📊 Enhanced financial data visualization.
+## 🚀 Quick Start Guide
 
-## ⚠️ Disclaimer
-FinWise is an academic application development project intended for educational and personal financial management purposes.
-AI-generated insights are provided for general financial awareness and planning. They should not be treated as professional financial advice.
+### 1. Backend Setup
+1. Import `backend/database/finwise_db.sql` into MySQL.
+2. Start the configured development API and mail server:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File .\backend\start-dev-server.ps1
+   ```
+   The script securely prompts for your Gmail address, Gmail App Password (hidden input), and MySQL settings. Create an App Password in your Google account first; never put it in source code or send it in chat. The script runs PHP with real SMTP delivery enabled and does not store the credentials. If TLS certificate verification fails on Windows, configure PHP's `openssl.cafile` with a current CA bundle; do not disable certificate verification.
 
+### 2. Android Studio Setup
+1. Open the `FinWiseAndroid` folder in Android Studio.
+2. In `ApiClient.java`, verify the base URL (`http://10.0.2.2:8000/backend/api/` for emulator).
+3. Connect an Android device or start an emulator (API 26+).
+4. Click **Run > Run 'app'** or build the APK via `gradlew assembleDebug`.
+
+---
+
+## 📅 Development Roadmap (4 Sprints)
+
+- **✅ Sprint 1 – Android Foundation & Authentication (Completed):**
+  - Native Android project setup & programmatic UI framework.
+  - Complete Login, Registration, Email Verification, and Forgot Password flows.
+  - 60-second OTP resend restriction with timestamp persistence.
+  - PHP REST API and MySQL database structure.
+  - Full Dashboard layout with balance hero, outflow trend chart, and transactions.
+  - C++ simulation module architecture.
+
+- **⏳ Sprint 2 – Financial Management:**
+  - Add, edit, delete real-time transactions.
+  - Category management & monthly spending limits.
+  - Dynamic budget utilization alerts.
+  - Savings goal tracker with milestone calculations.
+
+- **⏳ Sprint 3 – AI & Financial Intelligence:**
+  - Gemini AI API integration for conversational Copilot.
+  - Receipt OCR parser.
+  - Spending anomaly detection.
+  - JNI bindings connecting C++ `FinancialSimulator` into Android.
+
+- **⏳ Sprint 4 – Integration & Testing:**
+  - End-to-end user acceptance testing with UTM students.
+  - Performance profiling, security auditing, and release APK signing.

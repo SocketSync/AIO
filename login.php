@@ -74,9 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Header -->
     <header class="fixed top-0 w-full max-w-[430px] z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div class="h-14 px-margin flex items-center justify-between">
-        <button aria-label="Go to register" class="min-w-[44px] min-h-[44px] -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors" onclick="location.href='register.php'" type="button">
-          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
-        </button>
+        <div class="w-8 h-8 shrink-0"></div>
         <h1 class="font-semibold text-lg text-on-surface tracking-tight text-center truncate px-space-xs flex-1">Login</h1>
         <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
