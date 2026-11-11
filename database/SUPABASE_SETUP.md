@@ -58,7 +58,18 @@ To enable the official **Google popup sign-in** (`accounts.google.com`) with Sup
    - Paste your **Client ID** and **Client Secret**.
    - Click **Save**.
 
-3. **Instant Development & Testing Fallback**:
+3. **Production Domain & Redirect URLs (finwise-app.xyz)**:
+   - In Supabase Dashboard, navigate to **Authentication** > **URL Configuration**.
+   - Set **Site URL**: `https://www.finwise-app.xyz`
+   - Under **Redirect URLs**, add:
+     - `https://www.finwise-app.xyz/**`
+     - `https://www.finwise-app.xyz/login`
+     - `https://www.finwise-app.xyz/dashboard`
+   - In Google Cloud Console Credentials, ensure Authorized JavaScript origins include:
+     - `https://www.finwise-app.xyz`
+     - `https://finwise-app.xyz`
+
+4. **Instant Development & Testing Fallback**:
    - If Google OAuth has not been toggled on yet in Supabase, clicking **Continue with Google** opens the **Google Account Fetcher**.
    - Enter your personal Gmail address (e.g. `your.name@gmail.com`).
    - FinWise will automatically extract your name, avatar, generate a user UUID, create a verified session, and sync to Supabase.
