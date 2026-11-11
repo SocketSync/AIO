@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
   <title>FinWise - Personal Financial Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -68,8 +69,8 @@
     <!-- Header -->
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
       <div class="h-16 px-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm">FW</div>
+        <div class="flex items-center gap-2.5">
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
           <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
           <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI SMART</span>
         </div>
@@ -104,6 +105,13 @@
             <div class="text-[10px] text-text-muted px-1">
               Backend: <strong class="text-slate-700">Supabase Cloud PostgreSQL</strong>
             </div>
+            <a href="profile.html" class="w-full text-left px-2.5 py-2 text-xs font-bold rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center justify-between mt-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                <span>Edit Full Profile & Account</span>
+              </span>
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </a>
             <button onclick="logoutFromMenu()" class="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-lg text-alert-coral hover:bg-alert-coral-subtle/50 transition-colors flex items-center gap-1.5 mt-1">
               <span class="material-symbols-outlined text-[16px]">logout</span>
               <span>Sign Out</span>
@@ -149,7 +157,7 @@
 
           <!-- Balance Metric Display -->
           <div class="flex items-baseline gap-1.5">
-            <span class="text-lg font-bold text-white/90">RM</span>
+            <span id="balanceCurrency" class="text-lg font-bold text-white/90">RM</span>
             <span class="text-3xl font-extrabold tracking-tight text-white" id="balanceValue">0.00</span>
           </div>
 
@@ -181,11 +189,11 @@
 
       <!-- Quick Action Buttons Grid -->
       <div class="grid grid-cols-4 gap-2">
-        <button onclick="showTransactions()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='transactions.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1">
-            <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+            <span class="material-symbols-outlined text-[20px]">receipt_long</span>
           </div>
-          <span class="text-[11px] font-semibold text-text-primary">Budgeting</span>
+          <span class="text-[11px] font-semibold text-text-primary">Transactions</span>
         </button>
         <button onclick="showAiModal()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-emerald-50 text-secondary flex items-center justify-center mb-1">
@@ -193,17 +201,17 @@
           </div>
           <span class="text-[11px] font-semibold text-text-primary">AI Insights</span>
         </button>
-        <button onclick="showSummary()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='summary.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center mb-1">
-            <span class="material-symbols-outlined text-[20px]">trending_up</span>
+            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
           </div>
-          <span class="text-[11px] font-semibold text-text-primary">Forecast</span>
+          <span class="text-[11px] font-semibold text-text-primary">Summary</span>
         </button>
-        <button onclick="alert('FinWise Cash Flow Simulator: Try adjusting monthly expenses or savings goals!')" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='profile.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
-            <span class="material-symbols-outlined text-[20px]">tune</span>
+            <span class="material-symbols-outlined text-[20px]">person</span>
           </div>
-          <span class="text-[11px] font-semibold text-text-primary">Simulator</span>
+          <span class="text-[11px] font-semibold text-text-primary">Profile</span>
         </button>
       </div>
 
@@ -211,7 +219,10 @@
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-text-primary">Recent Transactions</h2>
-          <button class="text-[11px] font-semibold text-primary hover:underline" onclick="showTransactions()">View all</button>
+          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5" onclick="window.location.href='transactions.html'">
+            <span>View all</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+          </button>
         </div>
 
         <div id="recentRecords" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
@@ -230,20 +241,13 @@
           <div><p class="text-[11px] text-text-muted">Expenses</p><p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p></div>
           <div><p class="text-[11px] text-text-muted">Net Cash Flow</p><p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p></div>
         </div>
-        <p class="text-[11px] font-semibold text-text-muted mt-3">Expenses by Category</p>
+        <div class="flex items-center justify-between mt-3 mb-1">
+          <p class="text-[11px] font-semibold text-text-muted">Expenses by Category</p>
+          <a href="summary.html" class="text-[11px] font-semibold text-primary hover:underline">Full Analytics →</a>
+        </div>
         <div id="categoryChart" class="mt-2 space-y-3">
           <p class="text-xs text-text-muted">No expenses recorded for this month.</p>
         </div>
-      </section>
-
-      <!-- Full Transaction History View -->
-      <section id="transactionHistory" class="hidden flex-col gap-2">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-text-primary">Transaction History</h2>
-          <span id="transactionCount" class="text-[11px] text-text-muted font-semibold">0 records</span>
-        </div>
-        <div id="transactionRows" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container"></div>
-        <p id="emptyTransactions" class="hidden rounded-xl bg-white p-5 text-center text-xs text-text-muted">No transactions found. Tap + to record your first transaction.</p>
       </section>
 
     </main>
@@ -263,10 +267,10 @@
           <option value="income">Income</option>
         </select>
 
-        <!-- Amount (RM) -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (RM)</label>
+        <!-- Amount -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (<span id="formAmountCurrencyLabel">RM</span>)</label>
         <div class="relative flex items-center mb-3">
-          <span class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
+          <span id="formAmountCurrencyPrefix" class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
           <input id="transactionAmount" class="w-full rounded-lg border border-slate-300 pl-11 pr-3 py-2.5 text-sm font-semibold outline-none focus:border-primary" type="number" min="0.01" step="0.01" required placeholder="0.00">
         </div>
 
@@ -293,11 +297,11 @@
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="showHome()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px]">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="showTransactions()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='transactions.html'">
           <span class="material-symbols-outlined text-[22px]">receipt_long</span>
           <span class="text-[10px]">Transactions</span>
         </button>
@@ -306,11 +310,11 @@
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="showSummary()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
           <span class="material-symbols-outlined text-[22px]">bar_chart</span>
           <span class="text-[10px]">Summary</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="toggleProfileMenu()">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
           <span class="text-[10px]">Profile</span>
         </button>
@@ -462,10 +466,30 @@
       window.location.replace('login.html');
     }
 
+    function isCustomAvatar(av) {
+      if (!av || typeof av !== 'string') return false;
+      const trimmed = av.trim();
+      if (!trimmed) return false;
+      if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return true;
+      if (trimmed.length > 1 || !/^[A-Za-z0-9]$/.test(trimmed)) return true;
+      return false;
+    }
+
     function applyUserProfile() {
       const name = localStorage.getItem('finwise_user_name') || 'Google User';
-      const email = localStorage.getItem('finwise_user_email') || 'Google Gmail Account';
-      const avatar = localStorage.getItem('finwise_user_avatar') || '';
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      let avatar = localStorage.getItem('finwise_user_avatar') || localStorage.getItem(scopedKey) || '';
+      if (!isCustomAvatar(avatar)) {
+        try {
+          const accounts = JSON.parse(localStorage.getItem('finwise_user_accounts') || '{}');
+          if (accounts[email] && isCustomAvatar(accounts[email].avatar)) {
+            avatar = accounts[email].avatar;
+            localStorage.setItem('finwise_user_avatar', avatar);
+          }
+        } catch (_) {}
+      }
 
       document.getElementById('greetingName').textContent = 'Hello, ' + name + '!';
       document.getElementById('userSubtitle').textContent = email ? email + ' • Personal Finance' : 'Personal Financial Snapshot';
@@ -479,6 +503,9 @@
       if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
         headerAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
         menuAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+      } else if (avatar && isCustomAvatar(avatar)) {
+        headerAvatar.innerHTML = `<span class="text-sm">${avatar}</span>`;
+        menuAvatar.innerHTML = `<span class="text-base">${avatar}</span>`;
       } else {
         headerAvatar.innerHTML = initial;
         menuAvatar.innerHTML = initial;
@@ -511,6 +538,20 @@
               date: row.transaction_date ? row.transaction_date.slice(0, 10) : localDateString()
             }));
             persistLocalTransactions();
+          }
+
+          // Also check for updated avatar from Supabase profiles
+          const { data: profData } = await supabaseClient
+            .from('profiles')
+            .select('avatar_url, display_name')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (profData && profData.avatar_url && isCustomAvatar(profData.avatar_url)) {
+            const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+            localStorage.setItem('finwise_user_avatar', profData.avatar_url);
+            localStorage.setItem(scopedKey, profData.avatar_url);
+            applyUserProfile();
           }
         } catch (e) {
           console.warn("Supabase load transactions notice:", e);
@@ -634,6 +675,11 @@
       editingTransactionId = id;
       const form = document.getElementById("transactionForm");
       form.reset();
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const currLabel = document.getElementById('formAmountCurrencyLabel');
+      const currPrefix = document.getElementById('formAmountCurrencyPrefix');
+      if (currLabel) currLabel.textContent = curr;
+      if (currPrefix) currPrefix.textContent = curr;
       const record = id ? transactions.find(t => t.id === id) : null;
       document.getElementById("transactionDialogTitle").textContent = record ? "Edit Transaction" : "Add Transaction";
       document.getElementById("transactionType").value = record ? record.type : "expense";
@@ -725,13 +771,17 @@
     }
 
     function renderDashboard() {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const currEl = document.getElementById("balanceCurrency");
+      if (currEl) currEl.textContent = curr;
+
       const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
       const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
       const net = income - expenses;
 
       document.getElementById("balanceValue").textContent = balanceIsHidden ? "••••••••" : money(net);
-      document.getElementById("incomeValue").textContent = "+RM " + money(income);
-      document.getElementById("expenseValue").textContent = "-RM " + money(expenses);
+      document.getElementById("incomeValue").textContent = "+" + curr + " " + money(income);
+      document.getElementById("expenseValue").textContent = "-" + curr + " " + money(expenses);
 
       // Month specific stats
       const monthStr = currentMonth();
@@ -740,9 +790,9 @@
       const mExpenses = monthRecords.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
 
       document.getElementById("monthlyTitle").textContent = new Date(monthStr + "-01T12:00:00").toLocaleDateString("en", { month: "long", year: "numeric" });
-      document.getElementById("monthlyIncome").textContent = "RM " + money(mIncome);
-      document.getElementById("monthlyExpense").textContent = "RM " + money(mExpenses);
-      document.getElementById("monthlyBalance").textContent = "RM " + money(mIncome - mExpenses);
+      document.getElementById("monthlyIncome").textContent = curr + " " + money(mIncome);
+      document.getElementById("monthlyExpense").textContent = curr + " " + money(mExpenses);
+      document.getElementById("monthlyBalance").textContent = curr + " " + money(mIncome - mExpenses);
 
       // Category chart
       const grouped = {};
@@ -756,7 +806,7 @@
         <div>
           <div class="mb-1 flex items-center justify-between text-xs">
             <span class="font-medium text-text-primary">${escapeHtml(cat)}</span>
-            <span class="font-bold text-alert-coral">RM ${money(amt)}</span>
+            <span class="font-bold text-alert-coral">${curr} ${money(amt)}</span>
           </div>
           <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
             <div class="h-full rounded-full bg-alert-coral transition-all" style="width:${Math.max(4, (amt / maxAmt) * 100)}%"></div>
@@ -775,7 +825,7 @@
             <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
           </div>
           <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
-            ${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}
+            ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
           </span>
         </div>
       `).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
@@ -790,7 +840,7 @@
             <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
           </div>
           <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
-            ${item.type === "income" ? "+" : "−"}RM ${money(item.amount)}
+            ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
           </span>
           <div class="flex items-center gap-1 shrink-0">
             <button aria-label="Edit" class="text-xs text-primary font-semibold px-1.5 py-1 hover:bg-primary/5 rounded" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>

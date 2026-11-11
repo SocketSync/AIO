@@ -159,6 +159,8 @@ class DatabaseService {
     required String email,
     required String displayName,
     String? photoUrl,
+    String? phone,
+    String? occupation,
   }) async {
     final client = _supabaseService.client;
     if (client != null) {
@@ -175,11 +177,21 @@ class DatabaseService {
           return profile;
         } else {
           // Create profile in Supabase
+          final defaultPhone = phone ??
+              ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
+                  ? '+60 11-987 6543'
+                  : '+60 12-345 6789');
+          final defaultOccupation = occupation ??
+              ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
+                  ? 'Product Designer & Consultant'
+                  : 'Senior Software Engineer');
           final newProfile = UserProfile(
             id: userId,
             email: email,
             displayName: displayName,
             avatarUrl: photoUrl,
+            phone: defaultPhone,
+            occupation: defaultOccupation,
             currency: 'RM',
             monthlyBudget: 2500.00,
           );
@@ -194,16 +206,83 @@ class DatabaseService {
 
     await Future.delayed(const Duration(milliseconds: 150));
     if (!_userProfiles.containsKey(userId)) {
+      final defaultPhone = phone ??
+          ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
+              ? '+60 11-987 6543'
+              : '+60 12-345 6789');
+      final defaultOccupation = occupation ??
+          ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
+              ? 'Product Designer & Consultant'
+              : 'Senior Software Engineer');
       _userProfiles[userId] = UserProfile(
         id: userId,
         email: email,
         displayName: displayName,
         avatarUrl: photoUrl,
+        phone: defaultPhone,
+        occupation: defaultOccupation,
         currency: 'RM',
-        monthlyBudget: 2500.00,
+        monthlyBudget: (userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
+            ? 3500.00
+            : 2500.00,
       );
     }
     return _userProfiles[userId]!;
+  }
+
+  /// Update full user profile in Supabase & local cache
+  Future<UserProfile> updateFullUserProfile({
+    required String userId,
+    required String displayName,
+    required String email,
+    String? phone,
+    String? occupation,
+    String? avatarUrl,
+    String? currency,
+    double? monthlyBudget,
+  }) async {
+    final client = _supabaseService.client;
+    if (client != null) {
+      try {
+        final updateMap = <String, dynamic>{
+          'display_name': displayName,
+          'email': email,
+          if (phone != null) 'phone': phone,
+          if (occupation != null) 'occupation': occupation,
+          if (avatarUrl != null) 'avatar_url': avatarUrl,
+          if (currency != null) 'currency': currency,
+          if (monthlyBudget != null) 'monthly_budget': monthlyBudget,
+        };
+        await client.from('profiles').upsert({'id': userId, ...updateMap});
+      } catch (e) {
+        debugPrint('[DatabaseService] Supabase full profile update notice: $e');
+      }
+    }
+
+    await Future.delayed(const Duration(milliseconds: 100));
+    final current = _userProfiles[userId];
+    final updated = (current != null)
+        ? current.copyWith(
+            displayName: displayName,
+            email: email,
+            phone: phone ?? current.phone,
+            occupation: occupation ?? current.occupation,
+            avatarUrl: avatarUrl ?? current.avatarUrl,
+            currency: currency ?? current.currency,
+            monthlyBudget: monthlyBudget ?? current.monthlyBudget,
+          )
+        : UserProfile(
+            id: userId,
+            email: email,
+            displayName: displayName,
+            phone: phone,
+            occupation: occupation,
+            avatarUrl: avatarUrl,
+            currency: currency ?? 'RM',
+            monthlyBudget: monthlyBudget ?? 2500.00,
+          );
+    _userProfiles[userId] = updated;
+    return updated;
   }
 
   /// Update user monthly budget

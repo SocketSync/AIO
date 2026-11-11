@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'database_service.dart';
 import 'supabase_service.dart';
 
 class AppUser {
@@ -27,12 +28,22 @@ class RegisteredAccount {
   final String email;
   final String name;
   final String passwordHash;
+  final String? photoUrl;
+  final String? phone;
+  final String? occupation;
+  final String? currency;
+  final double? monthlyBudget;
 
   RegisteredAccount({
     required this.id,
     required this.email,
     required this.name,
     required this.passwordHash,
+    this.photoUrl,
+    this.phone,
+    this.occupation,
+    this.currency,
+    this.monthlyBudget,
   });
 }
 
@@ -164,7 +175,7 @@ class AuthService extends ChangeNotifier {
         id: account.id,
         email: account.email,
         displayName: account.name,
-        photoUrl: null,
+        photoUrl: account.photoUrl,
         provider: 'email',
       );
       _isLoading = false;
@@ -286,16 +297,18 @@ class AuthService extends ChangeNotifier {
     // 1. Explicit Google account specified by user
     if (selectedEmail != null && selectedEmail.trim().isNotEmpty) {
       final email = selectedEmail.trim();
+      final cleanEmail = email.trim().toLowerCase();
+      final account = _registeredAccounts[cleanEmail];
       final name = (selectedName != null && selectedName.trim().isNotEmpty)
           ? selectedName.trim()
-          : formatNameFromEmail(email);
+          : (account?.name ?? formatNameFromEmail(cleanEmail));
 
-      final userId = generateUserUuid(email);
+      final userId = account?.id ?? generateUserUuid(cleanEmail);
       _currentUser = AppUser(
         id: userId,
-        email: email,
+        email: cleanEmail,
         displayName: name,
-        photoUrl: null,
+        photoUrl: account?.photoUrl,
         provider: 'google',
       );
       _isLoading = false;
@@ -414,6 +427,98 @@ class AuthService extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('[AuthService] Update password notice: $e');
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Update User Profile details (Name, Email, Password, Photo, etc.)
+  Future<bool> updateUserProfile({
+    required String newName,
+    required String newEmail,
+    String? currentPassword,
+    String? newPassword,
+    String? photoUrl,
+    String? phone,
+    String? occupation,
+    String? currency,
+    double? monthlyBudget,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final cleanOldEmail = (_currentUser?.email ?? '').trim().toLowerCase();
+      final cleanNewEmail = newEmail.trim().toLowerCase();
+
+      // Password verification if changing password
+      if (newPassword != null && newPassword.isNotEmpty) {
+        if (_registeredAccounts.containsKey(cleanOldEmail)) {
+          final account = _registeredAccounts[cleanOldEmail]!;
+          if (currentPassword == null || hashPassword(currentPassword) != account.passwordHash) {
+            _errorMessage = 'Current password does not match database record.';
+            _isLoading = false;
+            notifyListeners();
+            return false;
+          }
+        }
+      }
+
+      final existingAcc = _registeredAccounts[cleanNewEmail] ?? _registeredAccounts[cleanOldEmail];
+      final currentPassHash = (newPassword != null && newPassword.isNotEmpty)
+          ? hashPassword(newPassword)
+          : (existingAcc?.passwordHash ?? hashPassword('FinWise2026!'));
+
+      if (cleanNewEmail != cleanOldEmail && _registeredAccounts.containsKey(cleanOldEmail)) {
+        _registeredAccounts.remove(cleanOldEmail);
+      }
+
+      final newPhoto = photoUrl ?? _currentUser?.photoUrl ?? existingAcc?.photoUrl;
+      final userId = _currentUser?.id ?? existingAcc?.id ?? generateUserUuid(cleanNewEmail);
+
+      _registeredAccounts[cleanNewEmail] = RegisteredAccount(
+        id: userId,
+        email: cleanNewEmail,
+        name: newName,
+        passwordHash: currentPassHash,
+        photoUrl: newPhoto,
+        phone: phone ?? existingAcc?.phone,
+        occupation: occupation ?? existingAcc?.occupation,
+        currency: currency ?? existingAcc?.currency,
+        monthlyBudget: monthlyBudget ?? existingAcc?.monthlyBudget,
+      );
+
+      _currentUser = AppUser(
+        id: userId,
+        email: cleanNewEmail,
+        displayName: newName,
+        photoUrl: newPhoto,
+        provider: _currentUser?.provider ?? 'email',
+      );
+
+      // Sync with Supabase and DatabaseService
+      try {
+        await DatabaseService().updateFullUserProfile(
+          userId: userId,
+          displayName: newName,
+          email: cleanNewEmail,
+          phone: phone,
+          occupation: occupation,
+          avatarUrl: newPhoto,
+          currency: currency ?? 'RM',
+          monthlyBudget: monthlyBudget ?? 2500.00,
+        );
+      } catch (e) {
+        debugPrint('[AuthService] Profile database sync notice: $e');
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();

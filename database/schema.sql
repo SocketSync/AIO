@@ -16,11 +16,19 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
     avatar_url TEXT,
+    phone VARCHAR(30),
+    occupation VARCHAR(100),
     currency VARCHAR(10) DEFAULT 'RM',
     monthly_budget NUMERIC(12, 2) DEFAULT 2500.00,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration safety: ensure phone and occupation exist if table was already created
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone VARCHAR(30);
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS occupation VARCHAR(100);
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'RM';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS monthly_budget NUMERIC(12, 2) DEFAULT 2500.00;
 
 -- 3. Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -140,17 +148,21 @@ CREATE TRIGGER set_transactions_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, display_name, avatar_url)
+    INSERT INTO public.profiles (id, email, display_name, avatar_url, phone, occupation)
     VALUES (
         NEW.id,
         COALESCE(NEW.email, 'user@finwise.app'),
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1), 'FinWise Member'),
-        NEW.raw_user_meta_data->>'avatar_url'
+        NEW.raw_user_meta_data->>'avatar_url',
+        NEW.raw_user_meta_data->>'phone',
+        NEW.raw_user_meta_data->>'occupation'
     )
     ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
         display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url);
+        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url),
+        phone = COALESCE(EXCLUDED.phone, profiles.phone),
+        occupation = COALESCE(EXCLUDED.occupation, profiles.occupation);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

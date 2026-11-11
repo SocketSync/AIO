@@ -4,6 +4,7 @@ import 'dashboard_screen.dart';
 import 'budgets_screen.dart';
 import 'insights_screen.dart';
 import 'simulator_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationShell extends StatefulWidget {
   final int initialTab;
@@ -21,6 +22,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     BudgetsScreen(),
     InsightsScreen(),
     SimulatorScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -99,11 +101,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                 label: 'Insights',
               ),
 
-              // 5. Simulator Tab
+              // 5. Profile Tab
               _buildNavItem(
-                index: 3,
-                icon: Icons.query_stats,
-                label: 'Simulator',
+                index: 4,
+                icon: Icons.person,
+                label: 'Profile',
               ),
             ],
           ),

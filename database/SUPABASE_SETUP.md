@@ -3,11 +3,12 @@
 ## 1. Overview
 FinWise uses **Supabase (PostgreSQL)** as its cloud database and authentication backend.
 The integration includes:
-- **`profiles` Table**: User profile data, custom currency, and monthly budget limits.
+- **`profiles` Table**: User profile data (`display_name`, `email`, `phone`, `occupation`, `avatar_url`), custom currency, and monthly budget limits.
 - **`categories` Table**: System and custom transaction categories with icons and colors.
 - **`transactions` Table**: Full CRUD support for daily financial records (Amount, Type, Category, Date, Notes).
 - **Row Level Security (RLS)**: Enforces strict user isolation so users can only view, create, edit, and delete their own financial records.
 - **Automatic Triggers**: Automatically updates `updated_at` timestamps and creates user profile entries when signing in with Google.
+- **Migration Script**: Run [`database/migration_update.sql`](file:///c:/Users/ykeng/Desktop/y3s1/AIO/database/migration_update.sql) to add new fields (`phone`, `occupation`) to an existing database.
 
 ---
 

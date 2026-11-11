@@ -221,12 +221,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
         centerTitle: false,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushNamed('/profile'),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.primary,
+                child: (user?.photoUrl != null && user!.photoUrl!.isNotEmpty)
+                    ? (user.photoUrl!.startsWith('http')
+                        ? ClipOval(
+                            child: Image.network(
+                              user.photoUrl!,
+                              width: 36,
+                              height: 36,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Text(
+                                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                          )
+                        : Text(user.photoUrl!, style: const TextStyle(fontSize: 16)))
+                    : Text(
+                        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
               ),
             ),
             const SizedBox(width: 10),
@@ -269,6 +287,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.manage_accounts, color: AppColors.primary, size: 22),
+            tooltip: 'Profile & Settings',
+            onPressed: () => Navigator.of(context).pushNamed('/profile'),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.outline, size: 20),

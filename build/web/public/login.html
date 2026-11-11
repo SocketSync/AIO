@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
   <title>FinWise - Sign In with Google</title>
+  <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -79,9 +80,7 @@
       <div class="relative w-full overflow-hidden rounded-xl bg-surface-container-low p-4 shadow-sm mb-4 border border-border-neutral">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
-              <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
-            </div>
+            <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-11 h-11 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
             <div>
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
@@ -440,6 +439,15 @@
       }
     }
 
+    function isCustomAvatar(av) {
+      if (!av || typeof av !== 'string') return false;
+      const trimmed = av.trim();
+      if (!trimmed) return false;
+      if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return true;
+      if (trimmed.length > 1 || !/^[A-Za-z0-9]$/.test(trimmed)) return true;
+      return false;
+    }
+
     async function selectGoogleAccount(name, email, initial) {
       const statusBox = document.getElementById('google-auth-status');
       statusBox.classList.remove('hidden');
@@ -457,30 +465,47 @@
         userId = '00000000-0000-4000-8000-' + Math.abs(cleanEmail.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
       }
 
+      // Check for previously saved custom profile picture
+      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      const accounts = getUserAccounts();
+      const acc = accounts[cleanEmail] || {};
+      const candidateAvatar = localStorage.getItem(scopedKey) || acc.avatar || '';
+      const finalAvatar = isCustomAvatar(candidateAvatar) ? candidateAvatar : initial;
+
       // Save verified Google session
       localStorage.setItem('finwise_user_name', name);
-      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_email', cleanEmail);
       localStorage.setItem('finwise_user_id', userId);
       localStorage.setItem('finwise_auth_provider', 'google');
-      localStorage.setItem('finwise_user_avatar', initial);
+      localStorage.setItem('finwise_user_avatar', finalAvatar);
+      localStorage.setItem(scopedKey, finalAvatar);
+
+      if (acc) {
+        if (acc.phone) localStorage.setItem('finwise_user_phone', acc.phone);
+        if (acc.occupation) localStorage.setItem('finwise_user_occupation', acc.occupation);
+        if (acc.currency) localStorage.setItem('finwise_currency', acc.currency);
+        if (acc.monthlyBudget) localStorage.setItem('finwise_monthly_budget', acc.monthlyBudget.toString());
+      }
+
       localStorage.setItem('finwise_session', JSON.stringify({
         id: userId,
         name: name,
-        email: email,
+        email: cleanEmail,
+        avatar: finalAvatar,
         provider: 'google',
         authenticatedAt: new Date().toISOString()
       }));
 
-      // Try creating/syncing profile in Supabase
+      // Try creating/syncing profile in Supabase without wiping existing avatar
       if (supabaseClient) {
         try {
           await supabaseClient.from('profiles').upsert({
             id: userId,
-            email: email,
+            email: cleanEmail,
             display_name: name,
-            avatar_url: null,
-            currency: 'RM',
-            monthly_budget: 2500.00
+            avatar_url: isCustomAvatar(finalAvatar) ? finalAvatar : null,
+            currency: acc.currency || 'RM',
+            monthly_budget: acc.monthlyBudget || 2500.00
           });
         } catch (_) {}
       }
@@ -561,6 +586,10 @@
           id: "00000000-0000-4000-8000-000000000001",
           name: "Kean Shen Yeoh",
           email: "keanshen.yeoh@gmail.com",
+          phone: "+60 12-882 1928",
+          occupation: "Financial Analyst & Tech Lead",
+          currency: "RM",
+          monthlyBudget: 2500.00,
           passwordHash: defaultHash
         };
       }
@@ -569,6 +598,10 @@
           id: "00000000-0000-4000-8000-000000000002",
           name: "Alex Yeoh",
           email: "alex.yeoh@gmail.com",
+          phone: "+60 17-331 4982",
+          occupation: "Senior Product Designer",
+          currency: "RM",
+          monthlyBudget: 3000.00,
           passwordHash: defaultHash
         };
       }
@@ -605,15 +638,34 @@
     }
 
     function completeUserSession(userId, name, email, provider) {
+      const cleanEmail = (email || '').toLowerCase().trim();
+      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      const accounts = getUserAccounts();
+      const acc = accounts[cleanEmail] || {};
+
+      const candidateAvatar = localStorage.getItem(scopedKey) || acc.avatar || '';
+      const finalAvatar = isCustomAvatar(candidateAvatar) ? candidateAvatar : (name[0] || 'U').toUpperCase();
+
       localStorage.setItem('finwise_user_name', name);
-      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_email', cleanEmail);
       localStorage.setItem('finwise_user_id', userId);
       localStorage.setItem('finwise_auth_provider', provider);
-      localStorage.setItem('finwise_user_avatar', (name[0] || 'U').toUpperCase());
+      localStorage.setItem('finwise_user_avatar', finalAvatar);
+      localStorage.setItem(scopedKey, finalAvatar);
+
+      // Pre-populate account profile fields if available
+      if (acc) {
+        if (acc.phone) localStorage.setItem('finwise_user_phone', acc.phone);
+        if (acc.occupation) localStorage.setItem('finwise_user_occupation', acc.occupation);
+        if (acc.currency) localStorage.setItem('finwise_currency', acc.currency);
+        if (acc.monthlyBudget) localStorage.setItem('finwise_monthly_budget', acc.monthlyBudget.toString());
+      }
+
       localStorage.setItem('finwise_session', JSON.stringify({
         id: userId,
         name: name,
-        email: email,
+        email: cleanEmail,
+        avatar: finalAvatar,
         provider: provider,
         authenticatedAt: new Date().toISOString()
       }));

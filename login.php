@@ -102,22 +102,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div>
                 <div class="flex items-center gap-1">
                   <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
-                  <span class="bg-growth-mint-subtle text-secondary text-xs px-1.5 py-0.5 rounded-full font-bold">CAMPUS</span>
+                  <span class="bg-growth-mint-subtle text-secondary text-xs px-1.5 py-0.5 rounded-full font-bold">PRO</span>
                 </div>
-                <p class="text-xs text-text-muted">Student Smart Banking</p>
+                <p class="text-xs text-text-muted">Smart Financial Management</p>
               </div>
             </div>
             <div class="flex items-center gap-1 bg-surface-container-highest px-2 py-1 rounded-full text-on-surface-variant text-xs">
               <span class="material-symbols-outlined text-[14px] text-secondary">verified_user</span>
-              <span>UTM Portal Sync</span>
+              <span>Cloud Sync</span>
             </div>
           </div>
 
           <div class="mt-space-md bg-surface-container-lowest p-space-sm rounded-lg flex items-center gap-space-sm shadow-sm">
-            <span class="material-symbols-outlined text-secondary text-[20px]">school</span>
+            <span class="material-symbols-outlined text-secondary text-[20px]">account_balance</span>
             <div class="min-w-0 flex-1">
-              <p class="text-xs text-secondary font-semibold uppercase tracking-wider">Semester Allowance Forecast</p>
-              <p class="text-xs text-on-surface truncate">Sem 2 budget active • UTM Skudai Campus</p>
+              <p class="text-xs text-secondary font-semibold uppercase tracking-wider">Smart Budget Forecast</p>
+              <p class="text-xs text-on-surface truncate">Monthly budget active • Intelligent AI Insights</p>
             </div>
             <div class="w-2 h-2 rounded-full bg-secondary shrink-0 animate-ping"></div>
           </div>
@@ -125,30 +125,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="mb-space-lg">
           <h2 class="text-2xl font-bold text-on-surface tracking-tight">Welcome back</h2>
-          <p class="text-sm text-text-muted mt-0.5">Take control of your campus finances and dynamic budget.</p>
+          <p class="text-sm text-text-muted mt-0.5">Take control of your personal finances and dynamic budget.</p>
         </div>
 
         <!-- Login Form -->
         <form class="flex flex-col gap-space-md w-full" method="POST" action="login.php">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-medium text-text-muted flex items-center justify-between" for="student-id">
-              <span>Student Email or Matric ID</span>
+              <span>Email Address</span>
               <span class="text-secondary text-xs font-semibold flex items-center gap-0.5">
-                <span class="material-symbols-outlined text-[12px]">check_circle</span> UTM Verified
+                <span class="material-symbols-outlined text-[12px]">check_circle</span> Verified Account
               </span>
             </label>
             <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-slate-200">
               <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
-                <span class="material-symbols-outlined text-[20px]">badge</span>
+                <span class="material-symbols-outlined text-[20px]">mail</span>
               </div>
-              <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-on-surface outline-none" id="student-id" name="student_id" placeholder="yeoh.k@graduate.utm.my" required type="text" value="yeoh.k@graduate.utm.my">
+              <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-on-surface outline-none" id="student-id" name="student_id" placeholder="keanshen.yeoh@gmail.com" required type="email" value="keanshen.yeoh@gmail.com">
             </div>
           </div>
 
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="text-xs font-medium text-text-muted" for="password">Password</label>
-              <button class="text-xs text-primary font-semibold hover:underline" onclick="alert('Password reset link sent to UTM email');" type="button">
+              <button class="text-xs text-primary font-semibold hover:underline" onclick="window.location.href='forgot_password.html';" type="button">
                 Forgot Password?
               </button>
             </div>
@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
                 <span class="material-symbols-outlined text-[20px]">lock</span>
               </div>
-              <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-on-surface outline-none tracking-widest" id="password" name="password" placeholder="••••••••••••" required type="password" value="SecretStudentPass99">
+              <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-on-surface outline-none tracking-widest" id="password" name="password" placeholder="••••••••••••" required type="password" value="FinWise2026!">
               <button aria-label="Toggle password view" class="absolute right-2 p-1.5 text-text-muted hover:text-on-surface rounded-full transition-colors flex items-center justify-center" id="toggle-password" onclick="togglePasswordVisibility()" type="button">
                 <span class="material-symbols-outlined text-[20px]" id="password-icon">visibility</span>
               </button>
@@ -195,12 +195,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="grid grid-cols-2 gap-space-sm">
-          <button class="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 border border-slate-200 cursor-pointer" onclick="alert('Connecting to UTM Single Sign-On Gateway (CIDOS)...');" type="button">
+          <button class="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 border border-slate-200 cursor-pointer" onclick="window.location.href='login.html';" type="button">
             <div class="w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
-              <span class="material-symbols-outlined text-[20px]">domain</span>
+              <span class="material-symbols-outlined text-[20px]">account_circle</span>
             </div>
-            <span class="text-xs text-on-surface font-semibold mt-1">UTM CIDOS SSO</span>
-            <span class="text-[10px] text-text-muted">Direct Student Auth</span>
+            <span class="text-xs text-on-surface font-semibold mt-1">Web Portal</span>
+            <span class="text-[10px] text-text-muted">Interactive App</span>
           </button>
 
           <button class="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 border border-slate-200 cursor-pointer" onclick="alert('Redirecting to Google Campus Account Selection...');" type="button">

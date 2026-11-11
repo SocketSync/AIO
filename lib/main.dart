@@ -11,6 +11,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/main_navigation_shell.dart';
 import 'screens/add_transaction_screen.dart';
 import 'screens/receipt_scanner_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,7 @@ class FinWiseApp extends StatelessWidget {
           '/simulator': (context) => const MainNavigationShell(initialTab: 3),
           '/add-transaction': (context) => const AddTransactionScreen(),
           '/scanner': (context) => const ReceiptScannerScreen(),
+          '/profile': (context) => const ProfileScreen(),
         },
       ),
     );

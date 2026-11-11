@@ -63,7 +63,11 @@ Security::jsonResponse(true, 'Email verification successful.', [
         'id'             => $userId,
         'full_name'      => $user['full_name'],
         'email'          => $user['email'],
-        'matric_id'      => $user['matric_id'],
+        'phone'          => $user['phone'] ?? '',
+        'occupation'     => $user['occupation'] ?? '',
+        'avatar_url'     => $user['avatar_url'] ?? '',
+        'currency'       => $user['currency'] ?? 'RM',
+        'monthly_budget' => (float)($user['monthly_budget'] ?? 2500.00),
         'email_verified' => true
     ],
     'token'      => $session['token'],
