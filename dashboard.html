@@ -61,8 +61,8 @@
         FinWise AI Intelligence
       </span>
       <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-[11px] text-white/90">Supabase Connected</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
@@ -416,35 +416,56 @@
 
     function persistLocalTransactions() {
       localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      if (email) {
+        fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, transactions: transactions })
+        }).catch(() => {});
+      }
     }
 
     // Check Supabase session & OAuth token / PKCE code callback
     async function checkSupabaseAuthSession() {
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
+      const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
 
-      // 1. Fresh OAuth PKCE code exchange: update session to this new Google account
+      // 1. Check for error in query or hash
+      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
+                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+      if (errorMsg) {
+        console.warn("OAuth error detected:", errorMsg);
+        window.location.replace('login.html?error=' + encodeURIComponent(errorMsg));
+        return;
+      }
+
+      // 2. Check for Implicit Flow Hash Tokens (#access_token=...&refresh_token=...)
+      const accessToken = hashParams ? hashParams.get('access_token') : null;
+      const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      if (accessToken && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
+          if (!error && data && data.user) {
+            saveSupabaseSession(data.user);
+            history.replaceState(null, null, window.location.pathname);
+            return;
+          }
+        } catch (e) {
+          console.warn("Set session from hash notice:", e);
+        }
+      }
+
+      // 3. Fresh OAuth PKCE code exchange: update session to this new Google account
+      const code = urlParams.get('code');
       if (code && supabaseClient) {
         try {
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
           if (!error && data && data.session && data.session.user) {
-            const user = data.session.user;
-            const meta = user.user_metadata || {};
-            const name = meta.full_name || meta.name || user.email?.split('@')[0] || "Google User";
-            const email = user.email || "";
-            const avatar = meta.avatar_url || meta.picture || "";
-            localStorage.setItem('finwise_user_name', name);
-            localStorage.setItem('finwise_user_email', email);
-            localStorage.setItem('finwise_user_id', user.id);
-            localStorage.setItem('finwise_auth_provider', 'google');
-            if (avatar) localStorage.setItem('finwise_user_avatar', avatar);
-            localStorage.setItem('finwise_session', JSON.stringify({
-              id: user.id,
-              name: name,
-              email: email,
-              provider: 'google',
-              authenticatedAt: new Date().toISOString()
-            }));
+            saveSupabaseSession(data.session.user);
             history.replaceState(null, null, window.location.pathname);
             return;
           }
@@ -453,17 +474,80 @@
         }
       }
 
-      // 2. Check active logged in user session
+      // 4. Check active Supabase client session
+      if (supabaseClient) {
+        try {
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (!error && session && session.user) {
+            saveSupabaseSession(session.user);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // 5. Check active logged in user session in LocalStorage
       const activeEmail = localStorage.getItem('finwise_user_email');
       const activeSession = localStorage.getItem('finwise_session');
-
-      // If active session exists, use it and never overwrite with old background tokens!
       if (activeEmail && activeSession) {
         return;
       }
 
-      // 3. Not logged in: redirect cleanly to login page
+      // 6. Not logged in: redirect cleanly to login page
       window.location.replace('login.html');
+    }
+
+    function saveSupabaseSession(user) {
+      const meta = user.user_metadata || {};
+      const email = (user.email || '').toLowerCase().trim();
+      const name = meta.full_name || meta.name || (email ? formatNameFromEmail(email) : "Google User");
+      const avatar = meta.avatar_url || meta.picture || "";
+      const initial = (name[0] || 'G').toUpperCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      localStorage.setItem('finwise_user_name', name);
+      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_id', user.id);
+      localStorage.setItem('finwise_auth_provider', 'google');
+      if (avatar) {
+        localStorage.setItem('finwise_user_avatar', avatar);
+        localStorage.setItem(scopedKey, avatar);
+      } else if (!localStorage.getItem('finwise_user_avatar')) {
+        localStorage.setItem('finwise_user_avatar', initial);
+      }
+
+      localStorage.setItem('finwise_session', JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        avatar: avatar || initial,
+        provider: 'google',
+        authenticatedAt: new Date().toISOString()
+      }));
+
+      // Auto-register in multi-device sync
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: user.id,
+          name: name,
+          email: email,
+          avatar: avatar || initial,
+          currency: localStorage.getItem('finwise_currency') || 'RM',
+          monthlyBudget: parseFloat(localStorage.getItem('finwise_monthly_budget')) || 2500.00
+        })
+      }).catch(() => {});
+    }
+
+    function formatNameFromEmail(email) {
+      if (!email) return "Google User";
+      const prefix = email.split('@')[0];
+      return prefix
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(w => w.length > 0)
+        .map(w => w[0].toUpperCase() + w.slice(1))
+        .join(' ');
     }
 
     function isCustomAvatar(av) {
@@ -512,20 +596,90 @@
       }
     }
 
-    // Fetch transactions from Supabase Cloud (Strictly isolated by user_id)
+    // Real-Time Transaction Synchronization Engine (Multi-Device Live Sync)
+    let lastKnownTxVersion = 0;
+    let sseSource = null;
+
+    function initRealtimeSync() {
+      // 1. Server-Sent Events (SSE) for instant zero-latency push updates
+      try {
+        if (window.EventSource) {
+          if (sseSource) sseSource.close();
+          sseSource = new EventSource('/api/events');
+          sseSource.onmessage = function(e) {
+            try {
+              const data = JSON.parse(e.data);
+              if (data && (data.event === 'tx_updated' || data.event === 'connected')) {
+                if (data.version && data.version !== lastKnownTxVersion) {
+                  lastKnownTxVersion = data.version;
+                  loadTransactions();
+                }
+              }
+            } catch (_) {}
+          };
+          sseSource.onerror = function() {
+            // EventSource will auto-reconnect
+          };
+        }
+      } catch (_) {}
+
+      // 2. High-speed lightweight version polling backup (every 2.5 seconds)
+      setInterval(async () => {
+        try {
+          const res = await fetch('/api/transactions/version');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.version && data.version !== lastKnownTxVersion) {
+              lastKnownTxVersion = data.version;
+              loadTransactions();
+            }
+          }
+        } catch (_) {}
+      }, 2500);
+
+      // 3. Supabase Realtime channel subscription
+      if (supabaseClient) {
+        try {
+          supabaseClient
+            .channel('public:transactions:realtime:dash')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+              loadTransactions();
+            })
+            .subscribe();
+        } catch (_) {}
+      }
+    }
+
+    // Synchronize transactions across all devices in real time
     async function loadTransactions() {
       const userId = getActiveUserId();
-      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase();
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
 
-      // Load user's isolated local partition
-      transactions = loadLocalTransactions();
+      // 1. Fetch latest shared transactions from the server sync API
+      try {
+        const apiRes = await fetch('/api/transactions' + (email ? ('?email=' + encodeURIComponent(email)) : ''));
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && apiData.success && Array.isArray(apiData.transactions) && apiData.transactions.length > 0) {
+            transactions = apiData.transactions;
+            if (apiData.version) lastKnownTxVersion = apiData.version;
+            localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+            renderDashboard();
+          }
+        }
+      } catch (_) {}
 
+      // 2. Fallback to local cache if offline
+      if (!transactions || transactions.length === 0) {
+        transactions = loadLocalTransactions();
+      }
+
+      // 3. Sync with Supabase Cloud
       if (supabaseClient && userId) {
         try {
           const { data, error } = await supabaseClient
             .from('transactions')
             .select('*')
-            .eq('user_id', userId)
             .order('transaction_date', { ascending: false });
 
           if (!error && Array.isArray(data) && data.length > 0) {
@@ -534,13 +688,14 @@
               type: row.type,
               amount: Number(row.amount),
               category: idToCategoryMap[row.category_id] || "Other Expenses",
-              description: row.title,
+              description: row.title || row.description,
               date: row.transaction_date ? row.transaction_date.slice(0, 10) : localDateString()
             }));
             persistLocalTransactions();
+            renderDashboard();
           }
 
-          // Also check for updated avatar from Supabase profiles
+          // Check for updated avatar from Supabase profiles
           const { data: profData } = await supabaseClient
             .from('profiles')
             .select('avatar_url, display_name')
@@ -555,39 +710,6 @@
           }
         } catch (e) {
           console.warn("Supabase load transactions notice:", e);
-        }
-      }
-
-      // Seed user-specific initial transactions if completely fresh
-      if (transactions.length === 0) {
-        if (email === "keanshen.yeoh@gmail.com") {
-          const today = localDateString();
-          const d1 = new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10);
-          const d2 = new Date(Date.now() - 86400000 * 4).toISOString().slice(0, 10);
-          transactions = [
-            { id: "seed_1", type: "income", amount: 4800.00, category: "Salary", description: "Monthly Tech Salary", date: today },
-            { id: "seed_2", type: "expense", amount: 142.50, category: "Groceries", description: "Village Grocer Weekly", date: today },
-            { id: "seed_3", type: "expense", amount: 28.00, category: "Food & Dining", description: "Coffee & Bistro Lunch", date: d1 },
-            { id: "seed_4", type: "expense", amount: 115.80, category: "Bills & Utilities", description: "Electricity & Water Bill", date: d2 },
-            { id: "seed_5", type: "income", amount: 750.00, category: "Freelance", description: "Freelance UI Project", date: d2 }
-          ];
-          persistLocalTransactions();
-        } else if (email === "alex.yeoh@gmail.com") {
-          const today = localDateString();
-          const d1 = new Date(Date.now() - 86400000 * 1).toISOString().slice(0, 10);
-          const d2 = new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10);
-          const d3 = new Date(Date.now() - 86400000 * 3).toISOString().slice(0, 10);
-          transactions = [
-            { id: "seed_a1", type: "income", amount: 6200.00, category: "Salary", description: "Consulting Retainer Monthly", date: today },
-            { id: "seed_a2", type: "expense", amount: 340.00, category: "Shopping", description: "Home Office Monitor & Stand", date: d1 },
-            { id: "seed_a3", type: "expense", amount: 185.00, category: "Groceries", description: "Organic Market Supplies", date: d2 },
-            { id: "seed_a4", type: "expense", amount: 90.00, category: "Bills & Utilities", description: "Cloud Infrastructure Hosting", date: d3 }
-          ];
-          persistLocalTransactions();
-        } else {
-          // Brand-new registered user: start with clean, isolated empty database
-          transactions = [];
-          persistLocalTransactions();
         }
       }
 
@@ -734,6 +856,14 @@
       closeTransactionDialog();
       renderDashboard();
 
+      // Real-Time Server Broadcast to all connected phones
+      const activeEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: activeEmail, transaction: record })
+      }).catch(() => {});
+
       // Cloud Sync to Supabase
       if (supabaseClient) {
         try {
@@ -759,6 +889,14 @@
       transactions = transactions.filter(item => item.id !== id);
       persistLocalTransactions();
       renderDashboard();
+
+      // Real-Time Server Broadcast delete to all connected phones
+      const delEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: delEmail, delete_id: id })
+      }).catch(() => {});
 
       if (supabaseClient && !id.startsWith("seed_") && !id.startsWith("tx_")) {
         try {
@@ -876,6 +1014,7 @@
       applyUserProfile();
       updateCategoryOptions();
       await loadTransactions();
+      initRealtimeSync();
     })();
   </script>
 </body>

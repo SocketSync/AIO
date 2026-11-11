@@ -167,7 +167,7 @@ void main() {
 
     // Test 1: Incorrect password fails with exception
     expect(
-      () => auth.signInWithPassword(email: 'keanshen.yeoh@gmail.com', password: 'WrongPassword123!'),
+      () => auth.signInWithPassword(email: 'ykwei2005@gmail.com', password: 'WrongPassword123!'),
       throwsA(isA<Exception>()),
     );
 
@@ -179,11 +179,11 @@ void main() {
 
     // Test 3: Matching password succeeds
     final user = await auth.signInWithPassword(
-      email: 'keanshen.yeoh@gmail.com',
+      email: 'ykwei2005@gmail.com',
       password: 'FinWise2026!',
     );
     expect(user, isNotNull);
-    expect(user!.email, 'keanshen.yeoh@gmail.com');
+    expect(user!.email, 'ykwei2005@gmail.com');
   });
 
   test('8. User Database Separation - Isolated transaction partitions for separate user accounts', () async {

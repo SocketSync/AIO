@@ -75,16 +75,22 @@ class AuthService extends ChangeNotifier {
 
   // Secure registered user accounts registry (isolated by email & UUID)
   final Map<String, RegisteredAccount> _registeredAccounts = {
+    'ykwei2005@gmail.com': RegisteredAccount(
+      id: generateUserUuid('ykwei2005@gmail.com'),
+      email: 'ykwei2005@gmail.com',
+      name: 'Ken Wei',
+      passwordHash: hashPassword('FinWise2026!'),
+    ),
+    'ptutm.kengwei@gmail.com': RegisteredAccount(
+      id: generateUserUuid('ptutm.kengwei@gmail.com'),
+      email: 'ptutm.kengwei@gmail.com',
+      name: 'John Yeoh',
+      passwordHash: hashPassword('FinWise2026!'),
+    ),
     'keanshen.yeoh@gmail.com': RegisteredAccount(
       id: generateUserUuid('keanshen.yeoh@gmail.com'),
       email: 'keanshen.yeoh@gmail.com',
       name: 'Kean Shen Yeoh',
-      passwordHash: hashPassword('FinWise2026!'),
-    ),
-    'alex.yeoh@gmail.com': RegisteredAccount(
-      id: generateUserUuid('alex.yeoh@gmail.com'),
-      email: 'alex.yeoh@gmail.com',
-      name: 'Alex Yeoh',
       passwordHash: hashPassword('FinWise2026!'),
     ),
   };
@@ -304,6 +310,17 @@ class AuthService extends ChangeNotifier {
           : (account?.name ?? formatNameFromEmail(cleanEmail));
 
       final userId = account?.id ?? generateUserUuid(cleanEmail);
+
+      // Ensure account is stored in registered accounts so future logins succeed seamlessly
+      if (!_registeredAccounts.containsKey(cleanEmail)) {
+        _registeredAccounts[cleanEmail] = RegisteredAccount(
+          id: userId,
+          email: cleanEmail,
+          name: name,
+          passwordHash: hashPassword('FinWise2026!'),
+        );
+      }
+
       _currentUser = AppUser(
         id: userId,
         email: cleanEmail,

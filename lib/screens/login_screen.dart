@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showPasswordLoginDialog() {
-    final emailCtrl = TextEditingController(text: 'keanshen.yeoh@gmail.com');
+    final emailCtrl = TextEditingController(text: 'ykwei2005@gmail.com');
     final passCtrl = TextEditingController(text: 'FinWise2026!');
     bool obscure = true;
 
@@ -312,33 +312,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Account 1: Kean Shen Yeoh
+                    // Account 1: Ken Wei
                     _buildGoogleAccountTile(
-                      name: 'Kean Shen Yeoh',
-                      email: 'keanshen.yeoh@gmail.com',
+                      name: 'Ken Wei',
+                      email: 'ykwei2005@gmail.com',
                       avatarColor: Colors.teal.shade700,
                       initial: 'K',
                       onTap: () {
                         Navigator.of(bottomSheetContext).pop();
                         _performGoogleSignIn(
-                          email: 'keanshen.yeoh@gmail.com',
-                          name: 'Kean Shen Yeoh',
+                          email: 'ykwei2005@gmail.com',
+                          name: 'Ken Wei',
                         );
                       },
                     ),
                     const SizedBox(height: 8),
 
-                    // Account 2: Alex Yeoh
+                    // Account 2: John Yeoh
                     _buildGoogleAccountTile(
-                      name: 'Alex Yeoh',
-                      email: 'alex.yeoh@gmail.com',
+                      name: 'John Yeoh',
+                      email: 'ptutm.kengwei@gmail.com',
                       avatarColor: Colors.blue.shade700,
-                      initial: 'A',
+                      initial: 'J',
                       onTap: () {
                         Navigator.of(bottomSheetContext).pop();
                         _performGoogleSignIn(
-                          email: 'alex.yeoh@gmail.com',
-                          name: 'Alex Yeoh',
+                          email: 'ptutm.kengwei@gmail.com',
+                          name: 'John Yeoh',
                         );
                       },
                     ),

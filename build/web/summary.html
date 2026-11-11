@@ -61,8 +61,8 @@
         FinWise Financial Analytics
       </span>
       <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-[11px] text-white/90">Reports Engine Active</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
@@ -307,6 +307,98 @@
       }
     }
 
+    // Real-Time Multi-Device Synchronization Engine
+    let lastKnownTxVersion = 0;
+    let sseSource = null;
+
+    function initRealtimeSync() {
+      // 1. Server-Sent Events (SSE) for instant zero-latency push updates
+      try {
+        if (window.EventSource) {
+          if (sseSource) sseSource.close();
+          sseSource = new EventSource('/api/events');
+          sseSource.onmessage = function(e) {
+            try {
+              const data = JSON.parse(e.data);
+              if (data && (data.event === 'tx_updated' || data.event === 'connected')) {
+                if (data.version && data.version !== lastKnownTxVersion) {
+                  lastKnownTxVersion = data.version;
+                  loadTransactions();
+                }
+              }
+            } catch (_) {}
+          };
+          sseSource.onerror = function() {
+            // EventSource will auto-reconnect
+          };
+        }
+      } catch (_) {}
+
+      // 2. High-speed lightweight version polling backup (every 2.5 seconds)
+      setInterval(async () => {
+        try {
+          const res = await fetch('/api/transactions/version');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.version && data.version !== lastKnownTxVersion) {
+              lastKnownTxVersion = data.version;
+              loadTransactions();
+            }
+          }
+        } catch (_) {}
+      }, 2500);
+
+      // 3. Supabase Realtime channel subscription
+      if (supabaseClient) {
+        try {
+          supabaseClient
+            .channel('public:transactions:realtime:summary_page')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+              loadTransactions();
+            })
+            .subscribe();
+        } catch (_) {}
+      }
+    }
+
+    async function loadTransactions() {
+      const email = getActiveEmail();
+
+      // 1. Fetch latest shared transactions from the server sync API
+      try {
+        const apiRes = await fetch('/api/transactions' + (email ? ('?email=' + encodeURIComponent(email)) : ''));
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && apiData.success && Array.isArray(apiData.transactions) && apiData.transactions.length > 0) {
+            allTransactions = apiData.transactions;
+            if (apiData.version) lastKnownTxVersion = apiData.version;
+            localStorage.setItem(getStorageKey(), JSON.stringify(allTransactions));
+            renderSummaryPage();
+            return;
+          }
+        }
+      } catch (_) {}
+
+      // 2. Fallback to local cache if offline
+      if (!allTransactions || allTransactions.length === 0) {
+        allTransactions = loadLocalTransactions();
+      }
+
+      // 3. Cloud fetch if connected
+      const userId = localStorage.getItem('finwise_user_id');
+      if (supabaseClient && userId) {
+        try {
+          const { data } = await supabaseClient.from('transactions').select('*').eq('user_id', userId);
+          if (data && data.length) {
+            allTransactions = data;
+            localStorage.setItem(getStorageKey(), JSON.stringify(allTransactions));
+          }
+        } catch (_) {}
+      }
+
+      renderSummaryPage();
+    }
+
     function stepMonth(delta) {
       const input = document.getElementById('summary-month-input');
       const val = input.value;
@@ -544,7 +636,7 @@
         return;
       }
 
-      document.getElementById('summary-user-subtitle').textContent = activeEmail + ' · Database Synced';
+      document.getElementById('summary-user-subtitle').textContent = activeEmail + ' · Live Real-Time Synced';
 
       // Set default month to current month
       document.getElementById('summary-month-input').value = new Date().toISOString().slice(0, 7);
@@ -552,17 +644,8 @@
       allTransactions = loadLocalTransactions();
       renderSummaryPage();
 
-      // Cloud fetch if connected
-      const userId = localStorage.getItem('finwise_user_id');
-      if (supabaseClient && userId) {
-        try {
-          const { data } = await supabaseClient.from('transactions').select('*').eq('user_id', userId);
-          if (data && data.length) {
-            allTransactions = data;
-            renderSummaryPage();
-          }
-        } catch (_) {}
-      }
+      initRealtimeSync();
+      await loadTransactions();
     })();
   </script>
 </body>

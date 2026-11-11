@@ -100,8 +100,10 @@
 
     async function handleAuthRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const errorDesc = urlParams.get('error_description') || urlParams.get('error');
+      const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
+
+      const errorDesc = urlParams.get('error_description') || urlParams.get('error') ||
+                        (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
 
       if (errorDesc) {
         document.getElementById('status-title').textContent = 'Sign-in Notice';
@@ -111,7 +113,33 @@
         return;
       }
 
-      // Case 1: OAuth Code received in query parameter (?code=...)
+      // Case 1: Fresh OAuth Hash Callback (#access_token=...&refresh_token=...)
+      const accessToken = hashParams ? hashParams.get('access_token') : null;
+      const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      if (accessToken && supabaseClient) {
+        document.getElementById('status-title').textContent = 'Authenticating...';
+        document.getElementById('status-desc').textContent = 'Securing session with Supabase...';
+        try {
+          const { data, error } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
+          if (!error && data && data.user) {
+            saveUserSession(data.user);
+            document.getElementById('status-title').textContent = 'Authenticated!';
+            document.getElementById('status-desc').textContent = 'Welcome, ' + (localStorage.getItem('finwise_user_name') || 'Google User') + '! Redirecting to your dashboard...';
+            setTimeout(() => {
+              window.location.replace('dashboard.html');
+            }, 300);
+            return;
+          }
+        } catch (e) {
+          console.warn("Hash auth error:", e);
+        }
+      }
+
+      // Case 2: OAuth Code received in query parameter (?code=...)
+      const code = urlParams.get('code');
       if (code && supabaseClient) {
         document.getElementById('status-title').textContent = 'Exchanging Google Code...';
         document.getElementById('status-desc').textContent = 'Connecting with Supabase authentication engine...';
@@ -125,7 +153,7 @@
             document.getElementById('status-desc').textContent = 'Welcome, ' + (localStorage.getItem('finwise_user_name') || 'Google User') + '! Redirecting to your dashboard...';
             setTimeout(() => {
               window.location.replace('dashboard.html');
-            }, 500);
+            }, 300);
             return;
           } else if (error) {
             console.warn("Code exchange notice:", error.message);
@@ -135,7 +163,19 @@
         }
       }
 
-      // Case 2: Check existing active user session
+      // Case 3: Check Supabase client active session
+      if (supabaseClient) {
+        try {
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (!error && session && session.user) {
+            saveUserSession(session.user);
+            window.location.replace('dashboard.html');
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // Case 4: Check existing active user session in localStorage
       const existing = localStorage.getItem('finwise_session');
       const activeEmail = localStorage.getItem('finwise_user_email');
       if (existing && activeEmail) {
@@ -143,7 +183,7 @@
         return;
       }
 
-      // Case 3: Default route to login (Clean slate for user to pick account)
+      // Case 5: Default route to login (Clean slate for user to pick account)
       window.location.replace('login.html');
     }
 

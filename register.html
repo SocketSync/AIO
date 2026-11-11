@@ -134,7 +134,7 @@
           <label class="text-xs font-semibold text-text-muted" for="signup-name">Full Name *</label>
           <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-border-neutral focus-within:border-primary">
             <span class="material-symbols-outlined text-[18px] text-text-muted pl-3 pointer-events-none">person</span>
-            <input id="signup-name" class="w-full bg-transparent pl-3 pr-3 py-2.5 text-sm outline-none" required placeholder="Kean Shen Yeoh" value="Kean Shen Yeoh">
+            <input id="signup-name" class="w-full bg-transparent pl-3 pr-3 py-2.5 text-sm outline-none" required placeholder="e.g. Kean Shen Yeoh">
           </div>
         </div>
 
@@ -142,7 +142,7 @@
           <label class="text-xs font-semibold text-text-muted" for="signup-email">Gmail Address *</label>
           <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-border-neutral focus-within:border-primary">
             <span class="material-symbols-outlined text-[18px] text-text-muted pl-3 pointer-events-none">mail</span>
-            <input id="signup-email" class="w-full bg-transparent pl-3 pr-3 py-2.5 text-sm outline-none" type="email" required placeholder="keanshen.yeoh@gmail.com" value="keanshen.yeoh@gmail.com">
+            <input id="signup-email" class="w-full bg-transparent pl-3 pr-3 py-2.5 text-sm outline-none" type="email" required placeholder="e.g. name@gmail.com">
           </div>
         </div>
 
@@ -151,7 +151,7 @@
           <label class="text-xs font-semibold text-text-muted" for="signup-password">Password *</label>
           <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-border-neutral focus-within:border-primary">
             <span class="material-symbols-outlined text-[18px] text-text-muted pl-3 pointer-events-none">lock</span>
-            <input class="w-full bg-transparent pl-3 pr-10 py-2.5 text-sm outline-none tracking-wider" id="signup-password" type="password" required oninput="evaluatePasswordStrength(this.value)" value="FinWise2026!">
+            <input class="w-full bg-transparent pl-3 pr-10 py-2.5 text-sm outline-none tracking-wider" id="signup-password" type="password" required oninput="evaluatePasswordStrength(this.value)" placeholder="At least 6 characters">
             <button type="button" onclick="toggleRegPassword()" class="absolute right-2.5 text-text-muted hover:text-text-primary p-1">
               <span class="material-symbols-outlined text-[18px]" id="reg-eye-icon">visibility</span>
             </button>
@@ -161,17 +161,17 @@
           <div class="bg-surface-container-low rounded-lg p-2.5 flex flex-col gap-1.5 mt-1 border border-border-neutral">
             <div class="flex items-center justify-between">
               <span class="text-[11px] text-text-muted">Password Security</span>
-              <span class="text-[11px] text-secondary font-bold" id="strength-label">Strong Password</span>
+              <span class="text-[11px] text-text-muted font-normal" id="strength-label">Enter password</span>
             </div>
             <div class="grid grid-cols-3 gap-1.5">
-              <div class="h-1.5 rounded-full bg-secondary transition-all" id="meter-bar-1"></div>
-              <div class="h-1.5 rounded-full bg-secondary transition-all" id="meter-bar-2"></div>
-              <div class="h-1.5 rounded-full bg-secondary transition-all" id="meter-bar-3"></div>
+              <div class="h-1.5 rounded-full bg-slate-200 transition-all" id="meter-bar-1"></div>
+              <div class="h-1.5 rounded-full bg-slate-200 transition-all" id="meter-bar-2"></div>
+              <div class="h-1.5 rounded-full bg-slate-200 transition-all" id="meter-bar-3"></div>
             </div>
             <div class="flex items-center gap-3 pt-0.5 text-[10px] text-text-muted">
-              <span id="crit-len" class="flex items-center gap-1 text-secondary font-medium">✓ 8+ chars</span>
-              <span id="crit-num" class="flex items-center gap-1 text-secondary font-medium">✓ Number</span>
-              <span id="crit-sym" class="flex items-center gap-1 text-secondary font-medium">✓ Symbol</span>
+              <span id="crit-len" class="flex items-center gap-1">8+ chars</span>
+              <span id="crit-num" class="flex items-center gap-1">Number</span>
+              <span id="crit-sym" class="flex items-center gap-1">Symbol</span>
             </div>
           </div>
         </div>
@@ -228,19 +228,19 @@
 
       <!-- Quick Accounts -->
       <div class="flex flex-col gap-1.5 mb-2">
-        <button onclick="selectGoogleRegister('Kean Shen Yeoh', 'keanshen.yeoh@gmail.com', 'K')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-left">
+        <button onclick="selectGoogleRegister('Ken Wei', 'ykwei2005@gmail.com', 'K')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-left">
           <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">K</div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold text-slate-900">Kean Shen Yeoh</p>
-            <p class="text-[10px] text-slate-500">keanshen.yeoh@gmail.com</p>
+            <p class="text-xs font-bold text-slate-900">Ken Wei</p>
+            <p class="text-[10px] text-slate-500">ykwei2005@gmail.com</p>
           </div>
           <span class="material-symbols-outlined text-slate-400 text-[16px]">chevron_right</span>
         </button>
-        <button onclick="selectGoogleRegister('Alex Yeoh', 'alex.yeoh@gmail.com', 'A')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-left">
-          <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">A</div>
+        <button onclick="selectGoogleRegister('John Yeoh', 'ptutm.kengwei@gmail.com', 'J')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-left">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">J</div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold text-slate-900">Alex Yeoh</p>
-            <p class="text-[10px] text-slate-500">alex.yeoh@gmail.com</p>
+            <p class="text-xs font-bold text-slate-900">John Yeoh</p>
+            <p class="text-[10px] text-slate-500">ptutm.kengwei@gmail.com</p>
           </div>
           <span class="material-symbols-outlined text-slate-400 text-[16px]">chevron_right</span>
         </button>
@@ -399,28 +399,71 @@
       statusBox.classList.add('flex');
       document.getElementById('google-status-text').textContent = 'Creating account for ' + name + '...';
 
-      const userId = '00000000-0000-4000-8000-' + Math.abs(email.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
+      const cleanEmail = email.trim().toLowerCase();
+      let userId;
+      if (cleanEmail === 'ykwei2005@gmail.com') {
+        userId = '00000000-0000-4000-8000-000000000001';
+      } else if (cleanEmail === 'ptutm.kengwei@gmail.com') {
+        userId = '00000000-0000-4000-8000-000000000002';
+      } else {
+        userId = '00000000-0000-4000-8000-' + Math.abs(cleanEmail.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
+      }
+
+      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
+      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      const accounts = getUserAccounts();
+      accounts[cleanEmail] = {
+        id: userId,
+        name: name,
+        email: cleanEmail,
+        passwordHash: accounts[cleanEmail]?.passwordHash || defaultHash,
+        avatar: initial,
+        currency: 'RM',
+        monthlyBudget: 2500.00
+      };
+      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
 
       localStorage.setItem('finwise_user_name', name);
-      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_email', cleanEmail);
       localStorage.setItem('finwise_user_id', userId);
       localStorage.setItem('finwise_auth_provider', 'google');
       localStorage.setItem('finwise_user_avatar', initial);
+      localStorage.setItem(scopedKey, initial);
       localStorage.setItem('finwise_session', JSON.stringify({
         id: userId,
         name: name,
-        email: email,
+        email: cleanEmail,
+        avatar: initial,
         provider: 'google',
         authenticatedAt: new Date().toISOString()
       }));
 
+      // Multi-device sync to server API
+      try {
+        await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: userId,
+            name: name,
+            email: cleanEmail,
+            avatar: initial,
+            passwordHash: defaultHash,
+            currency: 'RM',
+            monthlyBudget: 2500.00
+          })
+        });
+      } catch (_) {}
+
+      // Supabase profiles sync
       if (supabaseClient) {
         try {
           await supabaseClient.from('profiles').upsert({
             id: userId,
-            email: email,
+            email: cleanEmail,
             display_name: name,
             avatar_url: null,
+            password_hash: defaultHash,
             currency: 'RM',
             monthly_budget: 2500.00
           });
@@ -496,25 +539,43 @@
         if (raw) accounts = JSON.parse(raw);
       } catch (_) {}
       const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
-      if (!accounts["keanshen.yeoh@gmail.com"] || !accounts["keanshen.yeoh@gmail.com"].passwordHash) {
-        accounts["keanshen.yeoh@gmail.com"] = {
+      if (!accounts["ykwei2005@gmail.com"] || !accounts["ykwei2005@gmail.com"].passwordHash) {
+        accounts["ykwei2005@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000001",
-          name: "Kean Shen Yeoh",
-          email: "keanshen.yeoh@gmail.com",
-          passwordHash: defaultHash
+          name: "Ken Wei",
+          email: "ykwei2005@gmail.com",
+          passwordHash: defaultHash,
+          avatar: "K"
         };
       }
-      if (!accounts["alex.yeoh@gmail.com"] || !accounts["alex.yeoh@gmail.com"].passwordHash) {
-        accounts["alex.yeoh@gmail.com"] = {
+      if (!accounts["ptutm.kengwei@gmail.com"] || !accounts["ptutm.kengwei@gmail.com"].passwordHash) {
+        accounts["ptutm.kengwei@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000002",
-          name: "Alex Yeoh",
-          email: "alex.yeoh@gmail.com",
-          passwordHash: defaultHash
+          name: "John Yeoh",
+          email: "ptutm.kengwei@gmail.com",
+          passwordHash: defaultHash,
+          avatar: "J"
         };
       }
       localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
       return accounts;
     }
+
+    // Sync accounts in real time from server API across all devices
+    async function syncAccountsWithServer() {
+      try {
+        const res = await fetch('/api/accounts');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && data.accounts) {
+            const local = getUserAccounts();
+            const merged = { ...data.accounts, ...local };
+            localStorage.setItem('finwise_user_accounts', JSON.stringify(merged));
+          }
+        }
+      } catch (_) {}
+    }
+    syncAccountsWithServer();
 
     function showRegAlert(type, message) {
       const alertBox = document.getElementById('reg-alert');
@@ -554,9 +615,22 @@
         return;
       }
 
+      if (!email.includes('@') || !email.includes('.')) {
+        showRegAlert('error', 'Please enter a valid email address.');
+        emailInput.focus();
+        return;
+      }
+
       if (password.length < 6) {
         showRegAlert('error', 'Password must be at least 6 characters.');
         passInput.focus();
+        return;
+      }
+
+      // Check if user already exists
+      const currentAccounts = getUserAccounts();
+      if (currentAccounts[email]) {
+        showRegAlert('error', 'An account with this email (' + email + ') already exists. Please sign in instead.');
         return;
       }
 
@@ -569,9 +643,49 @@
 
       try {
         const inputHash = await sha256(password);
-        const userId = '00000000-0000-4000-8000-' + Math.abs(email.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
+        let userId;
+        if (email === 'ykwei2005@gmail.com') {
+          userId = '00000000-0000-4000-8000-000000000001';
+        } else if (email === 'ptutm.kengwei@gmail.com') {
+          userId = '00000000-0000-4000-8000-000000000002';
+        } else {
+          userId = '00000000-0000-4000-8000-' + Math.abs(email.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
+        }
 
-        // 1. Supabase Auth Registration
+        const avatarInitial = (name[0] || 'U').toUpperCase();
+        const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+        // 1. Register account in persistent secure local registry with SHA-256 hash
+        const accounts = getUserAccounts();
+        accounts[email] = {
+          id: userId,
+          name: name,
+          email: email,
+          passwordHash: inputHash,
+          avatar: avatarInitial,
+          currency: 'RM',
+          monthlyBudget: 2500.00
+        };
+        localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
+
+        // 2. Sync to Server API for multi-device cross-browser access (works across phones & PCs)
+        try {
+          await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: userId,
+              name: name,
+              email: email,
+              passwordHash: inputHash,
+              avatar: avatarInitial,
+              currency: 'RM',
+              monthlyBudget: 2500.00
+            })
+          });
+        } catch (_) {}
+
+        // 3. Supabase Auth and Profiles registration (fail-safe and non-blocking)
         if (supabaseClient) {
           try {
             await supabaseClient.auth.signUp({
@@ -580,44 +694,38 @@
               options: {
                 data: { full_name: name }
               }
-            });
+            }).catch(() => {});
 
             await supabaseClient.from('profiles').upsert({
               id: userId,
               email: email,
               display_name: name,
+              avatar_url: null,
+              password_hash: inputHash,
               currency: 'RM',
               monthly_budget: 2500.00
-            });
+            }).catch(() => {});
           } catch (sbErr) {
             console.warn("Supabase registration notice:", sbErr);
           }
         }
 
-        // 2. Register account in persistent secure database with SHA-256 hash
-        const accounts = getUserAccounts();
-        accounts[email] = {
-          id: userId,
-          name: name,
-          email: email,
-          passwordHash: inputHash
-        };
-        localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
-
-        // 3. Ensure strictly isolated, empty transactions partition for this new user
+        // 4. Ensure strictly isolated, empty transactions partition for this new user
         const txKey = 'finwise_transactions_' + email.replace(/[^a-z0-9]/g, '_');
         localStorage.setItem(txKey, JSON.stringify([]));
 
-        // 4. Set active user session
+        // 5. Set active user session
         localStorage.setItem('finwise_user_name', name);
         localStorage.setItem('finwise_user_email', email);
         localStorage.setItem('finwise_user_id', userId);
         localStorage.setItem('finwise_auth_provider', 'email');
-        localStorage.setItem('finwise_user_avatar', (name[0] || 'U').toUpperCase());
+        localStorage.setItem('finwise_user_avatar', avatarInitial);
+        localStorage.setItem(scopedKey, avatarInitial);
         localStorage.setItem('finwise_session', JSON.stringify({
           id: userId,
           name: name,
           email: email,
+          avatar: avatarInitial,
           provider: 'email',
           authenticatedAt: new Date().toISOString()
         }));
@@ -625,6 +733,15 @@
         showRegAlert('success', 'Account registered successfully with database! Redirecting...');
         setTimeout(() => {
           const target = window.location.href.includes('/public/') ? 'dashboard.html' : 'dashboard.html';
+          window.location.href = target;
+        }, 600);
+
+      } catch (err) {
+        showRegAlert('error', 'Registration error: ' + (err.message || err));
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+      }
+    }
           window.location.href = target;
         }, 600);
 

@@ -15,3 +15,11 @@
 .idea/
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+
+# Flutter/Dart
+.dart_tool/
+

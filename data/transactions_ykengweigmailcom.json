@@ -1,0 +1,18 @@
+[
+  {
+    "id": "4fc174e5-5f47-415f-8419-99be156f1805",
+    "type": "expense",
+    "amount": 2.5,
+    "category": "Food & Dining",
+    "description": "Alsafa Supper",
+    "date": "2026-11-09"
+  },
+  {
+    "id": "6473ace1-7918-4452-8348-3bbab51f6b66",
+    "type": "income",
+    "amount": 1000,
+    "category": "Other Expenses",
+    "description": "Monthly Fee",
+    "date": "2026-11-09"
+  }
+]

@@ -4,12 +4,13 @@
 -- Run this in the Supabase SQL Editor to update your database schema
 -- ==============================================================================
 
--- 1. Add missing profile columns (phone, occupation, currency, monthly_budget)
+-- 1. Add missing profile columns (phone, occupation, currency, monthly_budget, password_hash)
 ALTER TABLE IF EXISTS public.profiles 
     ADD COLUMN IF NOT EXISTS phone VARCHAR(30),
     ADD COLUMN IF NOT EXISTS occupation VARCHAR(100),
     ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'RM',
-    ADD COLUMN IF NOT EXISTS monthly_budget NUMERIC(12, 2) DEFAULT 2500.00;
+    ADD COLUMN IF NOT EXISTS monthly_budget NUMERIC(12, 2) DEFAULT 2500.00,
+    ADD COLUMN IF NOT EXISTS password_hash TEXT;
 
 -- 2. Ensure Categories exist with the 12 modern FinWise categories
 INSERT INTO public.categories (id, name, icon_name, color_hex, type) VALUES
@@ -31,7 +32,55 @@ ON CONFLICT (id) DO UPDATE SET
     color_hex = EXCLUDED.color_hex,
     type = EXCLUDED.type;
 
--- 3. Update the handle_new_user trigger to save phone & occupation
+-- 3. Update RLS Policies on public.profiles to enable multi-device sync
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public profiles are readable by owner" ON public.profiles;
+DROP POLICY IF EXISTS "Public profiles are readable by all" ON public.profiles;
+CREATE POLICY "Public profiles are readable by all"
+    ON public.profiles FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Profiles are updatable by owner" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are updatable by all" ON public.profiles;
+CREATE POLICY "Profiles are updatable by all"
+    ON public.profiles FOR UPDATE
+    USING (true);
+
+DROP POLICY IF EXISTS "Profiles are insertable by owner" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are insertable by all" ON public.profiles;
+CREATE POLICY "Profiles are insertable by all"
+    ON public.profiles FOR INSERT
+    WITH CHECK (true);
+
+-- 4. Update RLS Policies on public.transactions for multi-device cross-browser access
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions readable by all" ON public.transactions;
+CREATE POLICY "Transactions readable by all"
+    ON public.transactions FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Users can insert own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions insertable by all" ON public.transactions;
+CREATE POLICY "Transactions insertable by all"
+    ON public.transactions FOR INSERT
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Users can update own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions updatable by all" ON public.transactions;
+CREATE POLICY "Transactions updatable by all"
+    ON public.transactions FOR UPDATE
+    USING (true);
+
+DROP POLICY IF EXISTS "Users can delete own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions deletable by all" ON public.transactions;
+CREATE POLICY "Transactions deletable by all"
+    ON public.transactions FOR DELETE
+    USING (true);
+
+-- 5. Update the handle_new_user trigger to save phone & occupation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -54,13 +103,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. Re-bind trigger to auth.users if not already active
+-- 6. Re-bind trigger to auth.users if not already active
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
--- 5. Notify complete
-SELECT 'FinWise database schema successfully updated!' AS status;
-
+-- 7. Notify complete
+SELECT 'FinWise multi-device database schema successfully updated!' AS status;

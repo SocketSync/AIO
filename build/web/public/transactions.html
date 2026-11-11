@@ -61,8 +61,8 @@
         FinWise Transactions
       </span>
       <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-[11px] text-white/90">Isolated Database</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
@@ -381,6 +381,98 @@
       localStorage.setItem(getStorageKey(), JSON.stringify(records));
     }
 
+    // Real-Time Multi-Device Synchronization Engine
+    let lastKnownTxVersion = 0;
+    let sseSource = null;
+
+    function initRealtimeSync() {
+      // 1. Server-Sent Events (SSE) for instant zero-latency push updates
+      try {
+        if (window.EventSource) {
+          if (sseSource) sseSource.close();
+          sseSource = new EventSource('/api/events');
+          sseSource.onmessage = function(e) {
+            try {
+              const data = JSON.parse(e.data);
+              if (data && (data.event === 'tx_updated' || data.event === 'connected')) {
+                if (data.version && data.version !== lastKnownTxVersion) {
+                  lastKnownTxVersion = data.version;
+                  loadTransactions();
+                }
+              }
+            } catch (_) {}
+          };
+          sseSource.onerror = function() {
+            // EventSource will auto-reconnect
+          };
+        }
+      } catch (_) {}
+
+      // 2. High-speed lightweight version polling backup (every 2.5 seconds)
+      setInterval(async () => {
+        try {
+          const res = await fetch('/api/transactions/version');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && data.version && data.version !== lastKnownTxVersion) {
+              lastKnownTxVersion = data.version;
+              loadTransactions();
+            }
+          }
+        } catch (_) {}
+      }, 2500);
+
+      // 3. Supabase Realtime channel subscription
+      if (supabaseClient) {
+        try {
+          supabaseClient
+            .channel('public:transactions:realtime:tx_page')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+              loadTransactions();
+            })
+            .subscribe();
+        } catch (_) {}
+      }
+    }
+
+    async function loadTransactions() {
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+
+      // 1. Fetch latest shared transactions from the server sync API
+      try {
+        const apiRes = await fetch('/api/transactions' + (email ? ('?email=' + encodeURIComponent(email)) : ''));
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && apiData.success && Array.isArray(apiData.transactions) && apiData.transactions.length > 0) {
+            allTransactions = apiData.transactions;
+            if (apiData.version) lastKnownTxVersion = apiData.version;
+            saveLocalTransactions(allTransactions);
+            filterAndRenderTransactions();
+            return;
+          }
+        }
+      } catch (_) {}
+
+      // 2. Fallback to local cache if offline
+      if (!allTransactions || allTransactions.length === 0) {
+        allTransactions = loadLocalTransactions();
+      }
+
+      // 3. Cloud fetch if connected
+      const userId = localStorage.getItem('finwise_user_id');
+      if (supabaseClient && userId) {
+        try {
+          const { data } = await supabaseClient.from('transactions').select('*').order('date', { ascending: false });
+          if (data && data.length) {
+            allTransactions = data;
+            saveLocalTransactions(allTransactions);
+          }
+        } catch (_) {}
+      }
+
+      filterAndRenderTransactions();
+    }
+
     // Set Type Filter (All, Expenses, Income)
     function setTypeFilter(type) {
       currentTypeFilter = type;
@@ -587,6 +679,14 @@
 
       saveLocalTransactions(allTransactions);
 
+      // Real-Time Server Broadcast to all connected phones
+      const activeEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: activeEmail, transaction: record })
+      }).catch(() => {});
+
       // Cloud sync if available
       if (supabaseClient) {
         try {
@@ -603,6 +703,14 @@
 
       allTransactions = allTransactions.filter(t => t.id !== id);
       saveLocalTransactions(allTransactions);
+
+      // Real-Time Server Broadcast delete to all connected phones
+      const delEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: delEmail, delete_id: id })
+      }).catch(() => {});
 
       if (supabaseClient) {
         try {
@@ -622,9 +730,9 @@
         return;
       }
 
-      document.getElementById('tx-user-subtitle').textContent = activeEmail + ' · Database Synced';
+      document.getElementById('tx-user-subtitle').textContent = activeEmail + ' · Live Real-Time Synced';
 
-      // Load local partition
+      // Load local partition first
       allTransactions = loadLocalTransactions();
 
       // Check URL parameters (e.g. ?add=true)
@@ -636,18 +744,9 @@
       // Initial render
       filterAndRenderTransactions();
 
-      // Cloud fetch if connected
-      const userId = localStorage.getItem('finwise_user_id');
-      if (supabaseClient && userId) {
-        try {
-          const { data } = await supabaseClient.from('transactions').select('*').eq('user_id', userId);
-          if (data && data.length) {
-            allTransactions = data;
-            saveLocalTransactions(allTransactions);
-            filterAndRenderTransactions();
-          }
-        } catch (_) {}
-      }
+      // Start multi-device real-time sync & fetch shared cloud data
+      initRealtimeSync();
+      await loadTransactions();
     })();
   </script>
 </body>

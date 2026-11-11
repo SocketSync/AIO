@@ -13,17 +13,17 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Alex Yeoh');
-  final TextEditingController _emailController = TextEditingController(text: 'alex.yeoh@gmail.com');
-  final TextEditingController _passwordController = TextEditingController(text: 'FinWise2026!');
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _termsAccepted = true;
   bool _isSigningUp = false;
 
   // Live password strength
-  bool _hasMinLength = true;
-  bool _hasNumber = true;
-  bool _hasSpecialChar = true;
+  bool _hasMinLength = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
 
   @override
   void initState() {
@@ -127,24 +127,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildGoogleAccountTile(
-                  name: 'Alex Yeoh',
-                  email: 'alex.yeoh@gmail.com',
-                  avatarColor: Colors.blue.shade700,
-                  initial: 'A',
-                  onTap: () {
-                    Navigator.of(bottomSheetContext).pop();
-                    _performGoogleSignUp(email: 'alex.yeoh@gmail.com', name: 'Alex Yeoh');
-                  },
-                ),
-                const SizedBox(height: 8),
-                _buildGoogleAccountTile(
-                  name: 'Kean Shen Yeoh',
-                  email: 'keanshen.yeoh@gmail.com',
+                  name: 'Ken Wei',
+                  email: 'ykwei2005@gmail.com',
                   avatarColor: Colors.teal.shade700,
                   initial: 'K',
                   onTap: () {
                     Navigator.of(bottomSheetContext).pop();
-                    _performGoogleSignUp(email: 'keanshen.yeoh@gmail.com', name: 'Kean Shen Yeoh');
+                    _performGoogleSignUp(email: 'ykwei2005@gmail.com', name: 'Ken Wei');
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildGoogleAccountTile(
+                  name: 'John Yeoh',
+                  email: 'ptutm.kengwei@gmail.com',
+                  avatarColor: Colors.blue.shade700,
+                  initial: 'J',
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _performGoogleSignUp(email: 'ptutm.kengwei@gmail.com', name: 'John Yeoh');
                   },
                 ),
                 const SizedBox(height: 8),
@@ -327,10 +327,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (password.length < 8) {
+    if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Password must be at least 8 characters long.'),
+          content: Text('Password must be at least 6 characters long.'),
           backgroundColor: AppColors.error,
         ),
       );
