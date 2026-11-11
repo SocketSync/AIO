@@ -416,11 +416,12 @@
 
     // Check Supabase session & OAuth token / PKCE code callback
     async function checkSupabaseAuthSession() {
-      if (!supabaseClient) return;
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        if (code) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      // 1. Fresh OAuth PKCE code exchange: update session to this new Google account
+      if (code && supabaseClient) {
+        try {
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
           if (!error && data && data.session && data.session.user) {
             const user = data.session.user;
@@ -433,32 +434,32 @@
             localStorage.setItem('finwise_user_id', user.id);
             localStorage.setItem('finwise_auth_provider', 'google');
             if (avatar) localStorage.setItem('finwise_user_avatar', avatar);
+            localStorage.setItem('finwise_session', JSON.stringify({
+              id: user.id,
+              name: name,
+              email: email,
+              provider: 'google',
+              authenticatedAt: new Date().toISOString()
+            }));
             history.replaceState(null, null, window.location.pathname);
             return;
           }
+        } catch (e) {
+          console.warn("Supabase code exchange notice:", e);
         }
-
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-          const user = session.user;
-          const meta = user.user_metadata || {};
-          const name = meta.full_name || meta.name || user.email?.split('@')[0] || "Google User";
-          const email = user.email || "";
-          const avatar = meta.avatar_url || meta.picture || "";
-
-          localStorage.setItem('finwise_user_name', name);
-          localStorage.setItem('finwise_user_email', email);
-          localStorage.setItem('finwise_user_id', user.id);
-          localStorage.setItem('finwise_auth_provider', 'google');
-          if (avatar) localStorage.setItem('finwise_user_avatar', avatar);
-
-          if (window.location.hash || window.location.search) {
-            history.replaceState(null, null, window.location.pathname);
-          }
-        }
-      } catch (e) {
-        console.warn("Supabase session notice:", e);
       }
+
+      // 2. Check active logged in user session
+      const activeEmail = localStorage.getItem('finwise_user_email');
+      const activeSession = localStorage.getItem('finwise_session');
+
+      // If active session exists, use it and never overwrite with old background tokens!
+      if (activeEmail && activeSession) {
+        return;
+      }
+
+      // 3. Not logged in: redirect cleanly to login page
+      window.location.replace('login.html');
     }
 
     function applyUserProfile() {
@@ -562,18 +563,53 @@
       document.getElementById('profileMenu').classList.toggle('hidden');
     }
 
-    function logoutFromMenu() {
-      document.getElementById('profileMenu').classList.add('hidden');
+    async function logoutFromMenu() {
+      const btn = event?.currentTarget;
+      if (btn) btn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></span> Signing out...';
+
+      // 1. Sign out completely from Supabase Auth
       if (supabaseClient) {
-        supabaseClient.auth.signOut().catch(() => {});
+        try {
+          await Promise.race([
+            supabaseClient.auth.signOut({ scope: 'local' }),
+            new Promise(resolve => setTimeout(resolve, 600))
+          ]);
+        } catch (_) {}
       }
-      localStorage.removeItem('finwise_session');
-      localStorage.removeItem('finwise_user_email');
-      localStorage.removeItem('finwise_user_name');
-      localStorage.removeItem('finwise_user_id');
-      localStorage.removeItem('finwise_user_avatar');
-      const target = window.location.href.includes('/public/') ? 'login.html' : 'login.html';
-      window.location.href = target;
+
+      // 2. Preserve only accounts registry and user-specific transaction histories
+      const preservedAccounts = localStorage.getItem('finwise_user_accounts');
+      const preservedTx = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('finwise_transactions_')) {
+          preservedTx[k] = localStorage.getItem(k);
+        }
+      }
+
+      // 3. Clear ALL localStorage tokens
+      localStorage.clear();
+
+      // 4. Restore preserved data
+      if (preservedAccounts) {
+        localStorage.setItem('finwise_user_accounts', preservedAccounts);
+      }
+      for (const k in preservedTx) {
+        localStorage.setItem(k, preservedTx[k]);
+      }
+
+      // 5. Clear sessionStorage
+      try { sessionStorage.clear(); } catch (_) {}
+
+      // 6. Expire any session cookies
+      try {
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      } catch (_) {}
+
+      // 7. Redirect to login.html with clean flag
+      window.location.replace('login.html?logout=true');
     }
 
     function showNotifModal() {

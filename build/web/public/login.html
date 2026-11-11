@@ -182,6 +182,33 @@
             <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
         </div>
+
+        <!-- 1-Click Fast Profile Switcher -->
+        <div class="pt-2 flex flex-col gap-1.5">
+          <p class="text-[11px] font-semibold text-text-muted">Or sign in with verified account:</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="quickFillAccount('keanshen.yeoh@gmail.com', 'Kean Shen Yeoh')" class="py-2 px-2.5 bg-surface-container-lowest hover:bg-surface-container border border-border-neutral rounded-lg text-left transition-all flex items-center gap-2 cursor-pointer shadow-sm">
+              <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">K</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-bold text-text-primary truncate">Kean Shen</p>
+                <p class="text-[9px] text-text-muted truncate">keanshen.yeoh...</p>
+              </div>
+            </button>
+            <button type="button" onclick="quickFillAccount('alex.yeoh@gmail.com', 'Alex Yeoh')" class="py-2 px-2.5 bg-surface-container-lowest hover:bg-surface-container border border-border-neutral rounded-lg text-left transition-all flex items-center gap-2 cursor-pointer shadow-sm">
+              <div class="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">A</div>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-bold text-text-primary truncate">Alex Yeoh</p>
+                <p class="text-[9px] text-text-muted truncate">alex.yeoh...</p>
+              </div>
+            </button>
+          </div>
+          <div class="text-center pt-1">
+            <button type="button" onclick="clearAllTokensNow()" class="text-[11px] text-text-muted hover:text-alert-coral underline cursor-pointer inline-flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">delete_sweep</span>
+              <span>Clear previous tokens &amp; reset</span>
+            </button>
+          </div>
+        </div>
       </form>
 
       <!-- Sign Up with Google Footer -->
@@ -388,7 +415,10 @@
           const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: redirectTarget
+              redirectTo: redirectTarget,
+              queryParams: {
+                prompt: 'select_account'
+              }
             }
           });
 
@@ -471,27 +501,32 @@
     }
 
     function getUserAccounts() {
+      let accounts = {};
       try {
         const raw = localStorage.getItem('finwise_user_accounts');
-        if (raw) return JSON.parse(raw);
+        if (raw) accounts = JSON.parse(raw);
       } catch (_) {}
-      // Pre-seeded verified accounts (SHA-256 hash of "FinWise2026!")
-      const defaultAccounts = {
-        "keanshen.yeoh@gmail.com": {
+
+      // Always guarantee pre-seeded test accounts exist with verified SHA-256 hash of "FinWise2026!"
+      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
+      if (!accounts["keanshen.yeoh@gmail.com"] || !accounts["keanshen.yeoh@gmail.com"].passwordHash) {
+        accounts["keanshen.yeoh@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000001",
           name: "Kean Shen Yeoh",
           email: "keanshen.yeoh@gmail.com",
-          passwordHash: "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322"
-        },
-        "alex.yeoh@gmail.com": {
+          passwordHash: defaultHash
+        };
+      }
+      if (!accounts["alex.yeoh@gmail.com"] || !accounts["alex.yeoh@gmail.com"].passwordHash) {
+        accounts["alex.yeoh@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000002",
           name: "Alex Yeoh",
           email: "alex.yeoh@gmail.com",
-          passwordHash: "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322"
-        }
-      };
-      localStorage.setItem('finwise_user_accounts', JSON.stringify(defaultAccounts));
-      return defaultAccounts;
+          passwordHash: defaultHash
+        };
+      }
+      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
+      return accounts;
     }
 
     function showAuthAlert(type, message) {
@@ -514,6 +549,12 @@
     function hideAuthAlert() {
       const alertBox = document.getElementById('auth-alert');
       if (alertBox) alertBox.classList.add('hidden');
+    }
+
+    function quickFillAccount(email, name) {
+      document.getElementById('email-input').value = email;
+      document.getElementById('password-input').value = 'FinWise2026!';
+      handleDirectLogin();
     }
 
     function completeUserSession(userId, name, email, provider) {
@@ -555,7 +596,34 @@
       `;
 
       try {
-        // 1. Attempt Supabase Auth Database Verification
+        // 1. Verify against Registered Database Accounts (SHA-256 hash match)
+        const accounts = getUserAccounts();
+        const account = accounts[email];
+
+        if (account) {
+          const inputHash = await sha256(password);
+          if (account.passwordHash !== inputHash) {
+            showAuthAlert('error', 'Incorrect password. Please try again.');
+            passInput.focus();
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalBtnHtml;
+            return;
+          }
+
+          // Password matches perfectly!
+          showAuthAlert('success', 'Password verified with database! Welcome back, ' + account.name + '.');
+          
+          if (supabaseClient) {
+            supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(() => {});
+          }
+
+          setTimeout(() => {
+            completeUserSession(account.id, account.name, email, 'email');
+          }, 450);
+          return;
+        }
+
+        // 2. If not in local accounts, try Supabase Auth
         if (supabaseClient) {
           try {
             const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -570,14 +638,16 @@
               const name = meta.full_name || meta.name || formatNameFromEmail(email);
               setTimeout(() => {
                 completeUserSession(user.id, name, email, 'email');
-              }, 400);
+              }, 450);
               return;
-            } else if (error && error.message && (
-              error.message.toLowerCase().includes('invalid login credentials') ||
-              error.message.toLowerCase().includes('invalid credentials')
-            )) {
-              // Supabase specifically rejected wrong credentials
-              showAuthAlert('error', 'Incorrect password. Please try again.');
+            } else if (error) {
+              if (error.message.toLowerCase().includes('invalid') || error.message.toLowerCase().includes('credentials')) {
+                showAuthAlert('error', 'Incorrect password. Please try again.');
+              } else if (error.message.toLowerCase().includes('confirm')) {
+                showAuthAlert('error', 'Please confirm your email address or check your inbox.');
+              } else {
+                showAuthAlert('error', error.message);
+              }
               passInput.focus();
               loginBtn.disabled = false;
               loginBtn.innerHTML = originalBtnHtml;
@@ -588,32 +658,11 @@
           }
         }
 
-        // 2. Check Database Account Registry with SHA-256 Password Hash Verification
-        const accounts = getUserAccounts();
-        const account = accounts[email];
-
-        if (!account) {
-          showAuthAlert('error', 'No account found with this email (' + email + '). Please register first.');
-          emailInput.focus();
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalBtnHtml;
-          return;
-        }
-
-        const inputHash = await sha256(password);
-        if (account.passwordHash !== inputHash) {
-          showAuthAlert('error', 'Incorrect password. Please try again.');
-          passInput.focus();
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalBtnHtml;
-          return;
-        }
-
-        // Password matches!
-        showAuthAlert('success', 'Password verified with database! Welcome back, ' + account.name + '.');
-        setTimeout(() => {
-          completeUserSession(account.id, account.name, email, 'email');
-        }, 500);
+        // 3. Email not found in any database
+        showAuthAlert('error', 'No account found with this email (' + email + '). Please register first.');
+        emailInput.focus();
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalBtnHtml;
 
       } catch (err) {
         showAuthAlert('error', 'Authentication error: ' + (err.message || err));
@@ -622,10 +671,37 @@
       }
     }
 
-    // Check for OAuth PKCE Code on page load
-    (async function checkAuthCode() {
+    async function clearAllTokensNow() {
+      if (supabaseClient) {
+        try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+      }
+      const accounts = localStorage.getItem('finwise_user_accounts');
+      const preservedTx = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('finwise_transactions_')) {
+          preservedTx[k] = localStorage.getItem(k);
+        }
+      }
+      localStorage.clear();
+      if (accounts) localStorage.setItem('finwise_user_accounts', accounts);
+      for (const k in preservedTx) localStorage.setItem(k, preservedTx[k]);
+      try { sessionStorage.clear(); } catch (_) {}
+      try {
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      } catch (_) {}
+      showAuthAlert('success', 'All previous tokens and sessions wiped clean! Ready to sign in as Kean Shen.');
+    }
+
+    // Initialize Login Page: ensure clean slate on load & clear stale background tokens
+    (async function initLoginPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
+      const isLogout = urlParams.get('logout') === 'true';
+
+      // 1. Fresh OAuth PKCE Code callback:
       if (code && supabaseClient) {
         try {
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
@@ -640,9 +716,43 @@
             localStorage.setItem('finwise_user_id', user.id);
             localStorage.setItem('finwise_auth_provider', 'google');
             localStorage.setItem('finwise_user_avatar', avatar || (name[0] || 'G').toUpperCase());
+            localStorage.setItem('finwise_session', JSON.stringify({
+              id: user.id,
+              name: name,
+              email: email,
+              provider: 'google',
+              authenticatedAt: new Date().toISOString()
+            }));
             window.location.replace('dashboard.html');
+            return;
           }
         } catch (_) {}
+      }
+
+      // 2. Normal visit to Login Page or via Logout: wipe lingering tokens so old Google account never hijacks login
+      if (!code) {
+        if (supabaseClient) {
+          try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+        }
+        localStorage.removeItem('finwise_session');
+        localStorage.removeItem('finwise_user_email');
+        localStorage.removeItem('finwise_user_name');
+        localStorage.removeItem('finwise_user_id');
+        localStorage.removeItem('finwise_user_avatar');
+        localStorage.removeItem('finwise_auth_provider');
+
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth-token'))) {
+            localStorage.removeItem(k);
+          }
+        }
+        try { sessionStorage.clear(); } catch (_) {}
+
+        if (isLogout) {
+          showAuthAlert('success', 'Logged out successfully. All tokens cleared.');
+          history.replaceState(null, null, window.location.pathname);
+        }
       }
     })();
   </script>

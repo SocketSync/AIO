@@ -147,7 +147,32 @@ class AuthService extends ChangeNotifier {
 
     final cleanEmail = email.trim().toLowerCase();
 
-    // 1. First, attempt Supabase backend authentication
+    // 1. If account exists in the local database registry, verify password hash
+    if (_registeredAccounts.containsKey(cleanEmail)) {
+      final account = _registeredAccounts[cleanEmail]!;
+      final expectedHash = hashPassword(password);
+
+      if (account.passwordHash != expectedHash) {
+        _errorMessage = 'Incorrect password. Please try again.';
+        _isLoading = false;
+        notifyListeners();
+        throw Exception(_errorMessage);
+      }
+
+      // Password matches!
+      _currentUser = AppUser(
+        id: account.id,
+        email: account.email,
+        displayName: account.name,
+        photoUrl: null,
+        provider: 'email',
+      );
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser;
+    }
+
+    // 2. If not in registry, attempt Supabase backend authentication
     if (SupabaseService.isConfigured) {
       final client = SupabaseService().client;
       if (client != null) {
@@ -166,7 +191,12 @@ class AuthService extends ChangeNotifier {
           debugPrint('[AuthService] Supabase AuthException: ${e.message}');
           if (e.message.toLowerCase().contains('invalid login credentials') ||
               e.message.toLowerCase().contains('invalid credentials')) {
-            _errorMessage = 'Invalid email or password. Please verify your credentials.';
+            _errorMessage = 'Incorrect password. Please try again.';
+            _isLoading = false;
+            notifyListeners();
+            throw Exception(_errorMessage);
+          } else if (e.message.toLowerCase().contains('confirm')) {
+            _errorMessage = 'Please confirm your email address or check your inbox.';
             _isLoading = false;
             notifyListeners();
             throw Exception(_errorMessage);
@@ -177,37 +207,10 @@ class AuthService extends ChangeNotifier {
       }
     }
 
-    // 2. Check against secure account registry (checking password hash)
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (!_registeredAccounts.containsKey(cleanEmail)) {
-      _errorMessage = 'No account found with this email. Please register first.';
-      _isLoading = false;
-      notifyListeners();
-      throw Exception(_errorMessage);
-    }
-
-    final account = _registeredAccounts[cleanEmail]!;
-    final expectedHash = hashPassword(password);
-
-    if (account.passwordHash != expectedHash) {
-      _errorMessage = 'Incorrect password. Please try again.';
-      _isLoading = false;
-      notifyListeners();
-      throw Exception(_errorMessage);
-    }
-
-    // Password verified and matches!
-    _currentUser = AppUser(
-      id: account.id,
-      email: account.email,
-      displayName: account.name,
-      photoUrl: null,
-      provider: 'email',
-    );
+    _errorMessage = 'No account found with this email. Please register first.';
     _isLoading = false;
     notifyListeners();
-    return _currentUser;
+    throw Exception(_errorMessage);
   }
 
   /// Register new user with Email and Password

@@ -136,30 +136,15 @@
         }
       }
 
-      // Case 2: Implicit grant hash (#access_token=...) or active session
-      if (supabaseClient) {
-        try {
-          const { data: { session }, error } = await supabaseClient.auth.getSession();
-          if (!error && session && session.user) {
-            saveUserSession(session.user);
-            document.getElementById('status-title').textContent = 'Authenticated!';
-            document.getElementById('status-desc').textContent = 'Welcome, ' + (localStorage.getItem('finwise_user_name') || 'Google User') + '! Redirecting...';
-            setTimeout(() => {
-              window.location.replace('dashboard.html');
-            }, 500);
-            return;
-          }
-        } catch (_) {}
-      }
-
-      // Case 3: Check existing localStorage session
+      // Case 2: Check existing active user session
       const existing = localStorage.getItem('finwise_session');
-      if (existing) {
+      const activeEmail = localStorage.getItem('finwise_user_email');
+      if (existing && activeEmail) {
         window.location.replace('dashboard.html');
         return;
       }
 
-      // Case 4: Default route to login
+      // Case 3: Default route to login (Clean slate for user to pick account)
       window.location.replace('login.html');
     }
 

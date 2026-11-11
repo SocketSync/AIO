@@ -336,7 +336,10 @@
           const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: redirectTarget
+              redirectTo: redirectTarget,
+              queryParams: {
+                prompt: 'select_account'
+              }
             }
           });
 
@@ -418,26 +421,30 @@
     }
 
     function getUserAccounts() {
+      let accounts = {};
       try {
         const raw = localStorage.getItem('finwise_user_accounts');
-        if (raw) return JSON.parse(raw);
+        if (raw) accounts = JSON.parse(raw);
       } catch (_) {}
-      const defaultAccounts = {
-        "keanshen.yeoh@gmail.com": {
+      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
+      if (!accounts["keanshen.yeoh@gmail.com"] || !accounts["keanshen.yeoh@gmail.com"].passwordHash) {
+        accounts["keanshen.yeoh@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000001",
           name: "Kean Shen Yeoh",
           email: "keanshen.yeoh@gmail.com",
-          passwordHash: "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322"
-        },
-        "alex.yeoh@gmail.com": {
+          passwordHash: defaultHash
+        };
+      }
+      if (!accounts["alex.yeoh@gmail.com"] || !accounts["alex.yeoh@gmail.com"].passwordHash) {
+        accounts["alex.yeoh@gmail.com"] = {
           id: "00000000-0000-4000-8000-000000000002",
           name: "Alex Yeoh",
           email: "alex.yeoh@gmail.com",
-          passwordHash: "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322"
-        }
-      };
-      localStorage.setItem('finwise_user_accounts', JSON.stringify(defaultAccounts));
-      return defaultAccounts;
+          passwordHash: defaultHash
+        };
+      }
+      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
+      return accounts;
     }
 
     function showRegAlert(type, message) {
