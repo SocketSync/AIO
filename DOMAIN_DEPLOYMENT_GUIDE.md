@@ -81,3 +81,4 @@ Once the DNS propagates, visit `https://finwise-app.xyz`.
 | :--- | :--- | :--- | :--- |
 | **Demo 1** | `ykwei2005@gmail.com` | `FinWise2026!` | Ken Wei |
 | **Demo 2** | `ptutm.kengwei@gmail.com` | `FinWise2026!` | John Yeoh |
+

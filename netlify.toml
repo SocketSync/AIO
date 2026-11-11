@@ -35,3 +35,4 @@
   from = "/profile"
   to = "/profile.html"
   status = 200
+
