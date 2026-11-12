@@ -230,36 +230,36 @@
 
       <form id="txModalForm" onsubmit="handleSaveTransaction(event)" class="space-y-3.5">
         <!-- Hidden Camera Input (Scan button - camera only) -->
-        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)">
+        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)" />
         <!-- Hidden File Upload Input (Upload button - images + PDFs) -->
-        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden" onchange="handleReceiptFileSelected(event)">
+        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden" onchange="handleReceiptFileSelected(event)" />
 
         <!-- Smart Receipt AI Scanner Banner -->
-        <div id="smartReceiptBanner" class="flex justify-between items-center p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
-          <div class="flex items-center gap-3">
-            <div id="receiptIconWrapper" class="w-11 h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
-              <svg id="receiptDefaultIcon" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div id="smartReceiptBanner" class="flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+            <div id="receiptIconWrapper" class="w-10 h-10 sm:w-11 sm:h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
+              <svg id="receiptDefaultIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3"/>
                 <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none"/>
                 <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5"/>
               </svg>
             </div>
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2">
-                <span id="receiptBadgeTitle" class="text-[11px] font-bold text-blue-900 tracking-wider uppercase">Smart Receipt AI</span>
-                <span id="receiptBadgePill" class="bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none">2s auto</span>
+            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span id="receiptBadgeTitle" class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart Receipt AI</span>
+                <span id="receiptBadgePill" class="bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">2s auto</span>
               </div>
-              <span id="receiptBannerTitle" class="text-sm font-semibold text-gray-900 leading-snug mt-0.5">Scan Receipt with AI</span>
-              <span id="receiptBannerSubtitle" class="text-xs text-gray-500 leading-snug">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a></span>
+              <span id="receiptBannerTitle" class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan Receipt with AI</span>
+              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a></span>
             </div>
           </div>
-          <div class="flex gap-2 shrink-0">
-            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors active:scale-[0.97] shadow-sm">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <div class="flex gap-1.5 sm:gap-2 shrink-0">
+            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] shadow-sm whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <span>Scan</span>
             </button>
-            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()" class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors active:scale-[0.97]">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()" class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
               <span>Upload</span>
             </button>
           </div>
@@ -775,20 +775,20 @@
       const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
 
-      if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
+      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
       if (badgePill) {
-        badgePill.className = "bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none";
+        badgePill.className = "bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
         badgePill.textContent = "2s auto";
       }
       if (bannerTitle) bannerTitle.textContent = "Scan Receipt with AI";
       if (bannerSub) bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a>';
       if (scanBtn) {
         scanBtn.disabled = false;
-        scanBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
+        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
       }
       if (uploadBtn) {
         uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+        uploadBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
       }
       if (toast) toast.classList.add('hidden');
     }
@@ -897,16 +897,16 @@
       });
 
       // 6. Reset Banner to Success State
-      if (banner) banner.className = "flex justify-between items-center p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
+      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
       if (badgePill) {
-        badgePill.className = "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none";
+        badgePill.className = "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
         badgePill.textContent = "Extracted in 1.8s";
       }
       if (bannerTitle) bannerTitle.textContent = `Extracted: ${parsed.merchant}`;
       if (bannerSub) bannerSub.textContent = `Total: RM ${extractedAmount} · ${extractedCategory}`;
       if (scanBtn) {
         scanBtn.disabled = false;
-        scanBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
+        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
       }
       if (uploadBtn) {
         uploadBtn.disabled = false;
