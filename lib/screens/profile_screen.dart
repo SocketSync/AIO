@@ -164,9 +164,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _saveChanges() async {
-    if (!_formKey.currentState!.validate()) return;
-
     final auth = Provider.of<AuthService>(context, listen: false);
+
+    // Security Check: Demo account is strictly prohibited from altering profile information
+    if (auth.currentUser?.email.toLowerCase().trim() == 'demo@finwise-app.xyz' ||
+        auth.currentUser?.id == '00000000-0000-4000-8000-000000000001') {
+      _showDemoRestrictedDialog();
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
 
     final success = await auth.updateUserProfile(
       newName: _nameController.text.trim(),
@@ -206,6 +213,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
           backgroundColor: AppColors.alertCoral,
         ),
       );
+    }
+  }
+
+  void _showDemoRestrictedDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: const Icon(Icons.shield_outlined, color: AppColors.alertCoral, size: 44),
+        title: const Text(
+          'Demo Account Restricted',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          textAlign: TextAlign.center,
+        ),
+        content: const Text(
+          'On the demo account, you cannot delete or alter profile info. The demo account is strictly for demonstrating input and output functions (transactions, expenses, and analytics), while editing or deleting the profile is strictly prohibited.',
+          style: TextStyle(fontSize: 13, height: 1.5),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('Understood'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteProfile() async {
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final user = auth.currentUser;
+    if (user?.email.toLowerCase().trim() == 'demo@finwise-app.xyz' ||
+        user?.id == '00000000-0000-4000-8000-000000000001') {
+      _showDemoRestrictedDialog();
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: const Icon(Icons.delete_forever, color: AppColors.alertCoral, size: 40),
+        title: const Text(
+          'Permanently Delete Profile?',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        content: const Text(
+          'This will permanently delete your user profile, all recorded transactions, and cloud authentication credentials from Supabase.\n\nThis action is irreversible. Are you sure you wish to proceed?',
+          style: TextStyle(fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.alertCoral),
+            child: const Text('Permanently Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final success = await auth.deleteAccount();
+      if (!mounted) return;
+      if (success) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(auth.errorMessage ?? 'Failed to delete account.'),
+            backgroundColor: AppColors.alertCoral,
+          ),
+        );
+      }
     }
   }
 
@@ -551,6 +642,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
                     }
                   },
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.delete_forever, color: AppColors.alertCoral),
+                  title: const Text(
+                    'Delete Profile & Account',
+                    style: TextStyle(color: AppColors.alertCoral, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Permanently remove profile and data from Supabase',
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.alertCoral),
+                  onTap: _confirmDeleteProfile,
                 ),
               ],
             ),

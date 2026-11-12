@@ -463,6 +463,16 @@ class AuthService extends ChangeNotifier {
       final cleanOldEmail = (_currentUser?.email ?? '').trim().toLowerCase();
       final cleanNewEmail = newEmail.trim().toLowerCase();
 
+      // Security Check: Demo account is strictly prohibited from altering profile information
+      if (cleanOldEmail == 'demo@finwise-app.xyz' ||
+          cleanNewEmail == 'demo@finwise-app.xyz' ||
+          _currentUser?.id == '00000000-0000-4000-8000-000000000001') {
+        _errorMessage = 'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
       // Password verification if changing password
       if (newPassword != null && newPassword.isNotEmpty) {
         if (_registeredAccounts.containsKey(cleanOldEmail)) {
@@ -526,6 +536,58 @@ class AuthService extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Delete Account & Profile permanently from Supabase & local state
+  Future<bool> deleteAccount() async {
+    final user = _currentUser;
+    if (user == null) return false;
+
+    final cleanEmail = user.email.toLowerCase().trim();
+
+    // Security Check: Demo account is strictly prohibited from deletion
+    if (cleanEmail == 'demo@finwise-app.xyz' ||
+        user.id == '00000000-0000-4000-8000-000000000001') {
+      _errorMessage = 'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      if (SupabaseService.isConfigured) {
+        final client = SupabaseService().client;
+        if (client != null) {
+          try {
+            // 1. Try secure PostgreSQL RPC function delete_user_account
+            await client.rpc('delete_user_account').timeout(const Duration(seconds: 10));
+          } catch (rpcErr) {
+            debugPrint('[AuthService] RPC delete notice: $rpcErr. Falling back to direct RLS deletion.');
+            // 2. Direct RLS table deletion
+            await client.from('transactions').delete().eq('user_id', user.id).timeout(const Duration(seconds: 10));
+            await client.from('profiles').delete().eq('id', user.id).timeout(const Duration(seconds: 10));
+          }
+        }
+      }
+
+      // 3. Remove from local database service
+      await DatabaseService().deleteUserRecords(user.id);
+
+      // 4. Remove from registered accounts registry
+      _registeredAccounts.remove(cleanEmail);
+
+      // 5. Sign out and clear active session
+      await signOut();
       return true;
     } catch (e) {
       _errorMessage = e.toString();

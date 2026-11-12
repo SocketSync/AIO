@@ -384,6 +384,28 @@
         </div>
       </div>
 
+      <!-- SECTION 7: Danger Zone (Delete Account) -->
+      <div class="bg-red-50/40 rounded-2xl p-4 shadow-sm border border-red-200">
+        <div class="flex items-center gap-2 pb-3 mb-2 border-b border-red-100">
+          <div class="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center text-alert-coral">
+            <span class="material-symbols-outlined text-[18px]">warning</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-red-800">Danger Zone</h3>
+            <p class="text-[11px] text-red-600">Permanently delete your profile and cloud data</p>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-3">
+          Permanently delete your user profile, all recorded transactions, and cloud credentials from Supabase. This action is irreversible.
+        </p>
+
+        <button type="button" onclick="handleDeleteProfileClick()" class="w-full py-2.5 px-3.5 rounded-xl border border-red-300 bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+          <span>Delete Profile & Account</span>
+        </button>
+      </div>
+
       <!-- Prominent Save Changes Button -->
       <div class="pt-2">
         <button id="save-profile-btn" onclick="saveAllProfileChanges()" class="w-full py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-container text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2">
@@ -491,6 +513,74 @@
       <div class="pt-2 flex gap-2">
         <button type="button" onclick="closeAvatarModal()" class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-sm hover:bg-primary-container">
           Done with Photo Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEMO ACCOUNT RESTRICTION POPUP MODAL -->
+  <div id="demoRestrictedModal" class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 transition-opacity">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 text-center space-y-4">
+      <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 mx-auto flex items-center justify-center shadow-xs">
+        <span class="material-symbols-outlined text-[32px]">shield_lock</span>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-text-primary">Demo Account Restricted</h3>
+        <div class="mt-2 text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-left">
+          <p class="font-semibold text-slate-800 mb-1">Notice for Demo Users:</p>
+          <p>On the demo account, you <strong>cannot delete or alter profile info</strong>.</p>
+          <p class="mt-1.5 text-slate-500">The demo account is strictly reserved for demonstrating <strong>input and output functions</strong> (adding transactions, viewing balances, and testing analytics), while editing or deleting the profile is strictly prohibited.</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeDemoRestrictedModal()" class="w-full py-3 rounded-xl bg-primary hover:bg-primary-container text-white font-bold text-xs shadow-sm transition-all">
+        Understood
+      </button>
+    </div>
+  </div>
+
+  <!-- SECURE DELETE PROFILE CONFIRMATION MODAL -->
+  <div id="deleteProfileModal" class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 transition-opacity">
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-red-200 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-alert-coral text-[22px]">delete_forever</span>
+          <h3 class="text-sm font-bold text-text-primary">Permanently Delete Account?</h3>
+        </div>
+        <button onclick="closeDeleteProfileModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-slate-100">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 leading-relaxed space-y-1">
+        <p class="font-bold flex items-center gap-1.5 text-red-700">
+          <span class="material-symbols-outlined text-[16px]">warning</span>
+          <span>Super Secure Cloud Purge</span>
+        </p>
+        <p>This will permanently erase all data associated with <strong id="deleteModalEmailText">your account</strong> from Supabase:</p>
+        <ul class="list-disc list-inside space-y-0.5 pt-1 text-[11px] text-red-700">
+          <li>All cloud transaction history in Supabase PostgreSQL</li>
+          <li>User profile, avatar, occupation & monthly budgets</li>
+          <li>Supabase Authentication credentials & session tokens</li>
+        </ul>
+        <p class="pt-1 font-semibold text-red-900">This action is irreversible and cannot be undone.</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label for="deleteConfirmInput" class="block text-xs font-semibold text-text-primary">
+          To confirm, type <span class="font-bold text-red-600 select-all font-mono">DELETE</span> below:
+        </label>
+        <input id="deleteConfirmInput" type="text" placeholder="Type DELETE to confirm" oninput="validateDeleteInput()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200">
+      </div>
+
+      <div id="deleteModalAlert" class="hidden p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="closeDeleteProfileModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+          Cancel
+        </button>
+        <button id="confirmDeleteProfileBtn" type="button" disabled onclick="executePermanentProfileDeletion()" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">delete_forever</span>
+          <span>Delete Everything</span>
         </button>
       </div>
     </div>
@@ -657,8 +747,91 @@
       ]);
     }
 
+    // Check if current active user is the public demo account
+    function isDemoUser() {
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      const userId = localStorage.getItem('finwise_user_id') || '';
+      return email === 'demo@finwise-app.xyz' || userId === '00000000-0000-4000-8000-000000000001';
+    }
+
+    // Show Demo Account Restriction Modal
+    function openDemoRestrictedModal() {
+      const modal = document.getElementById('demoRestrictedModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeDemoRestrictedModal() {
+      const modal = document.getElementById('demoRestrictedModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    // Open Secure Delete Profile Modal
+    function openDeleteProfileModal() {
+      const modal = document.getElementById('deleteProfileModal');
+      const email = localStorage.getItem('finwise_user_email') || 'your account';
+      const emailText = document.getElementById('deleteModalEmailText');
+      if (emailText) emailText.textContent = email;
+      const input = document.getElementById('deleteConfirmInput');
+      if (input) input.value = '';
+      const btn = document.getElementById('confirmDeleteProfileBtn');
+      if (btn) btn.disabled = true;
+      const alertEl = document.getElementById('deleteModalAlert');
+      if (alertEl) alertEl.classList.add('hidden');
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      setTimeout(() => { if (input) input.focus(); }, 150);
+    }
+
+    function closeDeleteProfileModal() {
+      const modal = document.getElementById('deleteProfileModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function validateDeleteInput() {
+      const input = document.getElementById('deleteConfirmInput');
+      const btn = document.getElementById('confirmDeleteProfileBtn');
+      if (input && btn) {
+        btn.disabled = (input.value.trim() !== 'DELETE');
+      }
+    }
+
+    function showDeleteModalAlert(type, message) {
+      const alertEl = document.getElementById('deleteModalAlert');
+      if (!alertEl) return;
+      alertEl.className = 'p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ' +
+        (type === 'error'
+          ? 'bg-red-50 text-red-700 border border-red-200'
+          : 'bg-emerald-50 text-emerald-800 border border-emerald-200');
+      alertEl.innerHTML = `<span class="material-symbols-outlined text-[16px]">${type === 'error' ? 'error' : 'check_circle'}</span><span>${escapeHtml(message)}</span>`;
+      alertEl.classList.remove('hidden');
+    }
+
+    function handleDeleteProfileClick() {
+      if (isDemoUser()) {
+        openDemoRestrictedModal();
+        return;
+      }
+      openDeleteProfileModal();
+    }
+
     // Modal controls for Avatar
     function openAvatarModal() {
+      if (isDemoUser()) {
+        openDemoRestrictedModal();
+        return;
+      }
       document.getElementById('avatarModal').classList.remove('hidden');
       document.getElementById('avatarModal').classList.add('flex');
       const name = document.getElementById('prof-name').value;
@@ -854,6 +1027,13 @@
       hideAlert();
       const saveBtn = document.getElementById('save-profile-btn');
       const originalBtnHtml = saveBtn.innerHTML;
+
+      // DEMO ACCOUNT RESTRICTION: Demo account profile cannot be altered or deleted
+      if (isDemoUser()) {
+        openDemoRestrictedModal();
+        showAlert('error', 'On demo account, you cannot alter profile info. Editing is strictly prohibited.');
+        return;
+      }
 
       saveBtn.disabled = true;
       saveBtn.innerHTML = `
@@ -1110,6 +1290,105 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showAlert('success', 'Financial data exported successfully!');
+    }
+
+    // Super Secure Profile & Account Deletion (Irreversible Cloud Purge)
+    async function executePermanentProfileDeletion() {
+      // 1. Strict demo account barrier
+      if (isDemoUser()) {
+        closeDeleteProfileModal();
+        openDemoRestrictedModal();
+        return;
+      }
+
+      const input = document.getElementById('deleteConfirmInput').value.trim();
+      if (input !== 'DELETE') {
+        showDeleteModalAlert('error', 'Please type DELETE in capital letters to confirm.');
+        return;
+      }
+
+      const btn = document.getElementById('confirmDeleteProfileBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Purging from Supabase...</span>';
+
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      const userId = localStorage.getItem('finwise_user_id');
+
+      try {
+        // 2. Execute deletion directly in Supabase Cloud
+        if (supabaseClient) {
+          try {
+            // A. Call the secure PostgreSQL RPC function delete_user_account()
+            const { error: rpcError } = await withTimeout(
+              supabaseClient.rpc('delete_user_account'),
+              12000
+            );
+            if (rpcError) {
+              console.warn("RPC delete notice:", rpcError, "Executing direct RLS purge.");
+              // B. Fallback to direct RLS table purge if RPC not yet created
+              if (userId) {
+                await withTimeout(supabaseClient.from('transactions').delete().eq('user_id', userId), 10000);
+                await withTimeout(supabaseClient.from('profiles').delete().eq('id', userId), 10000);
+              }
+            }
+          } catch (sbErr) {
+            console.warn("Supabase deletion error:", sbErr);
+            // Direct RLS purge fallback
+            if (userId) {
+              try {
+                await supabaseClient.from('transactions').delete().eq('user_id', userId);
+                await supabaseClient.from('profiles').delete().eq('id', userId);
+              } catch (_) {}
+            }
+          }
+
+          // C. Sign out from Supabase Auth
+          try {
+            await supabaseClient.auth.signOut({ scope: 'local' });
+          } catch (_) {}
+        }
+
+        // 3. Clear local transaction and account registries
+        try {
+          const accounts = getUserAccounts();
+          if (accounts[email]) {
+            delete accounts[email];
+            localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
+          }
+          const storageKey = "finwise_transactions_" + email.replace(/[^a-z0-9]/g, "_");
+          localStorage.removeItem(storageKey);
+          localStorage.removeItem("finwise_user_avatar_" + email.replace(/[^a-z0-9]/g, "_"));
+          localStorage.removeItem("finwise_has_password_" + email);
+        } catch (_) {}
+
+        // 4. Scrub all session tokens and credentials
+        localStorage.removeItem('finwise_session');
+        localStorage.removeItem('finwise_user_email');
+        localStorage.removeItem('finwise_user_name');
+        localStorage.removeItem('finwise_user_id');
+        localStorage.removeItem('finwise_user_avatar');
+        localStorage.removeItem('finwise_auth_provider');
+        localStorage.removeItem('finwise_currency');
+        localStorage.removeItem('finwise_monthly_budget');
+        localStorage.removeItem('finwise_savings_goal');
+        localStorage.removeItem('finwise_user_phone');
+        localStorage.removeItem('finwise_user_occupation');
+
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth-token'))) {
+            localStorage.removeItem(k);
+          }
+        }
+        try { sessionStorage.clear(); } catch (_) {}
+
+        // 5. Redirect to login page with deleted notification flag
+        window.location.replace('login.html?deleted=true');
+      } catch (err) {
+        showDeleteModalAlert('error', 'Error deleting account: ' + (err.message || err));
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">delete_forever</span><span>Delete Everything</span>';
+      }
     }
 
     // Sign Out

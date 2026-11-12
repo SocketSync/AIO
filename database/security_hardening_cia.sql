@@ -29,11 +29,11 @@ ON public.profiles FOR ALL TO authenticated
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
--- Scoped Demo Profile Policy (restricted strictly to the single public demo UUID)
-CREATE POLICY "Allow demo profile operations"
-ON public.profiles FOR ALL TO anon
-USING (id = '00000000-0000-4000-8000-000000000001'::uuid)
-WITH CHECK (id = '00000000-0000-4000-8000-000000000001'::uuid);
+-- Scoped Demo Profile Policy (Read-Only: demo profile cannot be altered or deleted)
+DROP POLICY IF EXISTS "Allow demo profile read only" ON public.profiles;
+CREATE POLICY "Allow demo profile read only"
+ON public.profiles FOR SELECT TO anon, authenticated
+USING (id = '00000000-0000-4000-8000-000000000001'::uuid);
 
 -- 3. Drop overly permissive legacy policies on public.transactions
 DROP POLICY IF EXISTS "Enable all actions for users based on user_id" ON public.transactions;
@@ -95,3 +95,75 @@ ALTER TABLE public.profiles ADD CONSTRAINT chk_profiles_budget_nonnegative
 ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS chk_profiles_email_nonempty;
 ALTER TABLE public.profiles ADD CONSTRAINT chk_profiles_email_nonempty
     CHECK (char_length(trim(email)) >= 3);
+
+-- ==============================================================================
+-- PHASE 4: DEMO PROTECTION TRIGGER & SUPER SECURE ACCOUNT PURGE RPC
+-- ==============================================================================
+
+-- 1. Database Trigger: Strictly Prohibit Altering or Deleting Demo Account Profile
+CREATE OR REPLACE FUNCTION public.protect_demo_profile()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'DELETE' AND OLD.id = '00000000-0000-4000-8000-000000000001'::uuid) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    IF (TG_OP = 'UPDATE' AND (OLD.id = '00000000-0000-4000-8000-000000000001'::uuid OR NEW.id = '00000000-0000-4000-8000-000000000001'::uuid)) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be altered. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_demo_profile ON public.profiles;
+CREATE TRIGGER trg_protect_demo_profile
+    BEFORE UPDATE OR DELETE ON public.profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.protect_demo_profile();
+
+-- 2. Super Secure PostgreSQL RPC: Delete User Account & Purge from Supabase
+-- Can only be executed by the authenticated owner of the account (auth.uid())
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+    current_user_id UUID;
+    current_email TEXT;
+BEGIN
+    current_user_id := auth.uid();
+    IF current_user_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required to delete account.';
+    END IF;
+
+    -- STRICT SECURITY CHECK: Prohibit deleting the demo account
+    IF current_user_id = '00000000-0000-4000-8000-000000000001'::uuid THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    SELECT email INTO current_email FROM auth.users WHERE id = current_user_id;
+    IF current_email = 'demo@finwise-app.xyz' THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    -- 1. Purge all transactions belonging to this user
+    DELETE FROM public.transactions WHERE user_id = current_user_id;
+
+    -- 2. Purge user profile
+    DELETE FROM public.profiles WHERE id = current_user_id;
+
+    -- 3. Purge user from auth.users (cascades sessions, refresh tokens, identities)
+    DELETE FROM auth.users WHERE id = current_user_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'message', 'User profile, transactions, and authentication record permanently deleted.'
+    );
+END;
+$$;
+
+-- Revoke execute from public and grant strictly to authenticated users
+REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM public;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;
+

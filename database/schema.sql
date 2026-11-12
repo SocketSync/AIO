@@ -167,3 +167,68 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
+
+-- 12. Protect Demo Account Profile from Alteration or Deletion
+CREATE OR REPLACE FUNCTION public.protect_demo_profile()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'DELETE' AND OLD.id = '00000000-0000-4000-8000-000000000001'::uuid) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    IF (TG_OP = 'UPDATE' AND (OLD.id = '00000000-0000-4000-8000-000000000001'::uuid OR NEW.id = '00000000-0000-4000-8000-000000000001'::uuid)) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be altered. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_demo_profile ON public.profiles;
+CREATE TRIGGER trg_protect_demo_profile
+    BEFORE UPDATE OR DELETE ON public.profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.protect_demo_profile();
+
+-- 13. Super Secure PostgreSQL RPC: Delete User Account & Purge from Supabase
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+    current_user_id UUID;
+    current_email TEXT;
+BEGIN
+    current_user_id := auth.uid();
+    IF current_user_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required to delete account.';
+    END IF;
+
+    -- STRICT SECURITY CHECK: Prohibit deleting the demo account
+    IF current_user_id = '00000000-0000-4000-8000-000000000001'::uuid THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    SELECT email INTO current_email FROM auth.users WHERE id = current_user_id;
+    IF current_email = 'demo@finwise-app.xyz' THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    -- 1. Purge all transactions belonging to this user
+    DELETE FROM public.transactions WHERE user_id = current_user_id;
+
+    -- 2. Purge user profile
+    DELETE FROM public.profiles WHERE id = current_user_id;
+
+    -- 3. Purge user from auth.users (cascades sessions, refresh tokens, identities)
+    DELETE FROM auth.users WHERE id = current_user_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'message', 'User profile, transactions, and authentication record permanently deleted.'
+    );
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM public;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;

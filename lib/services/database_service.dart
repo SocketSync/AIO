@@ -464,4 +464,10 @@ class DatabaseService {
     }
     return false;
   }
+
+  /// Delete all local cached records for a user upon account deletion
+  Future<void> deleteUserRecords(String userId) async {
+    _userTransactions.remove(userId);
+    _userProfiles.remove(userId);
+  }
 }

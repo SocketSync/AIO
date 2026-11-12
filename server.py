@@ -380,6 +380,13 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
                 self._send_json(400, {"success": False, "message": "Email is required."})
                 return
 
+            if email == "demo@finwise-app.xyz":
+                self._send_json(403, {
+                    "success": False,
+                    "message": "Demo accounts cannot alter or delete profile information. The demo account is strictly reserved for testing input and output transactions."
+                })
+                return
+
             if not user_id:
                 h = abs(sum((ord(c) * (31 ** i)) for i, c in enumerate(email)))
                 user_id = f"00000000-0000-4000-8000-{h:012x}"[-36:]
@@ -399,6 +406,21 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
             save_accounts(accounts)
             print(f"[FinWise Server] Registered/Updated account across devices: {email} ({name})")
             self._send_json(200, {"success": True, "message": "Account registered successfully", "account": _strip_sensitive_account(accounts[email])})
+            return
+
+        if path in ("/api/accounts/delete", "/api/profile/delete"):
+            email = (payload.get("email") or "").lower().strip()
+            if email == "demo@finwise-app.xyz":
+                self._send_json(403, {
+                    "success": False,
+                    "message": "Demo accounts cannot alter or delete profile information. The demo account is strictly reserved for testing input and output transactions."
+                })
+                return
+            accounts = load_accounts()
+            if email in accounts:
+                del accounts[email]
+                save_accounts(accounts)
+            self._send_json(200, {"success": True, "message": "Account permanently deleted."})
             return
 
         if path == "/api/login":

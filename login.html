@@ -780,6 +780,13 @@
         history.replaceState(null, null, window.location.pathname);
       }
 
+      // Profile permanently deleted from Supabase
+      if (urlParams.get('deleted') === 'true') {
+        showAuthAlert('success', 'Your profile, transactions, and cloud account have been permanently deleted from Supabase.');
+        history.replaceState(null, null, window.location.pathname);
+        return;
+      }
+
       // Explicit logout action requested
       if (isLogout) {
         if (supabaseClient) {

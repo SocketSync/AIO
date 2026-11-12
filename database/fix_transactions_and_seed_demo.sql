@@ -59,10 +59,10 @@ CREATE POLICY "Enable all actions for users based on id"
 ON public.profiles FOR ALL TO authenticated
 USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Allow demo profile operations"
-ON public.profiles FOR ALL TO anon
-USING (id = '00000000-0000-4000-8000-000000000001'::uuid)
-WITH CHECK (id = '00000000-0000-4000-8000-000000000001'::uuid);
+DROP POLICY IF EXISTS "Allow demo profile read only" ON public.profiles;
+CREATE POLICY "Allow demo profile read only"
+ON public.profiles FOR SELECT TO anon, authenticated
+USING (id = '00000000-0000-4000-8000-000000000001'::uuid);
 
 -- Integrity Constraints on public.transactions
 ALTER TABLE public.transactions DROP CONSTRAINT IF EXISTS chk_transactions_amount_nonnegative;
