@@ -311,7 +311,7 @@
                 <span id="receiptBadgePill" class="bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">2s auto</span>
               </div>
               <span id="receiptBannerTitle" class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan Receipt with AI</span>
-              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a></span>
+              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-blue-900 font-semibold underline hover:text-blue-700" title="Configure Google Gemini API Key">Gemini Key</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
             </div>
           </div>
           <div class="flex gap-1.5 sm:gap-2 shrink-0">
@@ -805,6 +805,52 @@
     let activeCameraStream = null;
     let currentFacingMode = "environment";
 
+    function getStoredGeminiApiKey() {
+      return (localStorage.getItem('finwise_gemini_api_key') || '').trim();
+    }
+
+    function promptGeminiApiKey(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const currentKey = getStoredGeminiApiKey();
+      const maskedKey = currentKey ? (currentKey.slice(0, 6) + '...' + currentKey.slice(-4)) : '';
+      const promptText = currentKey 
+        ? `Google Gemini Vision API Key is active (${maskedKey}).\n\nTo update or replace it, paste your new key below.\nTo clear it and return to Demo mode, leave it blank and click OK:`
+        : `Enter your Google Gemini API Key to enable live AI receipt & invoice scanning:\n\n(Starts with AIzaSy... Get one free from https://aistudio.google.com)`;
+
+      const input = window.prompt(promptText, currentKey || '');
+      if (input !== null) {
+        const trimmed = input.trim();
+        if (trimmed) {
+          localStorage.setItem('finwise_gemini_api_key', trimmed);
+          alert('✅ Google Gemini API Key saved! Live AI receipt scanning is now active.');
+        } else {
+          localStorage.removeItem('finwise_gemini_api_key');
+          alert('ℹ️ Gemini API Key removed. Smart scanner will use demo mode.');
+        }
+        updateGeminiBadgeStatus();
+      }
+    }
+
+    function updateGeminiBadgeStatus() {
+      const key = getStoredGeminiApiKey();
+      const badgePill = document.getElementById('receiptBadgePill');
+      const bannerSub = document.getElementById('receiptBannerSubtitle');
+      if (!badgePill || !bannerSub) return;
+
+      if (key) {
+        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
+        badgePill.textContent = "Gemini AI";
+        bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-emerald-700 font-semibold underline hover:text-emerald-800" title="Gemini API Key active. Click to update.">Key Active 🟢</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
+      } else {
+        badgePill.className = "bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
+        badgePill.textContent = "2s auto";
+        bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-blue-900 font-semibold underline hover:text-blue-700" title="Configure Google Gemini API Key">Gemini Key</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
+      }
+    }
+
     async function triggerReceiptCameraFlow() {
       // 1. Try Live Camera Viewfinder (Laptop Webcams, USB Webcams, Phones & Tablets)
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -939,29 +985,24 @@
 
     function resetReceiptBannerState() {
       const banner = document.getElementById('smartReceiptBanner');
-      const badgePill = document.getElementById('receiptBadgePill');
       const bannerTitle = document.getElementById('receiptBannerTitle');
-      const bannerSub = document.getElementById('receiptBannerSubtitle');
       const scanBtn = document.getElementById('receiptScanBtn');
       const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
 
       if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
-      if (badgePill) {
-        badgePill.className = "bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
-        badgePill.textContent = "2s auto";
-      }
       if (bannerTitle) bannerTitle.textContent = "Scan Receipt with AI";
-      if (bannerSub) bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a>';
       if (scanBtn) {
         scanBtn.disabled = false;
         scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
       }
       if (uploadBtn) {
         uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
         uploadBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
       }
       if (toast) toast.classList.add('hidden');
+      updateGeminiBadgeStatus();
     }
 
     async function executeReceiptScan(file) {
@@ -974,14 +1015,29 @@
       const toast = document.getElementById('receiptScanToast');
       const toastText = document.getElementById('receiptScanToastText');
 
+      let currentKey = getStoredGeminiApiKey();
+
+      // If user uploaded/captured a real receipt but hasn't entered a Gemini Key, ask if they want to enter it now
+      if (file && !currentKey) {
+        const wantsKey = confirm("✨ Real-time receipt scanning uses Google Gemini AI.\n\nWould you like to enter your Gemini API Key now to read this receipt with Gemini Vision?\n\n• OK = Enter Gemini API Key\n• Cancel = Test with Demo receipt preset");
+        if (wantsKey) {
+          const inputKey = window.prompt("Paste your Google Gemini API Key (starts with AIzaSy...):");
+          if (inputKey && inputKey.trim()) {
+            localStorage.setItem('finwise_gemini_api_key', inputKey.trim());
+            currentKey = inputKey.trim();
+            updateGeminiBadgeStatus();
+          }
+        }
+      }
+
       // 1. Enter Scanning State
       if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all";
       if (badgePill) {
         badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
-        badgePill.textContent = "Scanning...";
+        badgePill.textContent = currentKey ? "Gemini AI..." : "Scanning...";
       }
-      if (bannerTitle) bannerTitle.textContent = "Analyzing Receipt with AI...";
-      if (bannerSub) bannerSub.textContent = file ? `Processing ${file.name}...` : "Reading merchant, total & items...";
+      if (bannerTitle) bannerTitle.textContent = currentKey ? "Reading receipt with Gemini Vision AI..." : "Analyzing Receipt with AI...";
+      if (bannerSub) bannerSub.textContent = file ? `Processing ${file.name || 'image'}...` : "Reading merchant, total & items...";
       if (scanBtn) {
         scanBtn.disabled = true;
         scanBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Scanning...</span>';
@@ -992,7 +1048,11 @@
       }
 
       // 2. Prepare payload
-      let payload = { filename: file ? (file.name || "receipt_scan.jpg") : "village_grocer_receipt.jpg" };
+      let payload = { 
+        filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg",
+        apiKey: currentKey
+      };
+
       if (file) {
         if (file.imageBase64) {
           payload.imageBase64 = file.imageBase64;
@@ -1025,10 +1085,18 @@
         }
       } catch (_) {}
 
-      // Ensure minimum 1.2s scan feedback
+      // Ensure minimum 1.2s scan feedback so user feels the AI at work
       const elapsed = Date.now() - startTime;
       if (elapsed < 1200) {
         await new Promise(r => setTimeout(r, 1200 - elapsed));
+      }
+
+      // Check if API key was rejected as invalid
+      if (parsed && parsed.invalidApiKey) {
+        alert("⚠️ " + parsed.message);
+        localStorage.removeItem('finwise_gemini_api_key');
+        updateGeminiBadgeStatus();
+        parsed = null;
       }
 
       // Fallback presets
@@ -1043,14 +1111,23 @@
       }
 
       const todayStr = new Date().toISOString().slice(0, 10);
-      const extractedDate = parsed.date || todayStr;
+      const extractedDate = (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr;
       const extractedAmount = Number(parsed.amount || 25.00).toFixed(2);
-      const extractedCategory = parsed.category || "Food & Dining";
+      
+      const incomeList = (typeof categoriesByType !== 'undefined' && categoriesByType.income) ? categoriesByType.income : [];
+      const expenseList = (typeof categoriesByType !== 'undefined' && categoriesByType.expense) ? categoriesByType.expense : [];
+      let isIncome = incomeList.includes(parsed.category);
+      let finalCategory = parsed.category || "Food & Dining";
+
+      if (!isIncome && !expenseList.includes(finalCategory)) {
+        finalCategory = "Other Expenses";
+      }
+
       const itemNote = (parsed.items && parsed.items.length) ? ` (${parsed.items.slice(0, 2).join(", ")})` : "";
       const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
 
       // 4. Auto-Fill Form Fields
-      setModalType('expense');
+      setModalType(isIncome ? 'income' : 'expense');
 
       const amtInput = document.getElementById('modal-amount');
       if (amtInput) amtInput.value = extractedAmount;
@@ -1062,7 +1139,14 @@
       if (dateInput) dateInput.value = extractedDate;
 
       const catSelect = document.getElementById('modal-category');
-      if (catSelect) catSelect.value = extractedCategory;
+      if (catSelect) {
+        const availableOptions = Array.from(catSelect.options).map(o => o.value);
+        if (availableOptions.includes(finalCategory)) {
+          catSelect.value = finalCategory;
+        } else {
+          catSelect.value = isIncome ? "Other Income" : "Other Expenses";
+        }
+      }
 
       // 5. Visual Flash Effect on inputs to highlight auto-fill
       [amtInput, descInput, dateInput, catSelect].forEach(el => {
@@ -1074,13 +1158,16 @@
       });
 
       // 6. Reset Banner to Success State
+      const isGeminiEngine = parsed.engine && parsed.engine.includes('gemini');
       if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
       if (badgePill) {
-        badgePill.className = "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
-        badgePill.textContent = "Extracted in 1.8s";
+        badgePill.className = isGeminiEngine 
+          ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"
+          : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
+        badgePill.textContent = isGeminiEngine ? "Gemini AI" : "Extracted";
       }
-      if (bannerTitle) bannerTitle.textContent = `Extracted: ${parsed.merchant}`;
-      if (bannerSub) bannerSub.textContent = `Total: RM ${extractedAmount} · ${extractedCategory}`;
+      if (bannerTitle) bannerTitle.textContent = `${isGeminiEngine ? '✨ ' : ''}Extracted: ${parsed.merchant}`;
+      if (bannerSub) bannerSub.textContent = `Total: RM ${extractedAmount} · ${finalCategory}`;
       if (scanBtn) {
         scanBtn.disabled = false;
         scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
@@ -1092,7 +1179,9 @@
 
       // 7. Show Toast
       if (toast && toastText) {
-        toastText.textContent = `✨ AI extracted RM ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
+        toastText.textContent = isGeminiEngine
+          ? `✨ Google Gemini AI extracted RM ${extractedAmount} from ${parsed.merchant}! Details filled below.`
+          : `✨ AI extracted RM ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
         toast.classList.remove('hidden');
       }
     }
