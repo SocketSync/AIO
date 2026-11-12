@@ -17,8 +17,8 @@ module.exports = async (req, res) => {
 
     if (hasValidKey && imageBase64) {
       try {
-        const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
-        const prompt = `Analyze this receipt image and return ONLY a valid JSON object with these exact fields:
+        const cleanBase64 = imageBase64.replace(/^data:[^;]+;base64,/, '');
+        const prompt = `Analyze this receipt or invoice (image/PDF) and return ONLY a valid JSON object with these exact fields:
 {
   "merchant": "Merchant or store name",
   "amount": numeric total amount as float (e.g. 48.50),
@@ -108,6 +108,12 @@ Do not include markdown backticks or commentary, just raw JSON.`;
         amount: 19.80,
         category: "Food & Dining",
         items: ["Oden Set C", "Sofuto Green Tea Cone"]
+      },
+      {
+        merchant: "Tenaga Nasional Berhad (TNB)",
+        amount: 124.60,
+        category: "Bills & Utilities",
+        items: ["Electricity Consumption Tariff", "Service Tax"]
       }
     ];
 
@@ -123,6 +129,8 @@ Do not include markdown backticks or commentary, just raw JSON.`;
       pick = presets[4];
     } else if (lowerName.includes('familymart') || lowerName.includes('mart') || lowerName.includes('bistro')) {
       pick = presets[5];
+    } else if (lowerName.includes('.pdf') || lowerName.includes('bill') || lowerName.includes('invoice') || lowerName.includes('tnb') || lowerName.includes('utility')) {
+      pick = presets[6];
     } else {
       pick = presets[Math.floor(Math.random() * presets.length)];
     }
@@ -144,3 +152,4 @@ Do not include markdown backticks or commentary, just raw JSON.`;
     });
   }
 };
+

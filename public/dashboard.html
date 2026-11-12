@@ -260,8 +260,10 @@
           <button type="button" aria-label="Close" onclick="closeTransactionDialog()" class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
         </div>
 
-        <!-- Hidden Camera / File Input for Receipt Scanning -->
-        <input type="file" id="receiptScannerFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)">
+        <!-- Hidden Camera Input (Scan button - camera only) -->
+        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)">
+        <!-- Hidden File Upload Input (Upload button - images + PDFs) -->
+        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden" onchange="handleReceiptFileSelected(event)">
 
         <!-- Smart Receipt AI Scanner Banner -->
         <div id="smartReceiptBanner" class="flex justify-between items-center p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
@@ -282,10 +284,16 @@
               <span id="receiptBannerSubtitle" class="text-xs text-gray-500 leading-snug">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Test Demo</a></span>
             </div>
           </div>
-          <button type="button" id="receiptScanBtn" onclick="triggerReceiptScanFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-1.5 shrink-0 transition-colors active:scale-[0.97] shadow-sm">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>Scan</span>
-          </button>
+          <div class="flex gap-2 shrink-0">
+            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors active:scale-[0.97] shadow-sm">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Scan</span>
+            </button>
+            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()" class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors active:scale-[0.97]">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              <span>Upload</span>
+            </button>
+          </div>
         </div>
 
         <!-- Receipt Scan Toast Notification -->
@@ -855,9 +863,14 @@
     }
 
     // --- SMART RECEIPT AI SCANNER ---
-    function triggerReceiptScanFlow() {
-      const fileInput = document.getElementById('receiptScannerFileInput');
-      if (fileInput) fileInput.click();
+    function triggerReceiptCameraFlow() {
+      const cameraInput = document.getElementById('receiptCameraInput');
+      if (cameraInput) cameraInput.click();
+    }
+
+    function triggerReceiptUploadFlow() {
+      const uploadInput = document.getElementById('receiptUploadInput');
+      if (uploadInput) uploadInput.click();
     }
 
     async function handleReceiptFileSelected(event) {
@@ -881,6 +894,7 @@
       const bannerTitle = document.getElementById('receiptBannerTitle');
       const bannerSub = document.getElementById('receiptBannerSubtitle');
       const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
 
       if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
@@ -894,6 +908,10 @@
         scanBtn.disabled = false;
         scanBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
       }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+      }
       if (toast) toast.classList.add('hidden');
     }
 
@@ -903,6 +921,7 @@
       const bannerTitle = document.getElementById('receiptBannerTitle');
       const bannerSub = document.getElementById('receiptBannerSubtitle');
       const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
       const toastText = document.getElementById('receiptScanToastText');
 
@@ -917,6 +936,10 @@
       if (scanBtn) {
         scanBtn.disabled = true;
         scanBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Scanning...</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.classList.add('opacity-50', 'pointer-events-none');
       }
 
       // 2. Prepare payload
@@ -1009,6 +1032,10 @@
       if (scanBtn) {
         scanBtn.disabled = false;
         scanBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
       }
 
       // 7. Show Toast
