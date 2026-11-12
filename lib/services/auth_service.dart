@@ -75,22 +75,10 @@ class AuthService extends ChangeNotifier {
 
   // Secure registered user accounts registry (isolated by email & UUID)
   final Map<String, RegisteredAccount> _registeredAccounts = {
-    'ykwei2005@gmail.com': RegisteredAccount(
-      id: generateUserUuid('ykwei2005@gmail.com'),
-      email: 'ykwei2005@gmail.com',
-      name: 'Ken Wei',
-      passwordHash: hashPassword('FinWise2026!'),
-    ),
-    'ptutm.kengwei@gmail.com': RegisteredAccount(
-      id: generateUserUuid('ptutm.kengwei@gmail.com'),
-      email: 'ptutm.kengwei@gmail.com',
-      name: 'John Yeoh',
-      passwordHash: hashPassword('FinWise2026!'),
-    ),
-    'keanshen.yeoh@gmail.com': RegisteredAccount(
-      id: generateUserUuid('keanshen.yeoh@gmail.com'),
-      email: 'keanshen.yeoh@gmail.com',
-      name: 'Kean Shen Yeoh',
+    'demo@finwise-app.xyz': RegisteredAccount(
+      id: '00000000-0000-4000-8000-000000000001',
+      email: 'demo@finwise-app.xyz',
+      name: 'Demo Finwise',
       passwordHash: hashPassword('FinWise2026!'),
     ),
   };
@@ -138,7 +126,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Format realistic human name from Gmail address (e.g. keanshen.yeoh@gmail.com -> Kean Shen Yeoh)
+  /// Format realistic human name from email address (e.g. demo@finwise-app.xyz -> Demo Finwise)
   static String formatNameFromEmail(String email) {
     final prefix = email.split('@')[0];
     final parts = prefix.replaceAll(RegExp(r'[._-]'), ' ').split(' ');

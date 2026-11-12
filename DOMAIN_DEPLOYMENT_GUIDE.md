@@ -77,8 +77,8 @@ In your [Google Cloud Console Credentials](https://console.cloud.google.com/apis
 
 Once the DNS propagates, visit `https://finwise-app.xyz`.
 
-| Account | Email | Password | Role |
+| Account | Email | Password | Display Name |
 | :--- | :--- | :--- | :--- |
-| **Demo 1** | `ykwei2005@gmail.com` | `FinWise2026!` | Ken Wei |
-| **Demo 2** | `ptutm.kengwei@gmail.com` | `FinWise2026!` | John Yeoh |
+| **Demo Account** | `demo@finwise-app.xyz` | `FinWise2026!` | Demo Finwise |
+
 

@@ -82,25 +82,23 @@ CREATE POLICY "Transactions deletable by all"
     ON public.transactions FOR DELETE
     USING (true);
 
--- 5. Update the handle_new_user trigger to save phone & occupation
+-- 5. Update the handle_new_user trigger to save clean profile fields
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, display_name, avatar_url, phone, occupation)
+    INSERT INTO public.profiles (id, email, display_name, avatar_url, currency, monthly_budget)
     VALUES (
         NEW.id,
-        COALESCE(NEW.email, 'user@finwise.app'),
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1), 'FinWise Member'),
+        COALESCE(NEW.email, 'demo@finwise-app.xyz'),
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1), 'Demo Finwise'),
         NEW.raw_user_meta_data->>'avatar_url',
-        NEW.raw_user_meta_data->>'phone',
-        NEW.raw_user_meta_data->>'occupation'
+        'RM',
+        2500.00
     )
     ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
         display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url),
-        phone = COALESCE(EXCLUDED.phone, profiles.phone),
-        occupation = COALESCE(EXCLUDED.occupation, profiles.occupation);
+        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

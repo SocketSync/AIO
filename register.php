@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                 <span class="material-symbols-outlined text-[20px]">person</span>
               </div>
-              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="fullName" name="full_name" placeholder="e.g. Kean Shen Yeoh" type="text" value="Kean Shen Yeoh" required>
+              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="fullName" name="full_name" placeholder="e.g. Demo Finwise" type="text" value="Demo Finwise" required>
             </div>
           </div>
 
@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                 <span class="material-symbols-outlined text-[20px]">mail</span>
               </div>
-              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="email" name="email" placeholder="keanshen.yeoh@gmail.com" type="email" value="keanshen.yeoh@gmail.com" required>
+              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="email" name="email" placeholder="demo@finwise-app.xyz" type="email" value="demo@finwise-app.xyz" required>
             </div>
             <p class="text-xs text-text-muted flex items-center gap-1 pl-1">
               <span class="material-symbols-outlined text-[14px] text-secondary">info</span>

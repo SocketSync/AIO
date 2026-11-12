@@ -512,19 +512,12 @@
     }
 
     const DEMO_DEFAULT_TRANSACTIONS = {
-      "ykwei2005@gmail.com": [
-        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Lead Salary", dateOffset: -5 },
+      "demo@finwise-app.xyz": [
+        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Salary", dateOffset: -5 },
         { type: "expense", amount: 68.40, category: "Groceries", description: "Village Grocer Weekly Essentials", dateOffset: -3 },
         { type: "expense", amount: 24.50, category: "Food & Dining", description: "Artisan Coffee & Pastry", dateOffset: -2 },
         { type: "expense", amount: 85.00, category: "Transportation", description: "RON95 Fuel Refill", dateOffset: -1 },
         { type: "income", amount: 650.00, category: "Freelance", description: "UI/UX Architecture Advisory", dateOffset: 0 }
-      ],
-      "ptutm.kengwei@gmail.com": [
-        { type: "income", amount: 4800.00, category: "Salary", description: "Senior Product Designer Salary", dateOffset: -6 },
-        { type: "expense", amount: 120.00, category: "Bills & Utilities", description: "High-Speed Fiber Internet Bill", dateOffset: -4 },
-        { type: "expense", amount: 42.90, category: "Food & Dining", description: "Japanese Bento Lunch", dateOffset: -2 },
-        { type: "expense", amount: 95.00, category: "Shopping", description: "Design System Reference Book", dateOffset: -1 },
-        { type: "income", amount: 450.00, category: "Investments", description: "ETF Quarterly Dividend Payout", dateOffset: 0 }
       ]
     };
 
@@ -532,8 +525,7 @@
       const stored = localStorage.getItem("finwise_user_id");
       if (isValidUUID(stored)) return stored;
       const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      if (email === "ykwei2005@gmail.com") return "00000000-0000-4000-8000-000000000001";
-      if (email === "ptutm.kengwei@gmail.com") return "00000000-0000-4000-8000-000000000002";
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
       return "00000000-0000-4000-8000-000000000001";
     }
 
@@ -629,8 +621,8 @@
       const meta = user.user_metadata || {};
       const appMeta = user.app_metadata || {};
       const email = (user.email || '').toLowerCase().trim();
-      const isDemo = (email === 'ykwei2005@gmail.com' || email === 'ptutm.kengwei@gmail.com');
-      const defaultDemoName = email === 'ykwei2005@gmail.com' ? 'Ken Wei' : 'John Yeoh';
+      const isDemo = (user.email === 'demo@finwise-app.xyz' || email === 'demo@finwise-app.xyz');
+      const defaultDemoName = 'Demo Finwise';
       const name = meta.full_name || meta.name || (isDemo ? defaultDemoName : (email ? formatNameFromEmail(email) : "Google User"));
       const avatar = meta.avatar_url || meta.picture || "";
       const initial = (name[0] || 'G').toUpperCase();
@@ -685,7 +677,7 @@
           : (localStorage.getItem('finwise_currency') || 'RM');
         const resolvedBudget = (existingProf && existingProf.monthly_budget)
           ? Number(existingProf.monthly_budget)
-          : (parseFloat(localStorage.getItem('finwise_monthly_budget')) || (email === 'ptutm.kengwei@gmail.com' ? 3000.00 : 2500.00));
+          : (parseFloat(localStorage.getItem('finwise_monthly_budget')) || 2500.00);
 
         localStorage.setItem('finwise_user_name', resolvedName);
         localStorage.setItem('finwise_currency', resolvedCurrency);
@@ -708,7 +700,6 @@
       }
 
       // Feature 2: Auto-initialize Demo Account standard password ('FinWise2026!') in Supabase Auth
-      // so Demo Accounts can sign in via Email/Password or Google across any device!
       if (isDemo && !meta.demo_password_initialized) {
         try {
           await supabaseClient.auth.updateUser({
@@ -716,9 +707,7 @@
             data: {
               full_name: name,
               demo_password_initialized: true,
-              has_password_set: true,
-              phone: email === 'ykwei2005@gmail.com' ? '+60 12-882 1928' : '+60 17-331 4982',
-              occupation: email === 'ykwei2005@gmail.com' ? 'Financial Analyst & Tech Lead' : 'Senior Product Designer'
+              has_password_set: true
             }
           });
           localStorage.setItem('finwise_has_password_' + email, 'true');
@@ -1020,7 +1009,7 @@
 
           if (!error && Array.isArray(data)) {
             // If Demo Account has 0 transactions in Supabase and hasn't been migrated yet, migrate local or seed defaults to Supabase
-            if (data.length === 0 && (email === 'ykwei2005@gmail.com' || email === 'ptutm.kengwei@gmail.com')) {
+            if (data.length === 0 && email === 'demo@finwise-app.xyz') {
               const localExisting = loadLocalTransactions();
               const seededKey = 'finwise_cloud_seeded_' + userId;
               if (localExisting.length > 0 && localStorage.getItem(seededKey) !== 'true') {

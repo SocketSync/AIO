@@ -48217,7 +48217,7 @@ arq(){var s,r=null,q={},p=$.ai()
 q.a=!0
 s=this.c
 s.toString
-A.Lu(r,r,!0,r,new A.ayc(q,this,new A.eb(new A.cl("keanshen.yeoh@gmail.com",B.bZ,B.aC),p),new A.eb(new A.cl("FinWise2026!",B.bZ,B.aC),p)),s,r,!0,t.z)},
+A.Lu(r,r,!0,r,new A.ayc(q,this,new A.eb(new A.cl("demo@finwise-app.xyz",B.bZ,B.aC),p),new A.eb(new A.cl("FinWise2026!",B.bZ,B.aC),p)),s,r,!0,t.z)},
 BL(a,b){return this.ap3(a,b)},
 ap3(a,b){var s=0,r=A.z(t.H),q=1,p=[],o=this,n,m,l,k,j,i
 var $async$BL=A.A(function(c,d){if(c===1){p.push(d)
@@ -48348,7 +48348,7 @@ $0(){return this.a.d=!1},
 $S:0}
 A.ay6.prototype={
 $1(a){var s=null,r=A.bq(a,s,t.w).w,q=A.d9(A.ah(s,s,B.m,s,s,new A.a6(B.h9,s,s,A.a_(2),s,s,B.p),s,4,s,s,s,s,38),s,s),p=t.p,o=A.ax(A.b([B.n9,B.bh,B.EA,B.oD,A.ah(s,B.a65,B.m,s,s,new A.a6(B.bf,s,s,A.a_(12),s,s,B.p),s,s,s,B.ds,s,s,s),B.bX,A.dW(s,B.dN,s,B.t7,s,s,new A.ay2(a),B.a6,s,s,s)],p),B.l,B.i,B.e,0,s),n=A.a_(14),m=A.ch(B.a3,1),l=this.b,k=this.a
-return new A.bc(new A.aa(0,0,0,r.f.d),A.ah(s,A.h7(!0,A.il(A.bp(A.b([q,B.bo,o,B.b1,B.a8d,B.db,B.a7l,B.bo,A.ah(s,A.bp(A.b([B.a8o,B.bi,A.mF(s,B.bI,!1,s,!0,B.G,s,A.pD(),l,s,s,s,s,s,2,A.vD(s,new A.fK(4,A.a_(10),new A.aM(B.h9,1,B.y,-1)),s,B.mp,s,s,s,s,!0,s,s,s,s,s,s,B.f,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"e.g. your.email@gmail.com",s,s,s,s,s,s,s,s,s,!0,!0,!1,s,B.ta,s,s,s,s,s,s,s,s,s,s,s,s),B.a_,!0,s,!0,s,!1,s,B.c0,s,s,s,s,B.ft,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bH,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ay,s,B.cU,s,s,s,s),B.aV,A.cM(A.aI1(B.LX,B.a8a,new A.ay3(k,l,a),A.hs(s,s,B.r,s,s,s,s,s,s,B.f,s,s,B.KI,s,new A.bM(A.a_(10),B.t),s,s,s,s,s)),s,1/0)],p),B.C,B.i,B.e),B.m,s,s,new A.a6(B.h7,s,m,n,s,s,B.p),s,s,s,B.cu,s,s,s),B.bL,B.a67,B.bi,k.SH(B.qu,"keanshen.yeoh@gmail.com","K","Kean Shen Yeoh",new A.ay4(k,a)),B.bi,k.SH(B.iP,"alex.yeoh@gmail.com","A","Alex Yeoh",new A.ay5(k,a)),B.b1,B.HM],p),B.C,B.i,B.aw),s,s,B.T),B.a6,!1),B.m,s,s,B.pV,s,s,s,B.rk,s,s,s),s)},
+return new A.bc(new A.aa(0,0,0,r.f.d),A.ah(s,A.h7(!0,A.il(A.bp(A.b([q,B.bo,o,B.b1,B.a8d,B.db,B.a7l,B.bo,A.ah(s,A.bp(A.b([B.a8o,B.bi,A.mF(s,B.bI,!1,s,!0,B.G,s,A.pD(),l,s,s,s,s,s,2,A.vD(s,new A.fK(4,A.a_(10),new A.aM(B.h9,1,B.y,-1)),s,B.mp,s,s,s,s,!0,s,s,s,s,s,s,B.f,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"e.g. your.email@gmail.com",s,s,s,s,s,s,s,s,s,!0,!0,!1,s,B.ta,s,s,s,s,s,s,s,s,s,s,s,s),B.a_,!0,s,!0,s,!1,s,B.c0,s,s,s,s,B.ft,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.bH,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ay,s,B.cU,s,s,s,s),B.aV,A.cM(A.aI1(B.LX,B.a8a,new A.ay3(k,l,a),A.hs(s,s,B.r,s,s,s,s,s,s,B.f,s,s,B.KI,s,new A.bM(A.a_(10),B.t),s,s,s,s,s)),s,1/0)],p),B.C,B.i,B.e),B.m,s,s,new A.a6(B.h7,s,m,n,s,s,B.p),s,s,s,B.cu,s,s,s),B.bL,B.a67,B.bi,k.SH(B.qu,"demo@finwise-app.xyz","K","Demo Finwise",new A.ay4(k,a)),B.bi,k.SH(B.iP,"demo@finwise-app.xyz","A","Demo Finwise",new A.ay5(k,a)),B.b1,B.HM],p),B.C,B.i,B.aw),s,s,B.T),B.a6,!1),B.m,s,s,B.pV,s,s,s,B.rk,s,s,s),s)},
 $S:188}
 A.ay2.prototype={
 $0(){return A.bG(this.a,!1).c6()},
@@ -48360,11 +48360,11 @@ this.a.rK(s,A.a4k(s))}},
 $S:0}
 A.ay4.prototype={
 $0(){A.bG(this.b,!1).c6()
-this.a.rK("keanshen.yeoh@gmail.com","Kean Shen Yeoh")},
+this.a.rK("demo@finwise-app.xyz","Demo Finwise")},
 $S:0}
 A.ay5.prototype={
 $0(){A.bG(this.b,!1).c6()
-this.a.rK("alex.yeoh@gmail.com","Alex Yeoh")},
+this.a.rK("demo@finwise-app.xyz","Demo Finwise")},
 $S:0}
 A.axX.prototype={
 $0(){return this.a.d=!0},
@@ -48476,7 +48476,7 @@ $0(){return this.a.e=this.b},
 $S:0}
 A.rP.prototype={
 ac(){var s=$.ai()
-return new A.IM(new A.eb(new A.cl("Alex Yeoh",B.bZ,B.aC),s),new A.eb(new A.cl("alex.yeoh@gmail.com",B.bZ,B.aC),s),new A.eb(new A.cl("FinWise2026!",B.bZ,B.aC),s))}}
+return new A.IM(new A.eb(new A.cl("Demo Finwise",B.bZ,B.aC),s),new A.eb(new A.cl("demo@finwise-app.xyz",B.bZ,B.aC),s),new A.eb(new A.cl("FinWise2026!",B.bZ,B.aC),s))}}
 A.IM.prototype={
 aw(){var s=this
 s.aQ()
@@ -48613,7 +48613,7 @@ s=A.bY('[!@#$%^&*(),.?":{}|<>]',!0,!1)
 r.Q=s.b.test(q)},
 $S:0}
 A.aAH.prototype={
-$1(a){var s=null,r=A.d9(A.ah(s,s,B.m,s,s,new A.a6(B.h9,s,s,A.a_(2),s,s,B.p),s,4,s,s,s,s,38),s,s),q=t.p,p=A.ax(A.b([B.n9,B.bh,B.EA,B.oD,A.dW(s,B.dN,s,B.t7,s,s,new A.aAD(a),B.a6,s,s,s)],q),B.l,B.i,B.e,0,s),o=this.a,n=o.Xo(B.iP,"alex.yeoh@gmail.com","A","Alex Yeoh",new A.aAE(o,a)),m=o.Xo(B.qu,"keanshen.yeoh@gmail.com","K","Kean Shen Yeoh",new A.aAF(o,a)),l=A.a_(12)
+$1(a){var s=null,r=A.d9(A.ah(s,s,B.m,s,s,new A.a6(B.h9,s,s,A.a_(2),s,s,B.p),s,4,s,s,s,s,38),s,s),q=t.p,p=A.ax(A.b([B.n9,B.bh,B.EA,B.oD,A.dW(s,B.dN,s,B.t7,s,s,new A.aAD(a),B.a6,s,s,s)],q),B.l,B.i,B.e,0,s),o=this.a,n=o.Xo(B.iP,"demo@finwise-app.xyz","A","Demo Finwise",new A.aAE(o,a)),m=o.Xo(B.qu,"demo@finwise-app.xyz","K","Demo Finwise",new A.aAF(o,a)),l=A.a_(12)
 return A.ah(s,A.h7(!0,A.bp(A.b([r,B.bo,p,B.b1,B.a5R,B.db,B.a6p,B.bo,n,B.bi,m,B.bi,A.aIt(B.mq,A.uM(B.IN,B.N7,s),new A.aAG(o,a),new A.bM(l,new A.aM(B.h9,1,B.y,-1)),B.a6f,B.a6W,s),B.bo,B.HJ],q),B.C,B.i,B.aw),B.a6,!1),B.m,s,s,B.pV,s,s,s,B.rk,s,s,s)},
 $S:339}
 A.aAD.prototype={
@@ -48621,11 +48621,11 @@ $0(){return A.bG(this.a,!1).c6()},
 $S:0}
 A.aAE.prototype={
 $0(){A.bG(this.b,!1).c6()
-this.a.rL("alex.yeoh@gmail.com","Alex Yeoh")},
+this.a.rL("demo@finwise-app.xyz","Demo Finwise")},
 $S:0}
 A.aAF.prototype={
 $0(){A.bG(this.b,!1).c6()
-this.a.rL("keanshen.yeoh@gmail.com","Kean Shen Yeoh")},
+this.a.rL("demo@finwise-app.xyz","Demo Finwise")},
 $S:0}
 A.aAG.prototype={
 $0(){A.bG(this.b,!1).c6()
@@ -107479,9 +107479,9 @@ B.Oc=new A.vE(null,null,null,null,null,null,null,null,null,B.rK,B.q3,!1,null,!1,
 B.Mv=new A.aE(58519,"MaterialIcons",!1)
 B.O5=new A.aJ(B.Mv,20,B.L,null,null)
 B.c8=new A.Yi(B.t)
-B.Od=new A.fI(null,null,null,null,null,null,null,null,null,null,"e.g. Alex Yeoh",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.j7,null,B.O5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
+B.Od=new A.fI(null,null,null,null,null,null,null,null,null,null,"e.g. Demo Finwise",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.j7,null,B.O5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
 B.Oe=new A.fI(null,null,null,null,null,null,null,null,null,null,"Ask FinWise AI about your spending...",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
-B.Of=new A.fI(null,null,null,null,null,null,null,null,null,null,"alex.yeoh@gmail.com",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.j7,null,B.tb,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
+B.Of=new A.fI(null,null,null,null,null,null,null,null,null,null,"demo@finwise-app.xyz",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.j7,null,B.tb,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
 B.ac4=new A.fI(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,!0,null,null,null,null)
 B.Og=new A.fI(null,null,null,null,null,null,null,null,null,null,"0.00",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
 B.Oh=new A.fI(null,null,null,null,null,null,null,null,null,null,"Add additional receipt information, reference or vendor tags...",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.dY,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.c8,!0,null,null,null,null)
@@ -110666,9 +110666,9 @@ s($,"b8R","aKR",()=>new A.N())
 r($,"aX7","aTp",()=>{var q=new A.a46()
 q.Ad($.aKR())
 return q})
-s($,"b8U","ul",()=>{var q="keanshen.yeoh@gmail.com",p="FinWise2026!",o="alex.yeoh@gmail.com",n=new A.Ot(A.b(["email","profile"],t.s),A.aPJ(null,null,!1,t.z1))
+s($,"b8U","ul",()=>{var q="demo@finwise-app.xyz",p="FinWise2026!",o="demo@finwise-app.xyz",n=new A.Ot(A.b(["email","profile"],t.s),A.aPJ(null,null,!1,t.z1))
 n.AK()
-n=new A.pS(n,A.a3([q,A.aP6(q,A.Me(q),"Kean Shen Yeoh",A.aMa(p)),o,A.aP6(o,A.Me(o),"Alex Yeoh",A.aMa(p))],t.N,A.aC("DI")),$.ai())
+n=new A.pS(n,A.a3([q,A.aP6(q,A.Me(q),"Demo Finwise",A.aMa(p)),o,A.aP6(o,A.Me(o),"Demo Finwise",A.aMa(p))],t.N,A.aC("DI")),$.ai())
 n.alZ()
 return n})
 s($,"b9b","aTz",()=>{var q=t.N

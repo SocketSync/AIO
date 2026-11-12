@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showPasswordLoginDialog() {
-    final emailCtrl = TextEditingController(text: 'ykwei2005@gmail.com');
+    final emailCtrl = TextEditingController(text: 'demo@finwise-app.xyz');
     final passCtrl = TextEditingController(text: 'FinWise2026!');
     bool obscure = true;
 
@@ -312,33 +312,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Account 1: Ken Wei
+                    // Single Clean Demo Account: Demo Finwise
                     _buildGoogleAccountTile(
-                      name: 'Ken Wei',
-                      email: 'ykwei2005@gmail.com',
+                      name: 'Demo Finwise',
+                      email: 'demo@finwise-app.xyz',
                       avatarColor: Colors.teal.shade700,
-                      initial: 'K',
+                      initial: 'D',
                       onTap: () {
                         Navigator.of(bottomSheetContext).pop();
                         _performGoogleSignIn(
-                          email: 'ykwei2005@gmail.com',
-                          name: 'Ken Wei',
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Account 2: John Yeoh
-                    _buildGoogleAccountTile(
-                      name: 'John Yeoh',
-                      email: 'ptutm.kengwei@gmail.com',
-                      avatarColor: Colors.blue.shade700,
-                      initial: 'J',
-                      onTap: () {
-                        Navigator.of(bottomSheetContext).pop();
-                        _performGoogleSignIn(
-                          email: 'ptutm.kengwei@gmail.com',
-                          name: 'John Yeoh',
+                          email: 'demo@finwise-app.xyz',
+                          name: 'Demo Finwise',
                         );
                       },
                     ),

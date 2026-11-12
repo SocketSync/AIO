@@ -476,8 +476,7 @@
       const stored = localStorage.getItem('finwise_user_id');
       if (isValidUUID(stored)) return stored;
       const email = getActiveEmail().trim();
-      if (email === 'ykwei2005@gmail.com') return '00000000-0000-4000-8000-000000000001';
-      if (email === 'ptutm.kengwei@gmail.com') return '00000000-0000-4000-8000-000000000002';
+      if (email === 'demo@finwise-app.xyz') return '00000000-0000-4000-8000-000000000001';
       return '00000000-0000-4000-8000-000000000001';
     }
 

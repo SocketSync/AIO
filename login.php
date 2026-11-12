@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
                 <span class="material-symbols-outlined text-[20px]">mail</span>
               </div>
-              <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-on-surface outline-none" id="student-id" name="student_id" placeholder="keanshen.yeoh@gmail.com" required type="email" value="keanshen.yeoh@gmail.com">
+              <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-on-surface outline-none" id="student-id" name="student_id" placeholder="demo@finwise-app.xyz" required type="email" value="demo@finwise-app.xyz">
             </div>
           </div>
 

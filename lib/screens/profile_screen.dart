@@ -37,10 +37,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = Provider.of<AuthService>(context, listen: false);
     final user = auth.currentUser;
 
-    _nameController = TextEditingController(text: user?.displayName ?? 'Ken Wei');
-    _emailController = TextEditingController(text: user?.email ?? 'ykwei2005@gmail.com');
-    _phoneController = TextEditingController(text: '+60 12-882 1928');
-    _occupationController = TextEditingController(text: 'Financial Tech Lead');
+    _nameController = TextEditingController(text: user?.displayName ?? 'Demo Finwise');
+    _emailController = TextEditingController(text: user?.email ?? 'demo@finwise-app.xyz');
+    _phoneController = TextEditingController(text: '');
+    _occupationController = TextEditingController(text: '');
     _budgetController = TextEditingController(text: '2500.00');
     _currentPassController = TextEditingController();
     _newPassController = TextEditingController();

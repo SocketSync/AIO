@@ -30,8 +30,8 @@ class DatabaseService {
     }
 
     final now = DateTime.now();
-    // Alex Yeoh's distinct transactions
-    if (userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002') {
+    // Secondary partition transactions for multi-user isolation tests
+    if (userId == '00000000-0000-4000-8000-000000000002') {
       _userTransactions[userId] = [
         TransactionRecord(
           id: _uuid.v4(),
@@ -77,9 +77,9 @@ class DatabaseService {
       return;
     }
 
-    // Default seeded transactions for Kean Shen or general evaluation
+    // Default seeded transactions for Demo Finwise or general evaluation
     if (userId == 'test_user_sprint1' ||
-        userId.contains('kean') ||
+        userId.contains('demo') ||
         userId == '00000000-0000-4000-8000-000000000001' ||
         userId.isEmpty) {
       final defaultList = [
@@ -177,14 +177,8 @@ class DatabaseService {
           return profile;
         } else {
           // Create profile in Supabase
-          final defaultPhone = phone ??
-              ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
-                  ? '+60 11-987 6543'
-                  : '+60 12-345 6789');
-          final defaultOccupation = occupation ??
-              ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
-                  ? 'Product Designer & Consultant'
-                  : 'Senior Software Engineer');
+          final defaultPhone = phone ?? '';
+          final defaultOccupation = occupation ?? '';
           final newProfile = UserProfile(
             id: userId,
             email: email,
@@ -213,14 +207,8 @@ class DatabaseService {
 
     await Future.delayed(const Duration(milliseconds: 150));
     if (!_userProfiles.containsKey(userId)) {
-      final defaultPhone = phone ??
-          ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
-              ? '+60 11-987 6543'
-              : '+60 12-345 6789');
-      final defaultOccupation = occupation ??
-          ((userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
-              ? 'Product Designer & Consultant'
-              : 'Senior Software Engineer');
+      final defaultPhone = phone ?? '';
+      final defaultOccupation = occupation ?? '';
       _userProfiles[userId] = UserProfile(
         id: userId,
         email: email,
@@ -229,9 +217,7 @@ class DatabaseService {
         phone: defaultPhone,
         occupation: defaultOccupation,
         currency: 'RM',
-        monthlyBudget: (userId.contains('alex') || userId == '00000000-0000-4000-8000-000000000002')
-            ? 3500.00
-            : 2500.00,
+        monthlyBudget: 2500.00,
       );
     }
     return _userProfiles[userId]!;

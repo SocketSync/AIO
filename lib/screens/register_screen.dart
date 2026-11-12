@@ -127,24 +127,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildGoogleAccountTile(
-                  name: 'Ken Wei',
-                  email: 'ykwei2005@gmail.com',
+                  name: 'Demo Finwise',
+                  email: 'demo@finwise-app.xyz',
                   avatarColor: Colors.teal.shade700,
-                  initial: 'K',
+                  initial: 'D',
                   onTap: () {
                     Navigator.of(bottomSheetContext).pop();
-                    _performGoogleSignUp(email: 'ykwei2005@gmail.com', name: 'Ken Wei');
-                  },
-                ),
-                const SizedBox(height: 8),
-                _buildGoogleAccountTile(
-                  name: 'John Yeoh',
-                  email: 'ptutm.kengwei@gmail.com',
-                  avatarColor: Colors.blue.shade700,
-                  initial: 'J',
-                  onTap: () {
-                    Navigator.of(bottomSheetContext).pop();
-                    _performGoogleSignUp(email: 'ptutm.kengwei@gmail.com', name: 'John Yeoh');
+                    _performGoogleSignUp(email: 'demo@finwise-app.xyz', name: 'Demo Finwise');
                   },
                 ),
                 const SizedBox(height: 8),
@@ -634,7 +623,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _nameController,
                           style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
                           decoration: const InputDecoration(
-                            hintText: 'e.g. Alex Yeoh',
+                            hintText: 'e.g. Demo Finwise',
                             prefixIcon: Icon(Icons.person_outline, size: 20, color: AppColors.textMuted),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -689,7 +678,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
                           decoration: const InputDecoration(
-                            hintText: 'alex.yeoh@gmail.com',
+                            hintText: 'demo@finwise-app.xyz',
                             prefixIcon: Icon(Icons.mail_outline, size: 20, color: AppColors.textMuted),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(vertical: 14),

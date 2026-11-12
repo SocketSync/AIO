@@ -133,32 +133,20 @@ CREATE TABLE IF NOT EXISTS `savings_goals` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==============================================================
--- Seed Accounts for Development & Testing
--- Password for all accounts: FinWise2026!
--- Hashed with BCRYPT: $2y$10$wO0oD5E7Y94NkWsSg.d4ueD6Ym9uK9Ff6Yc2E0qI4c8P3x.w9uV1K
+-- Seed Clean Demo Account for Public Use
+-- Password: FinWise2026!
 -- SHA-256: 989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322
 -- ==============================================================
 INSERT INTO `users` (`id`, `full_name`, `email`, `phone`, `occupation`, `currency`, `monthly_budget`, `password_hash`, `email_verified`)
 VALUES 
 (
     1,
-    'Kean Shen Yeoh',
-    'keanshen.yeoh@gmail.com',
-    '+60 12-345 6789',
-    'Senior Software Engineer',
+    'Demo Finwise',
+    'demo@finwise-app.xyz',
+    '',
+    '',
     'RM',
     2500.00,
-    '$2y$10$tZ2c69vK0f0PzHq/uQ622e.lE5e76z2p1yWffo/O59z1F5E1k6sC.',
-    1
-),
-(
-    2,
-    'Alex Yeoh',
-    'alex.yeoh@gmail.com',
-    '+60 11-987 6543',
-    'Product Designer & Consultant',
-    'RM',
-    3500.00,
     '$2y$10$tZ2c69vK0f0PzHq/uQ622e.lE5e76z2p1yWffo/O59z1F5E1k6sC.',
     1
 )
@@ -168,7 +156,7 @@ ON DUPLICATE KEY UPDATE
     `occupation`=VALUES(`occupation`),
     `monthly_budget`=VALUES(`monthly_budget`);
 
--- Seed Initial Transactions for Kean Shen Yeoh (user_id = 1)
+-- Seed Initial Transactions for Demo Finwise (user_id = 1)
 INSERT INTO `transactions` (`user_id`, `transaction_name`, `category`, `category_id`, `amount`, `transaction_type`, `transaction_date`, `payment_method`, `note`)
 VALUES
 (1, 'Monthly Tech Salary', 'Salary / Employment', 'salary', 4800.00, 'income', DATE_SUB(NOW(), INTERVAL 10 DAY), 'Bank Transfer', 'Monthly direct deposit paycheck'),
@@ -177,11 +165,3 @@ VALUES
 (1, 'Electricity & Water Bill', 'Bills & Utilities', 'bills_utilities', 115.80, 'expense', DATE_SUB(NOW(), INTERVAL 3 DAY), 'Online Banking', 'Monthly utility auto-debit'),
 (1, 'Freelance Mobile UI Design', 'Freelance & Side Gig', 'freelance', 750.00, 'income', DATE_SUB(NOW(), INTERVAL 5 DAY), 'Direct', 'Completed wireframe milestones'),
 (1, 'Touch N Go / Transit Reload', 'Transportation', 'transportation', 50.00, 'expense', DATE_SUB(NOW(), INTERVAL 6 DAY), 'E-Wallet', 'MRT transit weekly commute reload');
-
--- Seed Initial Transactions for Alex Yeoh (user_id = 2)
-INSERT INTO `transactions` (`user_id`, `transaction_name`, `category`, `category_id`, `amount`, `transaction_type`, `transaction_date`, `payment_method`, `note`)
-VALUES
-(2, 'Consulting Retainer Monthly', 'Salary / Employment', 'salary', 6200.00, 'income', DATE_SUB(NOW(), INTERVAL 8 DAY), 'Wire Transfer', 'Tech architecture advisory retainer'),
-(2, 'Home Office Monitor & Stand', 'Shopping', 'shopping', 340.00, 'expense', DATE_SUB(NOW(), INTERVAL 1 DAY), 'Credit Card', 'Ergonomic dual arm monitor mount'),
-(2, 'Organic Market Supplies', 'Groceries', 'groceries', 185.00, 'expense', DATE_SUB(NOW(), INTERVAL 2 DAY), 'Apple Pay', 'Fresh organic greens, artisanal sourdough'),
-(2, 'Cloud Infrastructure Hosting', 'Bills & Utilities', 'bills_utilities', 90.00, 'expense', DATE_SUB(NOW(), INTERVAL 4 DAY), 'Credit Card', 'AWS and Supabase production tier');
