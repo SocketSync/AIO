@@ -360,6 +360,37 @@
       ]
     };
 
+    const categoryIdMap = {
+      "Food & Dining": "food_dining",
+      "Transportation": "transportation",
+      "Groceries": "groceries",
+      "Shopping": "shopping",
+      "Entertainment": "entertainment",
+      "Bills & Utilities": "bills_utilities",
+      "Health & Wellness": "health_wellness",
+      "Education & Self-Care": "education",
+      "Salary": "salary",
+      "Freelance": "freelance",
+      "Investments": "investments",
+      "Other Income": "other",
+      "Other Expenses": "other"
+    };
+
+    const idToCategoryMap = {
+      "food_dining": "Food & Dining",
+      "transportation": "Transportation",
+      "groceries": "Groceries",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment",
+      "bills_utilities": "Bills & Utilities",
+      "health_wellness": "Health & Wellness",
+      "education": "Education & Self-Care",
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investments": "Investments",
+      "other": "Other Expenses"
+    };
+
     let allTransactions = [];
     let currentTypeFilter = "all";
     let editingTxId = null;
@@ -484,15 +515,29 @@
       }
 
       // 3. Cloud fetch if connected
-      const userId = localStorage.getItem('finwise_user_id');
+      const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
       if (supabaseClient && userId) {
         try {
-          const { data } = await supabaseClient.from('transactions').select('*').order('date', { ascending: false });
-          if (data && data.length) {
-            allTransactions = data;
+          const { data, error } = await supabaseClient
+            .from('transactions')
+            .select('*')
+            .eq('user_id', userId)
+            .order('transaction_date', { ascending: false });
+          if (!error && Array.isArray(data) && data.length) {
+            allTransactions = data.map(row => ({
+              id: row.id,
+              type: row.type,
+              amount: Number(row.amount),
+              category: idToCategoryMap[row.category_id] || "Other Expenses",
+              description: row.title || row.description || "",
+              date: row.transaction_date ? row.transaction_date.slice(0, 10) : new Date().toISOString().slice(0, 10),
+              user_id: row.user_id
+            }));
             saveLocalTransactions(allTransactions);
           }
-        } catch (_) {}
+        } catch (e) {
+          console.warn("Supabase load error:", e);
+        }
       }
 
       filterAndRenderTransactions();
@@ -712,11 +757,23 @@
         body: JSON.stringify({ email: activeEmail, transaction: record })
       }).catch(() => {});
 
-      // Cloud sync if available
+      // Cloud sync to Supabase
       if (supabaseClient) {
         try {
-          await supabaseClient.from('transactions').upsert(record);
-        } catch (_) {}
+          const categoryId = categoryIdMap[category] || "other";
+          const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
+          await supabaseClient.from('transactions').upsert({
+            id: txId.startsWith("seed_") || txId.startsWith("tx_") ? undefined : txId,
+            user_id: userId,
+            title: desc,
+            amount: record.amount,
+            type: type,
+            category_id: categoryId,
+            transaction_date: date + "T12:00:00Z"
+          });
+        } catch (e) {
+          console.warn("Supabase upsert notice:", e);
+        }
       }
 
       closeTransactionModal();
@@ -737,10 +794,13 @@
         body: JSON.stringify({ email: delEmail, delete_id: id })
       }).catch(() => {});
 
-      if (supabaseClient) {
+      if (supabaseClient && !id.startsWith("seed_") && !id.startsWith("tx_")) {
         try {
-          await supabaseClient.from('transactions').delete().eq('id', id);
-        } catch (_) {}
+          const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
+          await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
+        } catch (e) {
+          console.warn("Supabase delete notice:", e);
+        }
       }
 
       filterAndRenderTransactions();
