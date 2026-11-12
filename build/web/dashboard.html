@@ -521,6 +521,23 @@
       ]
     };
 
+    async function getAuthenticatedUserId() {
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user && session.user.id) {
+            localStorage.setItem("finwise_user_id", session.user.id);
+            return session.user.id;
+          }
+        } catch (_) {}
+      }
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
+      return "00000000-0000-4000-8000-000000000001";
+    }
+
     function getActiveUserId() {
       const stored = localStorage.getItem("finwise_user_id");
       if (isValidUUID(stored)) return stored;
@@ -964,21 +981,39 @@
         const d = new Date(now.getTime() + (item.dateOffset || 0) * 86400000);
         const dateStr = localDateString(d);
         return {
-          id: generateUUID(),
           user_id: userId,
           title: item.description,
           amount: item.amount,
           type: item.type,
           category_id: categoryIdMap[item.category] || 'other',
-          transaction_date: dateStr + 'T12:00:00Z'
+          category: item.category,
+          transaction_date: dateStr + 'T12:00:00Z',
+          date: dateStr + 'T12:00:00Z'
         };
       });
 
       try {
-        const { data, error } = await supabaseClient
+        let { data, error } = await supabaseClient
           .from('transactions')
-          .upsert(rowsToInsert, { onConflict: 'id' })
+          .insert(rowsToInsert)
           .select('*');
+
+        if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+          const fallbackRows = rowsToInsert.map(r => ({
+            user_id: r.user_id,
+            title: r.title,
+            amount: r.amount,
+            type: r.type,
+            category_id: r.category_id,
+            transaction_date: r.transaction_date
+          }));
+          const res2 = await supabaseClient
+            .from('transactions')
+            .insert(fallbackRows)
+            .select('*');
+          data = res2.data;
+          error = res2.error;
+        }
 
         if (!error && Array.isArray(data) && data.length > 0) {
           localStorage.setItem(seededKey, 'true');
@@ -995,7 +1030,7 @@
 
     // Synchronize transactions across all devices in real time via Supabase
     async function loadTransactions() {
-      const userId = getActiveUserId();
+      const userId = await getAuthenticatedUserId();
       const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
 
       // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
@@ -1008,42 +1043,19 @@
             .order('transaction_date', { ascending: false });
 
           if (!error && Array.isArray(data)) {
-            // If Demo Account has 0 transactions in Supabase and hasn't been migrated yet, migrate local or seed defaults to Supabase
+            // If Demo Account has 0 transactions in Supabase and hasn't been seeded yet, seed to Supabase
             if (data.length === 0 && email === 'demo@finwise-app.xyz') {
-              const localExisting = loadLocalTransactions();
-              const seededKey = 'finwise_cloud_seeded_' + userId;
-              if (localExisting.length > 0 && localStorage.getItem(seededKey) !== 'true') {
-                const migratedRows = localExisting.map(t => ({
-                  id: isValidUUID(t.id) ? t.id : generateUUID(),
-                  user_id: userId,
-                  title: t.description || t.title || 'Transaction',
-                  amount: Number(t.amount || 0),
-                  type: t.type || 'expense',
-                  category_id: categoryIdMap[t.category] || 'other',
-                  transaction_date: (t.date || localDateString()) + 'T12:00:00Z'
-                }));
-                const { data: inserted } = await supabaseClient
-                  .from('transactions')
-                  .upsert(migratedRows, { onConflict: 'id' })
-                  .select('*');
-                if (Array.isArray(inserted) && inserted.length > 0) {
-                  data = inserted;
-                  localStorage.setItem(seededKey, 'true');
-                  try { await supabaseClient.auth.updateUser({ data: { cloud_tx_seeded: true } }); } catch (_) {}
-                }
-              } else {
-                const seeded = await seedDemoTransactionsIfNeeded(userId, email);
-                if (seeded.length > 0) data = seeded;
-              }
+              const seeded = await seedDemoTransactionsIfNeeded(userId, email);
+              if (seeded && seeded.length > 0) data = seeded;
             }
 
             transactions = data.map(row => ({
               id: row.id,
               type: row.type,
               amount: Number(row.amount),
-              category: idToCategoryMap[row.category_id] || "Other Expenses",
+              category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
-              date: row.transaction_date ? row.transaction_date.slice(0, 10) : localDateString()
+              date: (row.transaction_date || row.date || localDateString()).slice(0, 10)
             }));
             persistLocalTransactions();
             renderDashboard();
@@ -1389,7 +1401,7 @@
     }
 
     async function saveTransaction(event) {
-      event.preventDefault();
+      if (event && event.preventDefault) event.preventDefault();
       const amount = Number(document.getElementById("transactionAmount").value);
       if (!Number.isFinite(amount) || amount <= 0) return;
 
@@ -1398,60 +1410,95 @@
       const description = document.getElementById("transactionDescription").value.trim();
       const dateStr = document.getElementById("transactionDate").value;
       const oldId = editingTransactionId;
-      const txId = isValidUUID(oldId) ? oldId : generateUUID();
+      const isUpdate = Boolean(oldId && isValidUUID(oldId));
+      const userId = await getAuthenticatedUserId();
+      const categoryId = categoryIdMap[category] || "other";
+      const isoDate = dateStr.includes("T") ? dateStr : (dateStr + "T12:00:00Z");
 
-      const record = {
-        id: txId,
-        type: type,
-        amount: Math.round(amount * 100) / 100,
-        category: category,
-        description: description,
-        date: dateStr
-      };
-
-      if (oldId) {
-        transactions = transactions.map(item => item.id === oldId ? record : item);
-      } else {
-        transactions.unshift(record);
-      }
-      persistLocalTransactions();
       closeTransactionDialog();
-      renderDashboard();
 
       // Cloud Sync directly to Supabase (Primary Database for all users & Demo Accounts)
       if (supabaseClient) {
         try {
-          const categoryId = categoryIdMap[category] || "other";
-          const userId = getActiveUserId();
-          await supabaseClient.from('transactions').upsert({
-            id: txId,
+          const payload = {
             user_id: userId,
             title: description,
-            amount: record.amount,
+            amount: Math.round(amount * 100) / 100,
             type: type,
             category_id: categoryId,
-            transaction_date: dateStr + "T12:00:00Z"
-          }, { onConflict: 'id' });
+            category: category,
+            transaction_date: isoDate,
+            date: isoDate
+          };
+
+          let data = null;
+          let error = null;
+
+          if (isUpdate) {
+            const res = await supabaseClient
+              .from('transactions')
+              .update(payload)
+              .eq('id', oldId)
+              .eq('user_id', userId)
+              .select();
+            data = res.data;
+            error = res.error;
+          } else {
+            // INSERT: Strip out any frontend ID creation. Supabase must generate UUID automatically on INSERT!
+            const res = await supabaseClient
+              .from('transactions')
+              .insert(payload)
+              .select();
+            data = res.data;
+            error = res.error;
+          }
+
+          // If schema cache doesn't have 'category' or 'date' columns yet:
+          if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackPayload = {
+              user_id: userId,
+              title: description,
+              amount: Math.round(amount * 100) / 100,
+              type: type,
+              category_id: categoryId,
+              transaction_date: isoDate
+            };
+            if (isUpdate) {
+              await supabaseClient
+                .from('transactions')
+                .update(fallbackPayload)
+                .eq('id', oldId)
+                .eq('user_id', userId);
+            } else {
+              await supabaseClient
+                .from('transactions')
+                .insert(fallbackPayload);
+            }
+          }
         } catch (e) {
-          console.warn("Supabase upsert notice:", e);
+          console.warn("Supabase transaction save error:", e);
         }
       }
+
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
     }
 
     async function deleteTransaction(id) {
       if (!confirm("Are you sure you want to delete this transaction?")) return;
-      transactions = transactions.filter(item => item.id !== id);
-      persistLocalTransactions();
-      renderDashboard();
+
+      const userId = await getAuthenticatedUserId();
 
       if (supabaseClient && isValidUUID(id)) {
         try {
-          const userId = getActiveUserId();
           await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
         } catch (e) {
           console.warn("Supabase delete notice:", e);
         }
       }
+
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
     }
 
     function renderDashboard() {

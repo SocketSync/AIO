@@ -336,23 +336,20 @@ class DatabaseService {
     final client = _supabaseService.client;
     final userId = transaction.userId;
 
-    final newRecord = transaction.id.isEmpty
-        ? transaction.copyWith(id: _uuid.v4())
-        : transaction;
-
     if (client != null) {
       try {
+        final payload = transaction.toSupabaseMap();
+        // Remove local ID so Supabase generates UUID automatically on INSERT!
+        payload.remove('id');
         final inserted = await client
             .from('transactions')
-            .insert(newRecord.toSupabaseMap())
+            .insert(payload)
             .select()
             .single();
 
         final created = TransactionRecord.fromJson(inserted);
-        if (!_userTransactions.containsKey(userId)) {
-          _userTransactions[userId] = [];
-        }
-        _userTransactions[userId]!.insert(0, created);
+        // Force Cloud Refresh immediately to confirm database state
+        await getTransactions(userId);
         debugPrint('[DatabaseService:Supabase] Created transaction: ${created.title} - RM ${created.amount}');
         return created;
       } catch (e) {
@@ -361,6 +358,10 @@ class DatabaseService {
     }
 
     await Future.delayed(const Duration(milliseconds: 200));
+    final newRecord = transaction.id.isEmpty
+        ? transaction.copyWith(id: _uuid.v4())
+        : transaction;
+
     if (!_userTransactions.containsKey(userId)) {
       _userTransactions[userId] = [];
     }
@@ -377,12 +378,16 @@ class DatabaseService {
 
     if (client != null) {
       try {
+        final payload = updatedRecord.toSupabaseMap();
+        payload.remove('id');
         await client
             .from('transactions')
-            .update(updatedRecord.toSupabaseMap())
+            .update(payload)
             .eq('id', updatedRecord.id)
             .eq('user_id', userId);
         debugPrint('[DatabaseService:Supabase] Updated transaction: ${updatedRecord.title}');
+        // Force Cloud Refresh immediately
+        await getTransactions(userId);
       } catch (e) {
         debugPrint('[DatabaseService] Supabase update notice: $e');
       }
@@ -413,6 +418,8 @@ class DatabaseService {
             .eq('id', transactionId)
             .eq('user_id', userId);
         debugPrint('[DatabaseService:Supabase] Deleted transaction: $transactionId');
+        // Force Cloud Refresh immediately
+        await getTransactions(userId);
       } catch (e) {
         debugPrint('[DatabaseService] Supabase delete notice: $e');
       }

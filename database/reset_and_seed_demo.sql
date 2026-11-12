@@ -128,7 +128,95 @@ ON CONFLICT (id) DO UPDATE SET
     currency = 'RM',
     monthly_budget = 2500.00;
 
--- 8. Enable Supabase Realtime on public.transactions and public.profiles
+-- 8. Enable Row Level Security (RLS) & establish unified policy
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Enable all actions for users based on user_id" ON public.transactions;
+DROP POLICY IF EXISTS "Users can read own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Users can insert own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Users can update own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Users can delete own transactions" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions readable by all" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions insertable by all" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions updatable by all" ON public.transactions;
+DROP POLICY IF EXISTS "Transactions deletable by all" ON public.transactions;
+DROP POLICY IF EXISTS "Allow demo account operations" ON public.transactions;
+
+CREATE POLICY "Enable all actions for users based on user_id"
+ON public.transactions FOR ALL TO authenticated
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Allow demo account operations"
+ON public.transactions FOR ALL TO anon
+USING (user_id = '00000000-0000-4000-8000-000000000001'::uuid)
+WITH CHECK (user_id = '00000000-0000-4000-8000-000000000001'::uuid);
+
+-- 9. Seed Demo Account Transactions (5 realistic transactions assigned to 00000000-0000-4000-8000-000000000001 using gen_random_uuid())
+INSERT INTO public.transactions (
+  id, user_id, title, amount, type, category_id, category, transaction_date, date, notes
+) VALUES
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'Monthly Tech Salary',
+  4800.00,
+  'income',
+  'salary',
+  'Salary',
+  NOW() - INTERVAL '5 days',
+  NOW() - INTERVAL '5 days',
+  'Monthly direct deposit paycheck'
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'Village Grocer Weekly',
+  142.50,
+  'expense',
+  'groceries',
+  'Groceries',
+  NOW() - INTERVAL '3 days',
+  NOW() - INTERVAL '3 days',
+  'Fresh vegetables, dairy, and organic staples'
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'Electricity & Water Utilities',
+  115.80,
+  'expense',
+  'bills_utilities',
+  'Bills & Utilities',
+  NOW() - INTERVAL '2 days',
+  NOW() - INTERVAL '2 days',
+  'Monthly residential utility payment'
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'Coffee & Bistro Lunch',
+  28.00,
+  'expense',
+  'food_dining',
+  'Food & Dining',
+  NOW() - INTERVAL '1 day',
+  NOW() - INTERVAL '1 day',
+  'Artisanal coffee and sourdough toast'
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'Touch N Go / Transit Reload',
+  50.00,
+  'expense',
+  'transportation',
+  'Transportation',
+  NOW(),
+  NOW(),
+  'MRT transit weekly commute reload'
+);
+
+-- 10. Enable Supabase Realtime on public.transactions and public.profiles
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -145,4 +233,5 @@ BEGIN
     END IF;
 END $$;
 
-SELECT 'Supabase Database Reset Complete! Clean demo account (demo@finwise-app.xyz / Demo Finwise) is ready.' AS status;
+SELECT 'Supabase Database Reset Complete! Clean demo account (demo@finwise-app.xyz / Demo Finwise) with 5 linked transactions is ready.' AS status;
+

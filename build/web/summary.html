@@ -326,6 +326,23 @@
       return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     }
 
+    async function getAuthenticatedUserId() {
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user && session.user.id) {
+            localStorage.setItem("finwise_user_id", session.user.id);
+            return session.user.id;
+          }
+        } catch (_) {}
+      }
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = getActiveEmail().trim();
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
+      return "00000000-0000-4000-8000-000000000001";
+    }
+
     function getActiveUserId() {
       const stored = localStorage.getItem('finwise_user_id');
       if (isValidUUID(stored)) return stored;
@@ -371,7 +388,7 @@
     }
 
     async function loadTransactions() {
-      const userId = getActiveUserId();
+      const userId = await getAuthenticatedUserId();
 
       // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
       if (supabaseClient && isValidUUID(userId)) {
@@ -387,9 +404,9 @@
               id: row.id,
               type: row.type,
               amount: Number(row.amount),
-              category: idToCategoryMap[row.category_id] || "Other Expenses",
+              category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
-              date: row.transaction_date ? row.transaction_date.slice(0, 10) : new Date().toISOString().slice(0, 10)
+              date: (row.transaction_date || row.date || new Date().toISOString()).slice(0, 10)
             }));
             localStorage.setItem(getStorageKey(), JSON.stringify(allTransactions));
             renderSummaryPage();
