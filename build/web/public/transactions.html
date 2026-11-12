@@ -457,93 +457,76 @@
       localStorage.setItem(getStorageKey(), JSON.stringify(records));
     }
 
-    // Real-Time Multi-Device Synchronization Engine
-    let lastKnownTxVersion = 0;
-    let sseSource = null;
+    function generateUUID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function isValidUUID(id) {
+      return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    }
+
+    function getActiveUserId() {
+      const stored = localStorage.getItem('finwise_user_id');
+      if (isValidUUID(stored)) return stored;
+      const email = getActiveEmail().trim();
+      if (email === 'ykwei2005@gmail.com') return '00000000-0000-4000-8000-000000000001';
+      if (email === 'ptutm.kengwei@gmail.com') return '00000000-0000-4000-8000-000000000002';
+      return '00000000-0000-4000-8000-000000000001';
+    }
+
+    // Real-Time Multi-Device Synchronization Engine (Supabase Cloud Sync)
+    let realtimeChannel = null;
 
     function initRealtimeSync() {
-      // 1. Server-Sent Events (SSE) for instant zero-latency push updates
+      if (!supabaseClient) return;
+
+      // 1. Supabase Realtime channel subscription
       try {
-        if (window.EventSource) {
-          if (sseSource) sseSource.close();
-          sseSource = new EventSource('/api/events');
-          sseSource.onmessage = function(e) {
-            try {
-              const data = JSON.parse(e.data);
-              if (data && (data.event === 'tx_updated' || data.event === 'connected')) {
-                if (data.version && data.version !== lastKnownTxVersion) {
-                  lastKnownTxVersion = data.version;
-                  loadTransactions();
-                }
-              }
-            } catch (_) {}
-          };
-          sseSource.onerror = function() {
-            // EventSource will auto-reconnect
-          };
+        if (realtimeChannel) {
+          supabaseClient.removeChannel(realtimeChannel);
         }
+        realtimeChannel = supabaseClient
+          .channel('public:transactions:realtime:tx_page')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+            loadTransactions();
+          })
+          .subscribe();
       } catch (_) {}
 
-      // 2. High-speed lightweight version polling backup (every 2.5 seconds)
-      setInterval(async () => {
-        try {
-          const res = await fetch('/api/transactions/version');
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.success && data.version && data.version !== lastKnownTxVersion) {
-              lastKnownTxVersion = data.version;
-              loadTransactions();
-            }
-          }
-        } catch (_) {}
-      }, 2500);
+      // 2. Cloud synchronization poll every 4 seconds
+      setInterval(() => {
+        if (!document.hidden && !editingTxId) {
+          loadTransactions();
+        }
+      }, 4000);
 
-      // 3. Supabase Realtime channel subscription
-      if (supabaseClient) {
-        try {
-          supabaseClient
-            .channel('public:transactions:realtime:tx_page')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
-              loadTransactions();
-            })
-            .subscribe();
-        } catch (_) {}
-      }
+      // 3. Refresh immediately when user focuses or unlocks device
+      window.addEventListener('focus', () => loadTransactions());
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadTransactions();
+      });
     }
 
     async function loadTransactions() {
-      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      const userId = getActiveUserId();
 
-      // 1. Fetch latest shared transactions from the server sync API
-      try {
-        const apiRes = await fetch('/api/transactions' + (email ? ('?email=' + encodeURIComponent(email)) : ''));
-        if (apiRes.ok) {
-          const apiData = await apiRes.json();
-          if (apiData && apiData.success && Array.isArray(apiData.transactions) && apiData.transactions.length > 0) {
-            allTransactions = apiData.transactions;
-            if (apiData.version) lastKnownTxVersion = apiData.version;
-            saveLocalTransactions(allTransactions);
-            filterAndRenderTransactions();
-            return;
-          }
-        }
-      } catch (_) {}
-
-      // 2. Fallback to local cache if offline
-      if (!allTransactions || allTransactions.length === 0) {
-        allTransactions = loadLocalTransactions();
-      }
-
-      // 3. Cloud fetch if connected
-      const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
-      if (supabaseClient && userId) {
+      // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
+      if (supabaseClient && isValidUUID(userId)) {
         try {
           const { data, error } = await supabaseClient
             .from('transactions')
             .select('*')
             .eq('user_id', userId)
             .order('transaction_date', { ascending: false });
-          if (!error && Array.isArray(data) && data.length) {
+
+          if (!error && Array.isArray(data)) {
             allTransactions = data.map(row => ({
               id: row.id,
               type: row.type,
@@ -554,12 +537,18 @@
               user_id: row.user_id
             }));
             saveLocalTransactions(allTransactions);
+            filterAndRenderTransactions();
+            return;
           }
         } catch (e) {
           console.warn("Supabase load error:", e);
         }
       }
 
+      // 2. Fallback to local cache only if offline
+      if (!allTransactions || allTransactions.length === 0) {
+        allTransactions = loadLocalTransactions();
+      }
       filterAndRenderTransactions();
     }
 
@@ -931,54 +920,46 @@
 
       if (!amount || amount <= 0 || !desc || !date) return;
 
-      const txId = editingTxId || ("tx_" + Date.now() + "_" + Math.floor(Math.random() * 1000));
+      const oldId = editingTxId;
+      const txId = isValidUUID(oldId) ? oldId : generateUUID();
+      const userId = getActiveUserId();
       const record = {
         id: txId,
-        amount: amount,
+        amount: Math.round(amount * 100) / 100,
         description: desc,
         date: date,
         category: category,
         type: type,
-        user_id: localStorage.getItem('finwise_user_id') || '00000000-0000-4000-8000-000000000001'
+        user_id: userId
       };
 
-      if (editingTxId) {
-        allTransactions = allTransactions.map(t => t.id === editingTxId ? record : t);
+      if (oldId) {
+        allTransactions = allTransactions.map(t => t.id === oldId ? record : t);
       } else {
         allTransactions.unshift(record);
       }
 
       saveLocalTransactions(allTransactions);
+      closeTransactionModal();
+      filterAndRenderTransactions();
 
-      // Real-Time Server Broadcast to all connected phones
-      const activeEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: activeEmail, transaction: record })
-      }).catch(() => {});
-
-      // Cloud sync to Supabase
+      // Cloud sync directly to Supabase (Primary Database for all accounts including Demo Accounts)
       if (supabaseClient) {
         try {
           const categoryId = categoryIdMap[category] || "other";
-          const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
           await supabaseClient.from('transactions').upsert({
-            id: txId.startsWith("seed_") || txId.startsWith("tx_") ? undefined : txId,
+            id: txId,
             user_id: userId,
             title: desc,
             amount: record.amount,
             type: type,
             category_id: categoryId,
             transaction_date: date + "T12:00:00Z"
-          });
+          }, { onConflict: 'id' });
         } catch (e) {
           console.warn("Supabase upsert notice:", e);
         }
       }
-
-      closeTransactionModal();
-      filterAndRenderTransactions();
     }
 
     async function deleteTransaction(id) {
@@ -986,25 +967,16 @@
 
       allTransactions = allTransactions.filter(t => t.id !== id);
       saveLocalTransactions(allTransactions);
+      filterAndRenderTransactions();
 
-      // Real-Time Server Broadcast delete to all connected phones
-      const delEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: delEmail, delete_id: id })
-      }).catch(() => {});
-
-      if (supabaseClient && !id.startsWith("seed_") && !id.startsWith("tx_")) {
+      if (supabaseClient && isValidUUID(id)) {
         try {
-          const userId = localStorage.getItem('finwise_user_id') || '00000000-0000-0000-0000-000000000001';
+          const userId = getActiveUserId();
           await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
         } catch (e) {
           console.warn("Supabase delete notice:", e);
         }
       }
-
-      filterAndRenderTransactions();
     }
 
     // Initialize on Load

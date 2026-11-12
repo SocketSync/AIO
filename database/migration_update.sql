@@ -4,7 +4,9 @@
 -- Run this in the Supabase SQL Editor to update your database schema
 -- ==============================================================================
 
--- 1. Add missing profile columns (phone, occupation, currency, monthly_budget, password_hash)
+-- 1. Drop strict foreign key constraint if present so Demo Accounts and OAuth accounts can sync freely, and add optional profile columns
+ALTER TABLE IF EXISTS public.profiles DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+
 ALTER TABLE IF EXISTS public.profiles 
     ADD COLUMN IF NOT EXISTS phone VARCHAR(30),
     ADD COLUMN IF NOT EXISTS occupation VARCHAR(100),
@@ -110,5 +112,22 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
--- 7. Notify complete
+-- 7. Enable Supabase Realtime publication for live cross-device synchronization
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'transactions'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
+    END IF;
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'profiles'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
+    END IF;
+END $$;
+
+-- 8. Notify complete
 SELECT 'FinWise multi-device database schema successfully updated!' AS status;

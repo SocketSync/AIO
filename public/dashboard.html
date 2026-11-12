@@ -339,6 +339,61 @@
       </form>
     </div>
 
+    <!-- First-Time Google Login: Password Setup & Verification Modal -->
+    <div id="googlePasswordSetupModal" class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 flex flex-col gap-3.5">
+        <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">mark_email_read</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary leading-tight">Confirm Account &amp; Set Password</h3>
+              <p class="text-[11px] text-secondary font-semibold mt-0.5">Enable Dual Login (Google + Email)</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeGooglePasswordModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs text-slate-700 leading-relaxed">
+          <p class="font-semibold text-primary mb-1 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">mail</span>
+            <span>Verification Email Sent!</span>
+          </p>
+          <p>We sent a confirmation link to <strong id="setupModalEmailText" class="text-slate-900">your Gmail</strong>. Click the email link or set your standard password below so you can log in using <strong>either Google or Email &amp; Password</strong>.</p>
+        </div>
+
+        <div id="setupModalAlert" class="hidden p-2.5 rounded-xl text-xs font-semibold items-center gap-2"></div>
+
+        <form id="googlePasswordSetupForm" onsubmit="handleInlinePasswordSetup(event)" class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupNewPass">Create Standard Password</label>
+            <input id="setupNewPass" type="password" required minlength="6" placeholder="At least 6 characters" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupConfirmPass">Confirm Password</label>
+            <input id="setupConfirmPass" type="password" required minlength="6" placeholder="Re-enter password" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+          </div>
+          <button type="submit" id="setupSavePassBtn" class="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">lock_check</span>
+            <span>Confirm &amp; Enable Dual Login</span>
+          </button>
+        </form>
+
+        <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+          <button type="button" onclick="resendGooglePasswordEmail()" id="resendSetupEmailBtn" class="text-primary font-semibold hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
+            <span>Resend Verification Email</span>
+          </button>
+          <button type="button" onclick="closeGooglePasswordModal()" class="text-text-muted hover:text-text-primary font-medium">
+            I'll use the email link
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
@@ -441,8 +496,45 @@
       return document.getElementById("selectedMonth").value || localDateString().slice(0, 7);
     }
 
+    function generateUUID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function isValidUUID(id) {
+      return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    }
+
+    const DEMO_DEFAULT_TRANSACTIONS = {
+      "ykwei2005@gmail.com": [
+        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Lead Salary", dateOffset: -5 },
+        { type: "expense", amount: 68.40, category: "Groceries", description: "Village Grocer Weekly Essentials", dateOffset: -3 },
+        { type: "expense", amount: 24.50, category: "Food & Dining", description: "Artisan Coffee & Pastry", dateOffset: -2 },
+        { type: "expense", amount: 85.00, category: "Transportation", description: "RON95 Fuel Refill", dateOffset: -1 },
+        { type: "income", amount: 650.00, category: "Freelance", description: "UI/UX Architecture Advisory", dateOffset: 0 }
+      ],
+      "ptutm.kengwei@gmail.com": [
+        { type: "income", amount: 4800.00, category: "Salary", description: "Senior Product Designer Salary", dateOffset: -6 },
+        { type: "expense", amount: 120.00, category: "Bills & Utilities", description: "High-Speed Fiber Internet Bill", dateOffset: -4 },
+        { type: "expense", amount: 42.90, category: "Food & Dining", description: "Japanese Bento Lunch", dateOffset: -2 },
+        { type: "expense", amount: 95.00, category: "Shopping", description: "Design System Reference Book", dateOffset: -1 },
+        { type: "income", amount: 450.00, category: "Investments", description: "ETF Quarterly Dividend Payout", dateOffset: 0 }
+      ]
+    };
+
     function getActiveUserId() {
-      return localStorage.getItem("finwise_user_id") || "00000000-0000-0000-0000-000000000001";
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      if (email === "ykwei2005@gmail.com") return "00000000-0000-4000-8000-000000000001";
+      if (email === "ptutm.kengwei@gmail.com") return "00000000-0000-4000-8000-000000000002";
+      return "00000000-0000-4000-8000-000000000001";
     }
 
     function getStorageKey() {
@@ -461,14 +553,6 @@
 
     function persistLocalTransactions() {
       localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
-      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      if (email) {
-        fetch('/api/transactions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, transactions: transactions })
-        }).catch(() => {});
-      }
     }
 
     // Check Supabase session & OAuth token / PKCE code callback
@@ -495,7 +579,7 @@
             refresh_token: refreshToken || ''
           });
           if (!error && data && data.user) {
-            saveSupabaseSession(data.user);
+            await saveSupabaseSession(data.user);
             history.replaceState(null, null, window.location.pathname);
             return;
           }
@@ -510,7 +594,7 @@
         try {
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
           if (!error && data && data.session && data.session.user) {
-            saveSupabaseSession(data.session.user);
+            await saveSupabaseSession(data.session.user);
             history.replaceState(null, null, window.location.pathname);
             return;
           }
@@ -524,7 +608,7 @@
         try {
           const { data: { session }, error } = await supabaseClient.auth.getSession();
           if (!error && session && session.user) {
-            saveSupabaseSession(session.user);
+            await saveSupabaseSession(session.user);
             return;
           }
         } catch (_) {}
@@ -541,47 +625,237 @@
       window.location.replace('login.html');
     }
 
-    function saveSupabaseSession(user) {
+    async function saveSupabaseSession(user) {
       const meta = user.user_metadata || {};
+      const appMeta = user.app_metadata || {};
       const email = (user.email || '').toLowerCase().trim();
-      const name = meta.full_name || meta.name || (email ? formatNameFromEmail(email) : "Google User");
+      const isDemo = (email === 'ykwei2005@gmail.com' || email === 'ptutm.kengwei@gmail.com');
+      const defaultDemoName = email === 'ykwei2005@gmail.com' ? 'Ken Wei' : 'John Yeoh';
+      const name = meta.full_name || meta.name || (isDemo ? defaultDemoName : (email ? formatNameFromEmail(email) : "Google User"));
       const avatar = meta.avatar_url || meta.picture || "";
       const initial = (name[0] || 'G').toUpperCase();
       const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
 
+      const providers = Array.isArray(appMeta.providers) ? appMeta.providers : [appMeta.provider || 'google'];
+      const isGoogleProvider = providers.includes('google') || appMeta.provider === 'google';
+
       localStorage.setItem('finwise_user_name', name);
       localStorage.setItem('finwise_user_email', email);
       localStorage.setItem('finwise_user_id', user.id);
-      localStorage.setItem('finwise_auth_provider', 'google');
-      if (avatar) {
-        localStorage.setItem('finwise_user_avatar', avatar);
-        localStorage.setItem(scopedKey, avatar);
-      } else if (!localStorage.getItem('finwise_user_avatar')) {
-        localStorage.setItem('finwise_user_avatar', initial);
+      localStorage.setItem('finwise_auth_provider', isGoogleProvider ? 'google' : 'email');
+
+      if (meta.phone) localStorage.setItem('finwise_user_phone', meta.phone);
+      if (meta.occupation) localStorage.setItem('finwise_user_occupation', meta.occupation);
+      if (meta.currency) localStorage.setItem('finwise_currency', meta.currency);
+      if (meta.monthly_budget) localStorage.setItem('finwise_monthly_budget', String(meta.monthly_budget));
+      if (meta.savings_goal) localStorage.setItem('finwise_savings_goal', String(meta.savings_goal));
+
+      const existingCustomAvatar = localStorage.getItem(scopedKey);
+      const chosenAvatar = isCustomAvatar(existingCustomAvatar) ? existingCustomAvatar : (avatar || initial);
+      localStorage.setItem('finwise_user_avatar', chosenAvatar);
+      if (isCustomAvatar(chosenAvatar)) {
+        localStorage.setItem(scopedKey, chosenAvatar);
       }
 
       localStorage.setItem('finwise_session', JSON.stringify({
         id: user.id,
         name: name,
         email: email,
-        avatar: avatar || initial,
-        provider: 'google',
+        avatar: chosenAvatar,
+        provider: isGoogleProvider ? 'google' : 'email',
         authenticatedAt: new Date().toISOString()
       }));
 
-      // Auto-register in multi-device sync
-      fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (!supabaseClient) return;
+
+      // Sync user profile to public.profiles in Supabase (using valid schema columns)
+      try {
+        const { data: existingProf } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const resolvedName = (existingProf && existingProf.display_name) ? existingProf.display_name : name;
+        const resolvedAvatar = (existingProf && isCustomAvatar(existingProf.avatar_url))
+          ? existingProf.avatar_url
+          : (isCustomAvatar(chosenAvatar) ? chosenAvatar : null);
+        const resolvedCurrency = (existingProf && existingProf.currency)
+          ? existingProf.currency
+          : (localStorage.getItem('finwise_currency') || 'RM');
+        const resolvedBudget = (existingProf && existingProf.monthly_budget)
+          ? Number(existingProf.monthly_budget)
+          : (parseFloat(localStorage.getItem('finwise_monthly_budget')) || (email === 'ptutm.kengwei@gmail.com' ? 3000.00 : 2500.00));
+
+        localStorage.setItem('finwise_user_name', resolvedName);
+        localStorage.setItem('finwise_currency', resolvedCurrency);
+        localStorage.setItem('finwise_monthly_budget', String(resolvedBudget));
+        if (resolvedAvatar) {
+          localStorage.setItem('finwise_user_avatar', resolvedAvatar);
+          localStorage.setItem(scopedKey, resolvedAvatar);
+        }
+
+        await supabaseClient.from('profiles').upsert({
           id: user.id,
-          name: name,
           email: email,
-          avatar: avatar || initial,
-          currency: localStorage.getItem('finwise_currency') || 'RM',
-          monthlyBudget: parseFloat(localStorage.getItem('finwise_monthly_budget')) || 2500.00
-        })
-      }).catch(() => {});
+          display_name: resolvedName,
+          avatar_url: resolvedAvatar,
+          currency: resolvedCurrency,
+          monthly_budget: resolvedBudget
+        }, { onConflict: 'id' });
+      } catch (e) {
+        console.warn("Supabase profile upsert notice:", e);
+      }
+
+      // Feature 2: Auto-initialize Demo Account standard password ('FinWise2026!') in Supabase Auth
+      // so Demo Accounts can sign in via Email/Password or Google across any device!
+      if (isDemo && !meta.demo_password_initialized) {
+        try {
+          await supabaseClient.auth.updateUser({
+            password: "FinWise2026!",
+            data: {
+              full_name: name,
+              demo_password_initialized: true,
+              has_password_set: true,
+              phone: email === 'ykwei2005@gmail.com' ? '+60 12-882 1928' : '+60 17-331 4982',
+              occupation: email === 'ykwei2005@gmail.com' ? 'Financial Analyst & Tech Lead' : 'Senior Product Designer'
+            }
+          });
+          localStorage.setItem('finwise_has_password_' + email, 'true');
+        } catch (e) {
+          console.warn("Demo password auto-init notice:", e);
+        }
+        return;
+      }
+
+      // Feature 3: First-Time Google Login Password Setup & Verification Email Trigger
+      const hasPasswordSet = Boolean(
+        meta.has_password_set ||
+        meta.demo_password_initialized ||
+        localStorage.getItem('finwise_has_password_' + email) === 'true'
+      );
+
+      if (isGoogleProvider && !hasPasswordSet && !isDemo) {
+        // Trigger verification & password setup email on first Google login (rate-limit guarded)
+        const emailSentKey = 'finwise_setup_email_sent_' + email;
+        const lastSentTs = parseInt(localStorage.getItem(emailSentKey) || '0', 10);
+        const now = Date.now();
+        if (now - lastSentTs > 60000) {
+          localStorage.setItem(emailSentKey, String(now));
+          try {
+            await supabaseClient.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin + '/reset_password.html?mode=setup&email=' + encodeURIComponent(email)
+            });
+          } catch (err) {
+            console.warn("First-time Google verification email notice:", err);
+          }
+        }
+        openGooglePasswordModal(email);
+      }
+    }
+
+    function openGooglePasswordModal(email) {
+      const modal = document.getElementById('googlePasswordSetupModal');
+      const emailText = document.getElementById('setupModalEmailText');
+      if (emailText && email) emailText.textContent = email;
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeGooglePasswordModal() {
+      const modal = document.getElementById('googlePasswordSetupModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function showSetupModalAlert(type, msg) {
+      const alertEl = document.getElementById('setupModalAlert');
+      if (!alertEl) return;
+      alertEl.className = 'p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ' +
+        (type === 'error'
+          ? 'bg-red-50 text-red-700 border border-red-200'
+          : 'bg-emerald-50 text-emerald-800 border border-emerald-200');
+      alertEl.innerHTML = `<span class="material-symbols-outlined text-[16px]">${type === 'error' ? 'error' : 'check_circle'}</span><span>${escapeHtml(msg)}</span>`;
+      alertEl.classList.remove('hidden');
+    }
+
+    async function resendGooglePasswordEmail() {
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      if (!email || !supabaseClient) return;
+      const btn = document.getElementById('resendSetupEmailBtn');
+      if (btn) btn.textContent = 'Sending...';
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset_password.html?mode=setup&email=' + encodeURIComponent(email)
+        });
+        if (error) {
+          showSetupModalAlert('error', error.message);
+        } else {
+          showSetupModalAlert('success', 'Verification email sent to ' + email + '! Check your inbox.');
+        }
+      } catch (e) {
+        showSetupModalAlert('error', 'Could not send email: ' + (e.message || e));
+      } finally {
+        if (btn) {
+          btn.innerHTML = '<span class="material-symbols-outlined text-[14px]">forward_to_inbox</span><span>Resend Verification Email</span>';
+        }
+      }
+    }
+
+    async function handleInlinePasswordSetup(event) {
+      event.preventDefault();
+      const newPass = document.getElementById('setupNewPass').value;
+      const confirmPass = document.getElementById('setupConfirmPass').value;
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      const saveBtn = document.getElementById('setupSavePassBtn');
+
+      if (!newPass || newPass.length < 6) {
+        showSetupModalAlert('error', 'Password must be at least 6 characters long.');
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showSetupModalAlert('error', 'Passwords do not match. Please try again.');
+        return;
+      }
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Saving Password...</span>';
+      }
+
+      try {
+        if (supabaseClient) {
+          const { error } = await supabaseClient.auth.updateUser({
+            password: newPass,
+            data: { has_password_set: true }
+          });
+          if (error) {
+            showSetupModalAlert('error', error.message);
+            if (saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">lock_check</span><span>Confirm & Enable Dual Login</span>';
+            }
+            return;
+          }
+        }
+
+        localStorage.setItem('finwise_has_password_' + email, 'true');
+        showSetupModalAlert('success', 'Dual Login enabled! You can now log in with Google or Email & Password.');
+        setTimeout(() => {
+          closeGooglePasswordModal();
+        }, 1200);
+      } catch (err) {
+        showSetupModalAlert('error', 'Error setting password: ' + (err.message || err));
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">lock_check</span><span>Confirm & Enable Dual Login</span>';
+        }
+      }
     }
 
     function formatNameFromEmail(email) {
@@ -641,123 +915,192 @@
       }
     }
 
-    // Real-Time Transaction Synchronization Engine (Multi-Device Live Sync)
-    let lastKnownTxVersion = 0;
-    let sseSource = null;
+    // Real-Time Cloud Synchronization Engine (Supabase Realtime + Cross-Device Poll)
+    let realtimeChannel = null;
 
     function initRealtimeSync() {
-      // 1. Server-Sent Events (SSE) for instant zero-latency push updates
+      if (!supabaseClient) return;
+
+      // 1. Supabase Realtime channel subscription for instant push updates on transactions & profiles
       try {
-        if (window.EventSource) {
-          if (sseSource) sseSource.close();
-          sseSource = new EventSource('/api/events');
-          sseSource.onmessage = function(e) {
-            try {
-              const data = JSON.parse(e.data);
-              if (data && (data.event === 'tx_updated' || data.event === 'connected')) {
-                if (data.version && data.version !== lastKnownTxVersion) {
-                  lastKnownTxVersion = data.version;
-                  loadTransactions();
-                }
-              }
-            } catch (_) {}
-          };
-          sseSource.onerror = function() {
-            // EventSource will auto-reconnect
-          };
+        if (realtimeChannel) {
+          supabaseClient.removeChannel(realtimeChannel);
+        }
+        realtimeChannel = supabaseClient
+          .channel('public:finwise:realtime:dash')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+            loadTransactions();
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+            loadTransactions();
+          })
+          .subscribe();
+      } catch (e) {
+        console.warn("Supabase Realtime subscription notice:", e);
+      }
+
+      // 2. Cloud synchronization poll every 4 seconds (ensures instant updates even across strict firewalls)
+      setInterval(() => {
+        if (!document.hidden && !editingTransactionId) {
+          loadTransactions();
+        }
+      }, 4000);
+
+      // 3. Refresh immediately when user switches back to this tab or unlocks phone
+      window.addEventListener('focus', () => loadTransactions());
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadTransactions();
+      });
+    }
+
+    // Seed initial Demo Account transactions directly to Supabase if empty on first migration
+    async function seedDemoTransactionsIfNeeded(userId, email) {
+      const defaults = DEMO_DEFAULT_TRANSACTIONS[email];
+      if (!defaults || !supabaseClient || !isValidUUID(userId)) return [];
+
+      const seededKey = 'finwise_cloud_seeded_' + userId;
+      if (localStorage.getItem(seededKey) === 'true') return [];
+
+      // Also check user_metadata so we never re-seed if user intentionally deleted all rows
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user && user.user_metadata && user.user_metadata.cloud_tx_seeded) {
+          localStorage.setItem(seededKey, 'true');
+          return [];
         }
       } catch (_) {}
 
-      // 2. High-speed lightweight version polling backup (every 2.5 seconds)
-      setInterval(async () => {
-        try {
-          const res = await fetch('/api/transactions/version');
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.success && data.version && data.version !== lastKnownTxVersion) {
-              lastKnownTxVersion = data.version;
-              loadTransactions();
-            }
-          }
-        } catch (_) {}
-      }, 2500);
+      const now = new Date();
+      const rowsToInsert = defaults.map(item => {
+        const d = new Date(now.getTime() + (item.dateOffset || 0) * 86400000);
+        const dateStr = localDateString(d);
+        return {
+          id: generateUUID(),
+          user_id: userId,
+          title: item.description,
+          amount: item.amount,
+          type: item.type,
+          category_id: categoryIdMap[item.category] || 'other',
+          transaction_date: dateStr + 'T12:00:00Z'
+        };
+      });
 
-      // 3. Supabase Realtime channel subscription
-      if (supabaseClient) {
-        try {
-          supabaseClient
-            .channel('public:transactions:realtime:dash')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
-              loadTransactions();
-            })
-            .subscribe();
-        } catch (_) {}
+      try {
+        const { data, error } = await supabaseClient
+          .from('transactions')
+          .upsert(rowsToInsert, { onConflict: 'id' })
+          .select('*');
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          localStorage.setItem(seededKey, 'true');
+          try {
+            await supabaseClient.auth.updateUser({ data: { cloud_tx_seeded: true } });
+          } catch (_) {}
+          return data;
+        }
+      } catch (e) {
+        console.warn("Demo cloud seed notice:", e);
       }
+      return [];
     }
 
-    // Synchronize transactions across all devices in real time
+    // Synchronize transactions across all devices in real time via Supabase
     async function loadTransactions() {
       const userId = getActiveUserId();
       const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
 
-      // 1. Fetch latest shared transactions from the server sync API
-      try {
-        const apiRes = await fetch('/api/transactions' + (email ? ('?email=' + encodeURIComponent(email)) : ''));
-        if (apiRes.ok) {
-          const apiData = await apiRes.json();
-          if (apiData && apiData.success && Array.isArray(apiData.transactions) && apiData.transactions.length > 0) {
-            transactions = apiData.transactions;
-            if (apiData.version) lastKnownTxVersion = apiData.version;
-            localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
-            renderDashboard();
-          }
-        }
-      } catch (_) {}
-
-      // 2. Fallback to local cache if offline
-      if (!transactions || transactions.length === 0) {
-        transactions = loadLocalTransactions();
-      }
-
-      // 3. Sync with Supabase Cloud
-      if (supabaseClient && userId) {
+      // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
+      if (supabaseClient && isValidUUID(userId)) {
         try {
-          const { data, error } = await supabaseClient
+          let { data, error } = await supabaseClient
             .from('transactions')
             .select('*')
+            .eq('user_id', userId)
             .order('transaction_date', { ascending: false });
 
-          if (!error && Array.isArray(data) && data.length > 0) {
+          if (!error && Array.isArray(data)) {
+            // If Demo Account has 0 transactions in Supabase and hasn't been migrated yet, migrate local or seed defaults to Supabase
+            if (data.length === 0 && (email === 'ykwei2005@gmail.com' || email === 'ptutm.kengwei@gmail.com')) {
+              const localExisting = loadLocalTransactions();
+              const seededKey = 'finwise_cloud_seeded_' + userId;
+              if (localExisting.length > 0 && localStorage.getItem(seededKey) !== 'true') {
+                const migratedRows = localExisting.map(t => ({
+                  id: isValidUUID(t.id) ? t.id : generateUUID(),
+                  user_id: userId,
+                  title: t.description || t.title || 'Transaction',
+                  amount: Number(t.amount || 0),
+                  type: t.type || 'expense',
+                  category_id: categoryIdMap[t.category] || 'other',
+                  transaction_date: (t.date || localDateString()) + 'T12:00:00Z'
+                }));
+                const { data: inserted } = await supabaseClient
+                  .from('transactions')
+                  .upsert(migratedRows, { onConflict: 'id' })
+                  .select('*');
+                if (Array.isArray(inserted) && inserted.length > 0) {
+                  data = inserted;
+                  localStorage.setItem(seededKey, 'true');
+                  try { await supabaseClient.auth.updateUser({ data: { cloud_tx_seeded: true } }); } catch (_) {}
+                }
+              } else {
+                const seeded = await seedDemoTransactionsIfNeeded(userId, email);
+                if (seeded.length > 0) data = seeded;
+              }
+            }
+
             transactions = data.map(row => ({
               id: row.id,
               type: row.type,
               amount: Number(row.amount),
               category: idToCategoryMap[row.category_id] || "Other Expenses",
-              description: row.title || row.description,
+              description: row.title || row.description || "",
               date: row.transaction_date ? row.transaction_date.slice(0, 10) : localDateString()
             }));
             persistLocalTransactions();
             renderDashboard();
           }
 
-          // Check for updated avatar from Supabase profiles
+          // Check for updated profile (name, avatar, currency, budget) from Supabase profiles
           const { data: profData } = await supabaseClient
             .from('profiles')
-            .select('avatar_url, display_name')
+            .select('avatar_url, display_name, currency, monthly_budget')
             .eq('id', userId)
             .maybeSingle();
 
-          if (profData && profData.avatar_url && isCustomAvatar(profData.avatar_url)) {
-            const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
-            localStorage.setItem('finwise_user_avatar', profData.avatar_url);
-            localStorage.setItem(scopedKey, profData.avatar_url);
-            applyUserProfile();
+          if (profData) {
+            let profileChanged = false;
+            if (profData.display_name && profData.display_name !== localStorage.getItem('finwise_user_name')) {
+              localStorage.setItem('finwise_user_name', profData.display_name);
+              profileChanged = true;
+            }
+            if (profData.currency && profData.currency !== localStorage.getItem('finwise_currency')) {
+              localStorage.setItem('finwise_currency', profData.currency);
+              profileChanged = true;
+            }
+            if (profData.monthly_budget) {
+              localStorage.setItem('finwise_monthly_budget', String(profData.monthly_budget));
+            }
+            if (profData.avatar_url && isCustomAvatar(profData.avatar_url)) {
+              const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+              if (localStorage.getItem('finwise_user_avatar') !== profData.avatar_url) {
+                localStorage.setItem('finwise_user_avatar', profData.avatar_url);
+                localStorage.setItem(scopedKey, profData.avatar_url);
+                profileChanged = true;
+              }
+            }
+            if (profileChanged) {
+              applyUserProfile();
+              renderDashboard();
+            }
           }
+          return;
         } catch (e) {
           console.warn("Supabase load transactions notice:", e);
         }
       }
 
+      // 2. Offline fallback to local cache if network is unreachable
+      transactions = loadLocalTransactions();
       renderDashboard();
     }
 
@@ -1065,7 +1408,8 @@
       const category = document.getElementById("transactionCategory").value;
       const description = document.getElementById("transactionDescription").value.trim();
       const dateStr = document.getElementById("transactionDate").value;
-      const txId = editingTransactionId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : "tx_" + Date.now());
+      const oldId = editingTransactionId;
+      const txId = isValidUUID(oldId) ? oldId : generateUUID();
 
       const record = {
         id: txId,
@@ -1076,8 +1420,8 @@
         date: dateStr
       };
 
-      if (editingTransactionId) {
-        transactions = transactions.map(item => item.id === editingTransactionId ? record : item);
+      if (oldId) {
+        transactions = transactions.map(item => item.id === oldId ? record : item);
       } else {
         transactions.unshift(record);
       }
@@ -1085,28 +1429,20 @@
       closeTransactionDialog();
       renderDashboard();
 
-      // Real-Time Server Broadcast to all connected phones
-      const activeEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: activeEmail, transaction: record })
-      }).catch(() => {});
-
-      // Cloud Sync to Supabase
+      // Cloud Sync directly to Supabase (Primary Database for all users & Demo Accounts)
       if (supabaseClient) {
         try {
           const categoryId = categoryIdMap[category] || "other";
           const userId = getActiveUserId();
           await supabaseClient.from('transactions').upsert({
-            id: txId.startsWith("seed_") || txId.startsWith("tx_") ? undefined : txId,
+            id: txId,
             user_id: userId,
             title: description,
             amount: record.amount,
             type: type,
             category_id: categoryId,
             transaction_date: dateStr + "T12:00:00Z"
-          });
+          }, { onConflict: 'id' });
         } catch (e) {
           console.warn("Supabase upsert notice:", e);
         }
@@ -1119,15 +1455,7 @@
       persistLocalTransactions();
       renderDashboard();
 
-      // Real-Time Server Broadcast delete to all connected phones
-      const delEmail = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
-      fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: delEmail, delete_id: id })
-      }).catch(() => {});
-
-      if (supabaseClient && !id.startsWith("seed_") && !id.startsWith("tx_")) {
+      if (supabaseClient && isValidUUID(id)) {
         try {
           const userId = getActiveUserId();
           await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);

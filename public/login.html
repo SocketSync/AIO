@@ -449,74 +449,28 @@
     }
 
     async function selectGoogleAccount(name, email, initial) {
-      const statusBox = document.getElementById('google-auth-status');
-      statusBox.classList.remove('hidden');
-      statusBox.classList.add('flex');
-      document.getElementById('google-status-text').textContent = 'Fetching Google Account: ' + email + '...';
-
-      // Deterministic UUID for Supabase
       const cleanEmail = email.trim().toLowerCase();
-      let userId;
-      if (cleanEmail === 'ykwei2005@gmail.com') {
-        userId = '00000000-0000-4000-8000-000000000001';
-      } else if (cleanEmail === 'ptutm.kengwei@gmail.com') {
-        userId = '00000000-0000-4000-8000-000000000002';
-      } else {
-        userId = '00000000-0000-4000-8000-' + Math.abs(cleanEmail.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
-      }
-
-      // Check for previously saved custom profile picture
-      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
-      const accounts = getUserAccounts();
-      const acc = accounts[cleanEmail] || {};
-      const candidateAvatar = localStorage.getItem(scopedKey) || acc.avatar || '';
-      const finalAvatar = isCustomAvatar(candidateAvatar) ? candidateAvatar : initial;
-
-      // Save verified Google session
-      localStorage.setItem('finwise_user_name', name);
-      localStorage.setItem('finwise_user_email', cleanEmail);
-      localStorage.setItem('finwise_user_id', userId);
-      localStorage.setItem('finwise_auth_provider', 'google');
-      localStorage.setItem('finwise_user_avatar', finalAvatar);
-      localStorage.setItem(scopedKey, finalAvatar);
-
-      if (acc) {
-        if (acc.phone) localStorage.setItem('finwise_user_phone', acc.phone);
-        if (acc.occupation) localStorage.setItem('finwise_user_occupation', acc.occupation);
-        if (acc.currency) localStorage.setItem('finwise_currency', acc.currency);
-        if (acc.monthlyBudget) localStorage.setItem('finwise_monthly_budget', acc.monthlyBudget.toString());
-      }
-
-      localStorage.setItem('finwise_session', JSON.stringify({
-        id: userId,
-        name: name,
-        email: cleanEmail,
-        avatar: finalAvatar,
-        provider: 'google',
-        authenticatedAt: new Date().toISOString()
-      }));
-
-      // Try creating/syncing profile in Supabase without wiping existing avatar
+      closeGoogleModal();
       if (supabaseClient) {
         try {
-          await supabaseClient.from('profiles').upsert({
-            id: userId,
-            email: cleanEmail,
-            display_name: name,
-            avatar_url: isCustomAvatar(finalAvatar) ? finalAvatar : null,
-            currency: acc.currency || 'RM',
-            monthly_budget: acc.monthlyBudget || 2500.00
+          const redirectTarget = window.location.pathname.includes('/public/')
+            ? window.location.origin + '/public/dashboard.html'
+            : window.location.origin + '/dashboard.html';
+
+          await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTarget,
+              queryParams: {
+                login_hint: cleanEmail,
+                prompt: 'select_account'
+              }
+            }
           });
+          return;
         } catch (_) {}
       }
-
-      setTimeout(() => {
-        document.getElementById('google-status-text').textContent = 'Welcome, ' + name + '! Redirecting...';
-        setTimeout(() => {
-          const target = window.location.href.includes('/public/') ? 'dashboard.html' : 'dashboard.html';
-          window.location.href = target;
-        }, 500);
-      }, 700);
+      fetchGoogleAccount();
     }
 
     function sha256Sync(ascii) {
@@ -572,60 +526,28 @@
       return sha256Sync(str);
     }
 
-    function getUserAccounts() {
-      let accounts = {};
-      try {
-        const raw = localStorage.getItem('finwise_user_accounts');
-        if (raw) accounts = JSON.parse(raw);
-      } catch (_) {}
-
-      // Always guarantee pre-seeded test accounts exist with verified SHA-256 hash of "FinWise2026!"
-      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
-      if (!accounts["ykwei2005@gmail.com"] || !accounts["ykwei2005@gmail.com"].passwordHash) {
-        accounts["ykwei2005@gmail.com"] = {
-          id: "00000000-0000-4000-8000-000000000001",
-          name: "Ken Wei",
-          email: "ykwei2005@gmail.com",
-          phone: "+60 12-882 1928",
-          occupation: "Financial Analyst & Tech Lead",
-          currency: "RM",
-          monthlyBudget: 2500.00,
-          passwordHash: defaultHash,
-          avatar: "K"
-        };
+    const DEMO_ACCOUNTS = {
+      "ykwei2005@gmail.com": {
+        id: "00000000-0000-4000-8000-000000000001",
+        name: "Ken Wei",
+        email: "ykwei2005@gmail.com",
+        phone: "+60 12-882 1928",
+        occupation: "Financial Analyst & Tech Lead",
+        currency: "RM",
+        monthlyBudget: 2500.00,
+        avatar: "K"
+      },
+      "ptutm.kengwei@gmail.com": {
+        id: "00000000-0000-4000-8000-000000000002",
+        name: "John Yeoh",
+        email: "ptutm.kengwei@gmail.com",
+        phone: "+60 17-331 4982",
+        occupation: "Senior Product Designer",
+        currency: "RM",
+        monthlyBudget: 3000.00,
+        avatar: "J"
       }
-      if (!accounts["ptutm.kengwei@gmail.com"] || !accounts["ptutm.kengwei@gmail.com"].passwordHash) {
-        accounts["ptutm.kengwei@gmail.com"] = {
-          id: "00000000-0000-4000-8000-000000000002",
-          name: "John Yeoh",
-          email: "ptutm.kengwei@gmail.com",
-          phone: "+60 17-331 4982",
-          occupation: "Senior Product Designer",
-          currency: "RM",
-          monthlyBudget: 3000.00,
-          passwordHash: defaultHash,
-          avatar: "J"
-        };
-      }
-      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
-      return accounts;
-    }
-
-    // Sync accounts in real time from server API across all devices
-    async function syncAccountsWithServer() {
-      try {
-        const res = await fetch('/api/accounts');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.success && data.accounts) {
-            const local = getUserAccounts();
-            const merged = { ...data.accounts, ...local };
-            localStorage.setItem('finwise_user_accounts', JSON.stringify(merged));
-          }
-        }
-      } catch (_) {}
-    }
-    syncAccountsWithServer();
+    };
 
     function showAuthAlert(type, message) {
       const alertBox = document.getElementById('auth-alert');
@@ -655,14 +577,17 @@
       handleDirectLogin();
     }
 
-    function completeUserSession(userId, name, email, provider) {
+    async function completeUserSession(userId, name, email, provider, profileMeta = {}) {
       const cleanEmail = (email || '').toLowerCase().trim();
       const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
-      const accounts = getUserAccounts();
-      const acc = accounts[cleanEmail] || {};
+      const demoPreset = DEMO_ACCOUNTS[cleanEmail] || {};
 
-      const candidateAvatar = localStorage.getItem(scopedKey) || acc.avatar || '';
+      const candidateAvatar = profileMeta.avatar || localStorage.getItem(scopedKey) || demoPreset.avatar || '';
       const finalAvatar = isCustomAvatar(candidateAvatar) ? candidateAvatar : (name[0] || 'U').toUpperCase();
+      const finalCurrency = profileMeta.currency || demoPreset.currency || 'RM';
+      const finalBudget = profileMeta.monthlyBudget || demoPreset.monthlyBudget || 2500.00;
+      const finalPhone = profileMeta.phone || demoPreset.phone || '';
+      const finalOccupation = profileMeta.occupation || demoPreset.occupation || '';
 
       localStorage.setItem('finwise_user_name', name);
       localStorage.setItem('finwise_user_email', cleanEmail);
@@ -670,14 +595,10 @@
       localStorage.setItem('finwise_auth_provider', provider);
       localStorage.setItem('finwise_user_avatar', finalAvatar);
       localStorage.setItem(scopedKey, finalAvatar);
-
-      // Pre-populate account profile fields if available
-      if (acc) {
-        if (acc.phone) localStorage.setItem('finwise_user_phone', acc.phone);
-        if (acc.occupation) localStorage.setItem('finwise_user_occupation', acc.occupation);
-        if (acc.currency) localStorage.setItem('finwise_currency', acc.currency);
-        if (acc.monthlyBudget) localStorage.setItem('finwise_monthly_budget', acc.monthlyBudget.toString());
-      }
+      localStorage.setItem('finwise_user_phone', finalPhone);
+      localStorage.setItem('finwise_user_occupation', finalOccupation);
+      localStorage.setItem('finwise_currency', finalCurrency);
+      localStorage.setItem('finwise_monthly_budget', finalBudget.toString());
 
       localStorage.setItem('finwise_session', JSON.stringify({
         id: userId,
@@ -688,8 +609,21 @@
         authenticatedAt: new Date().toISOString()
       }));
 
-      const target = window.location.href.includes('/public/') ? 'dashboard.html' : 'dashboard.html';
-      window.location.href = target;
+      // Sync profile to Supabase Cloud (using valid schema columns)
+      if (supabaseClient && userId) {
+        try {
+          await supabaseClient.from('profiles').upsert({
+            id: userId,
+            email: cleanEmail,
+            display_name: name,
+            avatar_url: isCustomAvatar(finalAvatar) ? finalAvatar : null,
+            currency: finalCurrency,
+            monthly_budget: Number(finalBudget)
+          }, { onConflict: 'id' });
+        } catch (_) {}
+      }
+
+      window.location.href = 'dashboard.html';
     }
 
     async function handleDirectLogin() {
@@ -709,140 +643,109 @@
       loginBtn.disabled = true;
       loginBtn.innerHTML = `
         <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-        <span>Checking Database...</span>
+        <span>Authenticating with Supabase...</span>
       `;
 
       try {
-        const inputHash = await sha256(password);
+        if (!supabaseClient) {
+          throw new Error('Supabase Cloud client is not initialized.');
+        }
 
-        // 1. Verify against Registered Database Accounts (SHA-256 hash match)
-        const accounts = getUserAccounts();
-        const account = accounts[email];
+        // 1. Primary Cloud Authentication: Sign in via Supabase Auth (supports both Demo & Dual-Login Google/Email accounts)
+        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
 
-        if (account) {
-          if (account.passwordHash && account.passwordHash !== inputHash) {
-            showAuthAlert('error', 'Incorrect password. Please try again.');
-            passInput.focus();
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = originalBtnHtml;
-            return;
-          }
+        if (!authError && authData && authData.user) {
+          const user = authData.user;
+          const meta = user.user_metadata || {};
+          const demoPreset = DEMO_ACCOUNTS[email] || {};
 
-          // Password matches perfectly!
-          showAuthAlert('success', 'Password verified with database! Welcome back, ' + account.name + '.');
-          
-          if (supabaseClient) {
-            supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(() => {});
-          }
+          // Fetch latest profile from Supabase profiles table
+          let profRow = null;
+          try {
+            const { data: pData } = await supabaseClient
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .maybeSingle();
+            profRow = pData;
+          } catch (_) {}
 
-          setTimeout(() => {
-            completeUserSession(account.id, account.name, email, 'email');
-          }, 450);
+          const displayName = (profRow && profRow.display_name) || meta.full_name || meta.name || demoPreset.name || formatNameFromEmail(email);
+          showAuthAlert('success', 'Authenticated with Supabase Cloud! Welcome back, ' + displayName + '.');
+
+          await completeUserSession(user.id, displayName, email, 'email', {
+            avatar: (profRow && profRow.avatar_url) || meta.avatar_url || meta.picture || demoPreset.avatar,
+            currency: (profRow && profRow.currency) || meta.currency || demoPreset.currency || 'RM',
+            monthlyBudget: (profRow && profRow.monthly_budget) || meta.monthly_budget || demoPreset.monthlyBudget || 2500.00,
+            phone: meta.phone || demoPreset.phone || '',
+            occupation: meta.occupation || demoPreset.occupation || ''
+          });
           return;
         }
 
-        // 2. Multi-device check: query server sync API for account created on another device
-        try {
-          const srvRes = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, passwordHash: inputHash })
-          });
-          if (srvRes.ok) {
-            const srvData = await srvRes.json();
-            if (srvData && srvData.success && srvData.account) {
-              const matched = srvData.account;
-              const curAccounts = getUserAccounts();
-              curAccounts[email] = matched;
-              localStorage.setItem('finwise_user_accounts', JSON.stringify(curAccounts));
-              showAuthAlert('success', 'Verified with cross-device sync! Welcome back, ' + (matched.name || email) + '.');
-              setTimeout(() => {
-                completeUserSession(matched.id, matched.name, email, 'email');
-              }, 450);
-              return;
-            }
-          } else if (srvRes.status === 401) {
-            showAuthAlert('error', 'Incorrect password. Please try again.');
+        // 2. Demo Account Cloud Migration Handling (ykwei2005@gmail.com / ptutm.kengwei@gmail.com)
+        if (DEMO_ACCOUNTS[email]) {
+          const demoAcc = DEMO_ACCOUNTS[email];
+          if (password !== 'FinWise2026!') {
+            showAuthAlert('error', 'Incorrect password. Please enter your password or FinWise2026! for the demo account.');
             passInput.focus();
             loginBtn.disabled = false;
             loginBtn.innerHTML = originalBtnHtml;
             return;
           }
-        } catch (_) {}
 
-        // 3. Check Supabase profiles table or Supabase Auth
-        if (supabaseClient) {
-          try {
-            // Check Supabase profiles table directly
-            const { data: profData } = await supabaseClient
-              .from('profiles')
-              .select('*')
-              .eq('email', email)
-              .maybeSingle();
+          // Check if Supabase profiles table allows direct demo upsert (if migration SQL has been run)
+          const { error: directUpsertErr } = await supabaseClient.from('profiles').upsert({
+            id: demoAcc.id,
+            email: demoAcc.email,
+            display_name: demoAcc.name,
+            currency: demoAcc.currency,
+            monthly_budget: demoAcc.monthlyBudget
+          }, { onConflict: 'id' });
 
-            if (profData) {
-              if (profData.password_hash && profData.password_hash !== inputHash) {
-                showAuthAlert('error', 'Incorrect password. Please try again.');
-                passInput.focus();
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = originalBtnHtml;
-                return;
-              }
-              // Password matches Supabase cloud profile!
-              showAuthAlert('success', 'Verified with Supabase Cloud! Welcome, ' + (profData.display_name || email) + '.');
-              const curAccounts = getUserAccounts();
-              curAccounts[email] = {
-                id: profData.id,
-                name: profData.display_name || formatNameFromEmail(email),
-                email: email,
-                passwordHash: inputHash,
-                phone: profData.phone || '',
-                occupation: profData.occupation || '',
-                currency: profData.currency || 'RM',
-                monthlyBudget: profData.monthly_budget || 2500.00,
-                avatar: profData.avatar_url || ''
-              };
-              localStorage.setItem('finwise_user_accounts', JSON.stringify(curAccounts));
-              setTimeout(() => {
-                completeUserSession(profData.id, profData.display_name, email, 'email');
-              }, 450);
-              return;
-            }
-
-            // Fallback: Supabase Auth check
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-              email: email,
-              password: password
-            });
-
-            if (!error && data && data.user) {
-              showAuthAlert('success', 'Password verified with Supabase! Redirecting...');
-              const user = data.user;
-              const meta = user.user_metadata || {};
-              const name = meta.full_name || meta.name || formatNameFromEmail(email);
-              setTimeout(() => {
-                completeUserSession(user.id, name, email, 'email');
-              }, 450);
-              return;
-            } else if (error) {
-              if (error.message.toLowerCase().includes('invalid') || error.message.toLowerCase().includes('credentials')) {
-                showAuthAlert('error', 'Incorrect password. Please try again.');
-                passInput.focus();
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = originalBtnHtml;
-                return;
-              }
-            }
-          } catch (sbErr) {
-            console.warn("Supabase auth notice:", sbErr);
+          if (!directUpsertErr) {
+            showAuthAlert('success', 'Connected Demo Account (' + demoAcc.name + ') to Supabase Cloud!');
+            await completeUserSession(demoAcc.id, demoAcc.name, demoAcc.email, 'email', demoAcc);
+            return;
           }
+
+          // If RLS requires an authenticated Supabase Auth session and the demo account hasn't set its password yet,
+          // authenticate via Google OAuth with login_hint so dashboard.html automatically sets FinWise2026! in Supabase Auth!
+          showAuthAlert('success', 'Connecting Demo Account (' + demoAcc.email + ') to Supabase Cloud via Google OAuth...');
+          const redirectTarget = window.location.pathname.includes('/public/')
+            ? window.location.origin + '/public/dashboard.html?demo_init=true'
+            : window.location.origin + '/dashboard.html?demo_init=true';
+
+          await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTarget,
+              queryParams: {
+                login_hint: demoAcc.email,
+                prompt: 'select_account'
+              }
+            }
+          });
+          return;
         }
 
-        // 4. Email not found in any database
-        showAuthAlert('error', 'No account found with this email (' + email + '). Please register first.');
-        emailInput.focus();
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = originalBtnHtml;
+        // 3. Standard Account Error Handling
+        if (authError) {
+          const msg = (authError.message || '').toLowerCase();
+          if (msg.includes('email not confirmed') || msg.includes('confirm')) {
+            showAuthAlert('error', 'Please confirm your email address via the verification link sent to ' + email + '.');
+          } else if (msg.includes('invalid') || msg.includes('credentials')) {
+            showAuthAlert('error', 'Invalid email or password. If you signed in with Google previously and have not set a password yet, please sign in with Google or click "Forgot Password" to set one.');
+          } else {
+            showAuthAlert('error', authError.message);
+          }
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = originalBtnHtml;
+          return;
+        }
 
       } catch (err) {
         showAuthAlert('error', 'Authentication error: ' + (err.message || err));
@@ -855,30 +758,21 @@
       if (supabaseClient) {
         try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
       }
-      const accounts = localStorage.getItem('finwise_user_accounts');
-      const preservedTx = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('finwise_transactions_')) {
-          preservedTx[k] = localStorage.getItem(k);
-        }
-      }
       localStorage.clear();
-      if (accounts) localStorage.setItem('finwise_user_accounts', accounts);
-      for (const k in preservedTx) localStorage.setItem(k, preservedTx[k]);
       try { sessionStorage.clear(); } catch (_) {}
       try {
         document.cookie.split(";").forEach(c => {
           document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
       } catch (_) {}
-      showAuthAlert('success', 'All previous tokens and sessions wiped clean! Ready to sign in as Keng Wei.');
+      showAuthAlert('success', 'All previous tokens and sessions wiped clean!');
     }
 
-    function saveOAuthUserAndRedirect(user) {
+    async function saveOAuthUserAndRedirect(user) {
       const meta = user.user_metadata || {};
       const email = (user.email || "").toLowerCase().trim();
-      const name = meta.full_name || meta.name || (email ? formatNameFromEmail(email) : "Google User");
+      const demoPreset = DEMO_ACCOUNTS[email] || {};
+      const name = meta.full_name || meta.name || demoPreset.name || (email ? formatNameFromEmail(email) : "Google User");
       const avatar = meta.avatar_url || meta.picture || "";
       const initial = (name[0] || 'G').toUpperCase();
       const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
@@ -903,19 +797,19 @@
         authenticatedAt: new Date().toISOString()
       }));
 
-      // Auto-register with multi-device sync
-      fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: user.id,
-          name: name,
-          email: email,
-          avatar: avatar || initial,
-          currency: 'RM',
-          monthlyBudget: 2500.00
-        })
-      }).catch(() => {});
+      // Sync profile to Supabase profiles table using valid schema columns
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('profiles').upsert({
+            id: user.id,
+            email: email,
+            display_name: name,
+            avatar_url: avatar || null,
+            currency: meta.currency || demoPreset.currency || 'RM',
+            monthly_budget: Number(meta.monthly_budget || demoPreset.monthlyBudget || 2500.00)
+          }, { onConflict: 'id' });
+        } catch (_) {}
+      }
 
       window.location.replace('dashboard.html');
     }

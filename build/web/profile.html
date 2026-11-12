@@ -740,9 +740,9 @@
       const account = accounts[originalEmail] || {};
       const scopedAvatarKey = "finwise_user_avatar_" + originalEmail.replace(/[^a-z0-9]/g, "_");
 
-      const name = localStorage.getItem('finwise_user_name') || account.name || 'FinWise User';
+      let name = localStorage.getItem('finwise_user_name') || account.name || 'FinWise User';
       const email = originalEmail;
-      
+
       // Prioritize saved custom avatar over default single-letter initial
       let avatar = localStorage.getItem(scopedAvatarKey) || account.avatar || '';
       if (!isCustomAvatar(avatar)) {
@@ -751,14 +751,14 @@
       }
       currentAvatarData = avatar;
 
-      const phone = localStorage.getItem('finwise_user_phone') || account.phone || '';
-      const occupation = localStorage.getItem('finwise_user_occupation') || account.occupation || '';
-      const currency = localStorage.getItem('finwise_currency') || account.currency || 'RM';
-      const monthlyBudget = localStorage.getItem('finwise_monthly_budget') || account.monthlyBudget || '2500.00';
-      const savingsGoal = localStorage.getItem('finwise_savings_goal') || account.savingsGoal || '10000.00';
+      let phone = localStorage.getItem('finwise_user_phone') || account.phone || '';
+      let occupation = localStorage.getItem('finwise_user_occupation') || account.occupation || '';
+      let currency = localStorage.getItem('finwise_currency') || account.currency || 'RM';
+      let monthlyBudget = localStorage.getItem('finwise_monthly_budget') || account.monthlyBudget || '2500.00';
+      let savingsGoal = localStorage.getItem('finwise_savings_goal') || account.savingsGoal || '10000.00';
       const provider = localStorage.getItem('finwise_auth_provider') || 'email';
 
-      // Populate Inputs
+      // Populate Inputs immediately from local state
       document.getElementById('prof-name').value = name;
       document.getElementById('prof-email').value = email;
       document.getElementById('prof-phone').value = phone;
@@ -779,24 +779,68 @@
 
       renderAvatarElement(document.getElementById('hero-avatar-display'), avatar, name);
 
-      // Check live Supabase profile if online
+      // Update Current Password placeholder if Google user hasn't set a standard password yet
+      const hasPasswordSet = localStorage.getItem('finwise_has_password_' + email) === 'true' || Boolean(account && account.passwordHash);
+      const currPassInput = document.getElementById('prof-current-pass');
+      if (currPassInput && provider === 'google' && !hasPasswordSet) {
+        currPassInput.placeholder = 'Optional for first-time Google password setup';
+      }
+
+      // 2. Sync latest profile & metadata from live Supabase Cloud
       if (supabaseClient) {
         try {
+          // Fetch latest user_metadata from Supabase Auth (phone, occupation, savings_goal, has_password_set)
+          const { data: authData } = await supabaseClient.auth.getUser();
+          if (authData && authData.user) {
+            const meta = authData.user.user_metadata || {};
+            if (authData.user.id) {
+              localStorage.setItem('finwise_user_id', authData.user.id);
+            }
+            if (meta.phone) {
+              phone = meta.phone;
+              document.getElementById('prof-phone').value = phone;
+              localStorage.setItem('finwise_user_phone', phone);
+            }
+            if (meta.occupation) {
+              occupation = meta.occupation;
+              document.getElementById('prof-occupation').value = occupation;
+              localStorage.setItem('finwise_user_occupation', occupation);
+            }
+            if (meta.savings_goal) {
+              savingsGoal = String(meta.savings_goal);
+              document.getElementById('prof-goal').value = savingsGoal;
+              localStorage.setItem('finwise_savings_goal', savingsGoal);
+            }
+            if (meta.has_password_set) {
+              localStorage.setItem('finwise_has_password_' + email, 'true');
+            } else if (currPassInput && provider === 'google') {
+              currPassInput.placeholder = 'Optional for first-time Google password setup';
+            }
+          }
+
+          // Fetch latest row from public.profiles (display_name, avatar_url, currency, monthly_budget)
           const userId = localStorage.getItem('finwise_user_id') || account.id;
           if (userId) {
-            const { data } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+            const { data } = await supabaseClient.from('profiles').select('*').eq('id', userId).maybeSingle();
             if (data) {
-              if (data.display_name && !localStorage.getItem('finwise_user_name')) {
-                document.getElementById('prof-name').value = data.display_name;
+              if (data.display_name) {
+                name = data.display_name;
+                document.getElementById('prof-name').value = name;
+                document.getElementById('hero-user-name').textContent = name;
+                localStorage.setItem('finwise_user_name', name);
               }
-              if (data.phone && !localStorage.getItem('finwise_user_phone')) {
-                document.getElementById('prof-phone').value = data.phone;
-              }
-              if (data.occupation && !localStorage.getItem('finwise_user_occupation')) {
-                document.getElementById('prof-occupation').value = data.occupation;
+              if (data.currency) {
+                currency = data.currency;
+                document.getElementById('prof-currency').value = currency;
+                document.getElementById('budget-curr-symbol').textContent = currency;
+                document.getElementById('goal-curr-symbol').textContent = currency;
+                document.getElementById('hero-currency-badge').textContent = currency + ' (Default)';
+                localStorage.setItem('finwise_currency', currency);
               }
               if (data.monthly_budget) {
-                document.getElementById('prof-budget').value = data.monthly_budget;
+                monthlyBudget = String(data.monthly_budget);
+                document.getElementById('prof-budget').value = monthlyBudget;
+                localStorage.setItem('finwise_monthly_budget', monthlyBudget);
               }
               if (data.avatar_url && isCustomAvatar(data.avatar_url)) {
                 currentAvatarData = data.avatar_url;
@@ -819,7 +863,7 @@
       saveBtn.disabled = true;
       saveBtn.innerHTML = `
         <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-        <span>Saving Changes to Database...</span>
+        <span>Saving Changes to Supabase...</span>
       `;
 
       try {
@@ -853,10 +897,12 @@
 
         const accounts = getUserAccounts();
         let account = accounts[originalEmail];
+        const provider = localStorage.getItem('finwise_auth_provider') || 'email';
+        const isFirstGooglePassSetup = (provider === 'google' && localStorage.getItem('finwise_has_password_' + originalEmail) !== 'true');
 
         // 1. Password Verification & Update (if user entered password fields)
         if (newPass || currentPass || confirmPass) {
-          if (!currentPass) {
+          if (!currentPass && !isFirstGooglePassSetup) {
             showAlert('error', 'Please enter your Current Password to set a new password.');
             document.getElementById('prof-current-pass').focus();
             saveBtn.disabled = false;
@@ -864,14 +910,27 @@
             return;
           }
 
-          if (account && account.passwordHash) {
+          if (currentPass && account && account.passwordHash && !isFirstGooglePassSetup) {
             const currentHash = await sha256(currentPass);
             if (currentHash !== account.passwordHash) {
-              showAlert('error', 'Current password is incorrect. Please verify and try again.');
-              document.getElementById('prof-current-pass').focus();
-              saveBtn.disabled = false;
-              saveBtn.innerHTML = originalBtnHtml;
-              return;
+              // Also check if currentPass is valid in Supabase Auth before rejecting
+              let sbVerified = false;
+              if (supabaseClient) {
+                try {
+                  const { data: verifyData, error: verifyErr } = await supabaseClient.auth.signInWithPassword({
+                    email: originalEmail,
+                    password: currentPass
+                  });
+                  if (!verifyErr && verifyData && verifyData.user) sbVerified = true;
+                } catch (_) {}
+              }
+              if (!sbVerified) {
+                showAlert('error', 'Current password is incorrect. Please verify and try again.');
+                document.getElementById('prof-current-pass').focus();
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnHtml;
+                return;
+              }
             }
           }
 
@@ -896,11 +955,15 @@
           if (account) {
             account.passwordHash = newHash;
           }
+          localStorage.setItem('finwise_has_password_' + newEmail, 'true');
 
-          // Try updating in Supabase Auth if connected
+          // Update password in Supabase Auth for Dual Login (Google + Email/Password)
           if (supabaseClient) {
             try {
-              await supabaseClient.auth.updateUser({ password: newPass });
+              await supabaseClient.auth.updateUser({
+                password: newPass,
+                data: { has_password_set: true }
+              });
             } catch (_) {}
           }
         }
@@ -940,6 +1003,8 @@
           accounts[newEmail] = account;
         }
 
+        const resolvedUserId = localStorage.getItem('finwise_user_id') || account.id;
+        account.id = resolvedUserId;
         account.name = newName;
         account.email = newEmail;
         account.phone = newPhone;
@@ -972,42 +1037,35 @@
           } catch (_) {}
         }
 
-        // 5. Sync to Supabase Cloud Profiles Table
-        if (supabaseClient && account.id) {
+        // 5. Sync to Supabase Cloud (public.profiles + auth.users metadata)
+        if (supabaseClient && resolvedUserId) {
           try {
+            // Upsert only existing columns on public.profiles
             await supabaseClient.from('profiles').upsert({
-              id: account.id,
+              id: resolvedUserId,
               email: newEmail,
               display_name: newName,
-              phone: newPhone,
-              occupation: newOccupation,
               avatar_url: currentAvatarData || null,
               currency: newCurrency,
               monthly_budget: newBudget
+            }, { onConflict: 'id' });
+
+            // Store extended profile fields in Supabase Auth user_metadata
+            await supabaseClient.auth.updateUser({
+              data: {
+                full_name: newName,
+                phone: newPhone,
+                occupation: newOccupation,
+                currency: newCurrency,
+                monthly_budget: newBudget,
+                savings_goal: newGoal,
+                avatar_url: currentAvatarData || null
+              }
             });
           } catch (sbErr) {
             console.warn("Supabase profile sync notice:", sbErr);
           }
         }
-
-        // 6. Sync to Server Multi-Device API
-        try {
-          await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: account.id,
-              name: newName,
-              email: newEmail,
-              phone: newPhone,
-              occupation: newOccupation,
-              avatar: currentAvatarData,
-              currency: newCurrency,
-              monthlyBudget: newBudget,
-              passwordHash: account.passwordHash
-            })
-          });
-        } catch (_) {}
 
         // 6. Update Hero Card
         document.getElementById('hero-user-name').textContent = newName;
@@ -1020,7 +1078,7 @@
         document.getElementById('prof-new-pass').value = '';
         document.getElementById('prof-confirm-pass').value = '';
 
-        showAlert('success', 'Profile and account details updated successfully! Database saved.');
+        showAlert('success', 'Profile and account details synced to Supabase Cloud!');
 
       } catch (err) {
         showAlert('error', 'Error saving profile: ' + (err.message || err));
@@ -1082,8 +1140,20 @@
       window.location.replace('login.html?logout=true');
     }
 
-    // Initialize on load
-    window.addEventListener('DOMContentLoaded', loadUserProfile);
+    // Initialize on load + subscribe to Supabase Realtime profile updates
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadUserProfile();
+      if (supabaseClient) {
+        try {
+          supabaseClient
+            .channel('public:profiles:realtime:profile_page')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+              loadUserProfile();
+            })
+            .subscribe();
+        } catch (_) {}
+      }
+    });
   </script>
 </body>
 </html>

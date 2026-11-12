@@ -345,39 +345,46 @@
     }
 
     async function fetchGoogleRegisterAccount() {
+      hideRegAlert();
+      const btn = document.getElementById('google-signup-btn');
       const btnText = document.getElementById('google-reg-text');
-      const originalText = btnText.textContent;
-      btnText.textContent = 'Connecting to Google...';
+      const originalText = btnText ? btnText.textContent : 'Sign up with Google (Gmail)';
+      if (btnText) btnText.textContent = 'Connecting to Google...';
+      if (btn) btn.disabled = true;
 
-      if (supabaseClient) {
-        try {
-          const redirectTarget = window.location.href.includes('/public/')
-            ? window.location.origin + '/public/dashboard.html'
-            : window.location.origin + '/dashboard.html';
+      if (!supabaseClient) {
+        if (btnText) btnText.textContent = originalText;
+        if (btn) btn.disabled = false;
+        showRegAlert('error', 'Supabase Cloud client could not be initialized. Please check your internet connection.');
+        return;
+      }
 
-          const { data, error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: redirectTarget,
-              queryParams: {
-                prompt: 'select_account'
-              }
+      try {
+        const redirectTarget = window.location.pathname.includes('/public/')
+          ? window.location.origin + '/public/dashboard.html?source=google_register'
+          : window.location.origin + '/dashboard.html?source=google_register';
+
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectTarget,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'select_account'
             }
-          });
-
-          if (error) {
-            btnText.textContent = originalText;
-            openGoogleAccountModal('register');
-            return;
           }
-        } catch (_) {
-          btnText.textContent = originalText;
-          openGoogleAccountModal('register');
+        });
+
+        if (error) {
+          if (btnText) btnText.textContent = originalText;
+          if (btn) btn.disabled = false;
+          showRegAlert('error', 'Google OAuth error: ' + error.message);
           return;
         }
-      } else {
-        btnText.textContent = originalText;
-        openGoogleAccountModal('register');
+      } catch (err) {
+        if (btnText) btnText.textContent = originalText;
+        if (btn) btn.disabled = false;
+        showRegAlert('error', 'Unable to launch Google Sign-Up: ' + (err.message || err));
       }
     }
 
@@ -394,89 +401,28 @@
     }
 
     async function selectGoogleRegister(name, email, initial) {
-      const statusBox = document.getElementById('google-auth-status');
-      statusBox.classList.remove('hidden');
-      statusBox.classList.add('flex');
-      document.getElementById('google-status-text').textContent = 'Creating account for ' + name + '...';
-
       const cleanEmail = email.trim().toLowerCase();
-      let userId;
-      if (cleanEmail === 'ykwei2005@gmail.com') {
-        userId = '00000000-0000-4000-8000-000000000001';
-      } else if (cleanEmail === 'ptutm.kengwei@gmail.com') {
-        userId = '00000000-0000-4000-8000-000000000002';
-      } else {
-        userId = '00000000-0000-4000-8000-' + Math.abs(cleanEmail.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
-      }
-
-      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
-      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
-      const accounts = getUserAccounts();
-      accounts[cleanEmail] = {
-        id: userId,
-        name: name,
-        email: cleanEmail,
-        passwordHash: accounts[cleanEmail]?.passwordHash || defaultHash,
-        avatar: initial,
-        currency: 'RM',
-        monthlyBudget: 2500.00
-      };
-      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
-
-      localStorage.setItem('finwise_user_name', name);
-      localStorage.setItem('finwise_user_email', cleanEmail);
-      localStorage.setItem('finwise_user_id', userId);
-      localStorage.setItem('finwise_auth_provider', 'google');
-      localStorage.setItem('finwise_user_avatar', initial);
-      localStorage.setItem(scopedKey, initial);
-      localStorage.setItem('finwise_session', JSON.stringify({
-        id: userId,
-        name: name,
-        email: cleanEmail,
-        avatar: initial,
-        provider: 'google',
-        authenticatedAt: new Date().toISOString()
-      }));
-
-      // Multi-device sync to server API
-      try {
-        await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: userId,
-            name: name,
-            email: cleanEmail,
-            avatar: initial,
-            passwordHash: defaultHash,
-            currency: 'RM',
-            monthlyBudget: 2500.00
-          })
-        });
-      } catch (_) {}
-
-      // Supabase profiles sync
+      closeGoogleModal();
       if (supabaseClient) {
         try {
-          await supabaseClient.from('profiles').upsert({
-            id: userId,
-            email: cleanEmail,
-            display_name: name,
-            avatar_url: null,
-            password_hash: defaultHash,
-            currency: 'RM',
-            monthly_budget: 2500.00
+          const redirectTarget = window.location.pathname.includes('/public/')
+            ? window.location.origin + '/public/dashboard.html?source=google_register'
+            : window.location.origin + '/dashboard.html?source=google_register';
+
+          await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTarget,
+              queryParams: {
+                login_hint: cleanEmail,
+                prompt: 'select_account'
+              }
+            }
           });
+          return;
         } catch (_) {}
       }
-
-      setTimeout(() => {
-        document.getElementById('google-status-text').textContent = 'Account created! Redirecting...';
-        setTimeout(() => {
-          const target = window.location.href.includes('/public/') ? 'dashboard.html' : 'dashboard.html';
-          window.location.href = target;
-        }, 500);
-      }, 700);
+      fetchGoogleRegisterAccount();
     }
 
     function sha256Sync(ascii) {
@@ -532,51 +478,6 @@
       return sha256Sync(str);
     }
 
-    function getUserAccounts() {
-      let accounts = {};
-      try {
-        const raw = localStorage.getItem('finwise_user_accounts');
-        if (raw) accounts = JSON.parse(raw);
-      } catch (_) {}
-      const defaultHash = "989a2c9493e8051c86a809ae60c025b6fff7a79de475aa91ebac2e2b562fb322";
-      if (!accounts["ykwei2005@gmail.com"] || !accounts["ykwei2005@gmail.com"].passwordHash) {
-        accounts["ykwei2005@gmail.com"] = {
-          id: "00000000-0000-4000-8000-000000000001",
-          name: "Ken Wei",
-          email: "ykwei2005@gmail.com",
-          passwordHash: defaultHash,
-          avatar: "K"
-        };
-      }
-      if (!accounts["ptutm.kengwei@gmail.com"] || !accounts["ptutm.kengwei@gmail.com"].passwordHash) {
-        accounts["ptutm.kengwei@gmail.com"] = {
-          id: "00000000-0000-4000-8000-000000000002",
-          name: "John Yeoh",
-          email: "ptutm.kengwei@gmail.com",
-          passwordHash: defaultHash,
-          avatar: "J"
-        };
-      }
-      localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
-      return accounts;
-    }
-
-    // Sync accounts in real time from server API across all devices
-    async function syncAccountsWithServer() {
-      try {
-        const res = await fetch('/api/accounts');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.success && data.accounts) {
-            const local = getUserAccounts();
-            const merged = { ...data.accounts, ...local };
-            localStorage.setItem('finwise_user_accounts', JSON.stringify(merged));
-          }
-        }
-      } catch (_) {}
-    }
-    syncAccountsWithServer();
-
     function showRegAlert(type, message) {
       const alertBox = document.getElementById('reg-alert');
       const icon = document.getElementById('reg-alert-icon');
@@ -627,130 +528,175 @@
         return;
       }
 
-      // Check if user already exists
-      const currentAccounts = getUserAccounts();
-      if (currentAccounts[email]) {
-        showRegAlert('error', 'An account with this email (' + email + ') already exists. Please sign in instead.');
-        return;
-      }
-
       const originalBtnHtml = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = `
         <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-        <span>Registering in Database...</span>
+        <span>Registering in Supabase...</span>
       `;
 
       try {
-        const inputHash = await sha256(password);
-        let userId;
-        if (email === 'ykwei2005@gmail.com') {
-          userId = '00000000-0000-4000-8000-000000000001';
-        } else if (email === 'ptutm.kengwei@gmail.com') {
-          userId = '00000000-0000-4000-8000-000000000002';
-        } else {
-          userId = '00000000-0000-4000-8000-' + Math.abs(email.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0');
+        if (!supabaseClient) {
+          throw new Error('Supabase Cloud is not reachable.');
         }
 
+        const redirectTarget = window.location.pathname.includes('/public/')
+          ? window.location.origin + '/public/dashboard.html'
+          : window.location.origin + '/dashboard.html';
+
+        const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo: redirectTarget,
+            data: {
+              full_name: name,
+              has_password_set: true,
+              currency: 'RM',
+              monthly_budget: 2500.00
+            }
+          }
+        });
+
+        if (signUpError) {
+          showRegAlert('error', signUpError.message || 'Registration error.');
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+          return;
+        }
+
+        const user = signUpData ? signUpData.user : null;
+        const session = signUpData ? signUpData.session : null;
+        const userId = user ? user.id : ('00000000-0000-4000-8000-' + Math.abs(email.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0)).toString(16).padStart(12, '0'));
         const avatarInitial = (name[0] || 'U').toUpperCase();
         const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
 
-        // 1. Register account in persistent secure local registry with SHA-256 hash
-        const accounts = getUserAccounts();
-        accounts[email] = {
-          id: userId,
-          name: name,
-          email: email,
-          passwordHash: inputHash,
-          avatar: avatarInitial,
-          currency: 'RM',
-          monthlyBudget: 2500.00
-        };
-        localStorage.setItem('finwise_user_accounts', JSON.stringify(accounts));
-
-        // 2. Sync to Server API for multi-device cross-browser access (works across phones & PCs)
+        // Upsert profile into Supabase profiles table (using valid schema columns)
         try {
-          await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: userId,
-              name: name,
-              email: email,
-              passwordHash: inputHash,
-              avatar: avatarInitial,
-              currency: 'RM',
-              monthlyBudget: 2500.00
-            })
-          });
-        } catch (_) {}
-
-        // 3. Supabase Auth and Profiles registration (fail-safe and non-blocking)
-        if (supabaseClient) {
-          try {
-            await supabaseClient.auth.signUp({
-              email: email,
-              password: password,
-              options: {
-                data: { full_name: name }
-              }
-            }).catch(() => {});
-
-            await supabaseClient.from('profiles').upsert({
-              id: userId,
-              email: email,
-              display_name: name,
-              avatar_url: null,
-              password_hash: inputHash,
-              currency: 'RM',
-              monthly_budget: 2500.00
-            }).catch(() => {});
-          } catch (sbErr) {
-            console.warn("Supabase registration notice:", sbErr);
-          }
+          await supabaseClient.from('profiles').upsert({
+            id: userId,
+            email: email,
+            display_name: name,
+            avatar_url: null,
+            currency: 'RM',
+            monthly_budget: 2500.00
+          }, { onConflict: 'id' });
+        } catch (sbErr) {
+          console.warn('Supabase profile upsert notice:', sbErr);
         }
 
-        // 4. Ensure strictly isolated, empty transactions partition for this new user
-        const txKey = 'finwise_transactions_' + email.replace(/[^a-z0-9]/g, '_');
-        localStorage.setItem(txKey, JSON.stringify([]));
+        if (session) {
+          localStorage.setItem('finwise_user_name', name);
+          localStorage.setItem('finwise_user_email', email);
+          localStorage.setItem('finwise_user_id', userId);
+          localStorage.setItem('finwise_auth_provider', 'email');
+          localStorage.setItem('finwise_user_avatar', avatarInitial);
+          localStorage.setItem(scopedKey, avatarInitial);
+          localStorage.setItem('finwise_session', JSON.stringify({
+            id: userId,
+            name: name,
+            email: email,
+            avatar: avatarInitial,
+            provider: 'email',
+            authenticatedAt: new Date().toISOString()
+          }));
 
-        // 5. Set active user session
-        localStorage.setItem('finwise_user_name', name);
-        localStorage.setItem('finwise_user_email', email);
-        localStorage.setItem('finwise_user_id', userId);
-        localStorage.setItem('finwise_auth_provider', 'email');
-        localStorage.setItem('finwise_user_avatar', avatarInitial);
-        localStorage.setItem(scopedKey, avatarInitial);
-        localStorage.setItem('finwise_session', JSON.stringify({
-          id: userId,
-          name: name,
+          showRegAlert('success', 'Account registered in Supabase! Redirecting to dashboard...');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 600);
+        } else {
+          showRegAlert('success', 'Account created! A verification email has been sent to ' + email + '. Please check your inbox and confirm your email to sign in.');
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+        }
+      } catch (err) {
+        showRegAlert('error', 'Registration error: ' + (err.message || err));
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+      }
+    }
+
+    async function saveOAuthUserFromRegister(user) {
+      const meta = user.user_metadata || {};
+      const email = (user.email || '').toLowerCase().trim();
+      const name = meta.full_name || meta.name || (email ? formatNameFromEmail(email) : 'Google User');
+      const avatar = meta.avatar_url || meta.picture || '';
+      const initial = (name[0] || 'G').toUpperCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      localStorage.setItem('finwise_user_name', name);
+      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_id', user.id);
+      localStorage.setItem('finwise_auth_provider', 'google');
+      if (avatar) {
+        localStorage.setItem('finwise_user_avatar', avatar);
+        localStorage.setItem(scopedKey, avatar);
+      } else if (!localStorage.getItem('finwise_user_avatar')) {
+        localStorage.setItem('finwise_user_avatar', initial);
+      }
+
+      localStorage.setItem('finwise_session', JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        avatar: avatar || initial,
+        provider: 'google',
+        authenticatedAt: new Date().toISOString()
+      }));
+
+      try {
+        await supabaseClient.from('profiles').upsert({
+          id: user.id,
           email: email,
-          avatar: avatarInitial,
-          provider: 'email',
-          authenticatedAt: new Date().toISOString()
-        }));
+          display_name: name,
+          avatar_url: avatar || null,
+          currency: 'RM',
+          monthly_budget: 2500.00
+        }, { onConflict: 'id' });
+      } catch (_) {}
 
-        showRegAlert('success', 'Account registered successfully with database! Redirecting...');
-        setTimeout(() => {
-          const target = window.location.href.includes('/public/') ? 'dashboard.html' : 'dashboard.html';
-          window.location.href = target;
-        }, 600);
-
-      } catch (err) {
-        showRegAlert('error', 'Registration error: ' + (err.message || err));
-        btn.disabled = false;
-        btn.innerHTML = originalBtnHtml;
-      }
+      window.location.replace('dashboard.html?source=google_register');
     }
-          window.location.href = target;
-        }, 600);
 
-      } catch (err) {
-        showRegAlert('error', 'Registration error: ' + (err.message || err));
-        btn.disabled = false;
-        btn.innerHTML = originalBtnHtml;
+    // Handle OAuth callbacks if redirected back to register.html
+    (async function initRegisterPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
+
+      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
+                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+      if (errorMsg) {
+        showRegAlert('error', 'Google Sign-Up notice: ' + decodeURIComponent(errorMsg));
+        history.replaceState(null, null, window.location.pathname);
       }
-    }
+
+      const accessToken = hashParams ? hashParams.get('access_token') : null;
+      const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      if (accessToken && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
+          if (!error && data && data.user) {
+            await saveOAuthUserFromRegister(data.user);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      const code = urlParams.get('code');
+      if (code && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (!error && data && data.session && data.session.user) {
+            await saveOAuthUserFromRegister(data.session.user);
+            return;
+          }
+        } catch (_) {}
+      }
+    })();
   </script>
 </body>
 </html>

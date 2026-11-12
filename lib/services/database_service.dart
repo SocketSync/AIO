@@ -195,7 +195,14 @@ class DatabaseService {
             currency: 'RM',
             monthlyBudget: 2500.00,
           );
-          await client.from('profiles').insert(newProfile.toJson());
+          await client.from('profiles').upsert({
+            'id': userId,
+            'email': email,
+            'display_name': displayName,
+            'avatar_url': photoUrl,
+            'currency': 'RM',
+            'monthly_budget': 2500.00,
+          });
           _userProfiles[userId] = newProfile;
           return newProfile;
         }
@@ -247,8 +254,6 @@ class DatabaseService {
         final updateMap = <String, dynamic>{
           'display_name': displayName,
           'email': email,
-          if (phone != null) 'phone': phone,
-          if (occupation != null) 'occupation': occupation,
           if (avatarUrl != null) 'avatar_url': avatarUrl,
           if (currency != null) 'currency': currency,
           if (monthlyBudget != null) 'monthly_budget': monthlyBudget,
