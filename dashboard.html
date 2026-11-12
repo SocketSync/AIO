@@ -1295,35 +1295,6 @@
     let activeCameraStream = null;
     let currentFacingMode = "environment";
 
-    function getStoredGeminiApiKey() {
-      return (localStorage.getItem('finwise_gemini_api_key') || '').trim();
-    }
-
-    function promptGeminiApiKey(event) {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      const currentKey = getStoredGeminiApiKey();
-      const maskedKey = currentKey ? (currentKey.slice(0, 6) + '...' + currentKey.slice(-4)) : '';
-      const promptText = currentKey 
-        ? `Google Gemini Vision API Key is active (${maskedKey}).\n\nTo update or replace it, paste your new key below.\nTo clear it and return to Demo mode, leave it blank and click OK:`
-        : `Enter your Google Gemini API Key to enable live AI receipt & invoice scanning:\n\n(Starts with AIzaSy... Get one free from https://aistudio.google.com)`;
-
-      const input = window.prompt(promptText, currentKey || '');
-      if (input !== null) {
-        const trimmed = input.trim();
-        if (trimmed) {
-          localStorage.setItem('finwise_gemini_api_key', trimmed);
-          alert('✅ Google Gemini API Key saved! Live AI receipt scanning is now active.');
-        } else {
-          localStorage.removeItem('finwise_gemini_api_key');
-          alert('ℹ️ Gemini API Key removed. Smart scanner will use demo mode.');
-        }
-        updateGeminiBadgeStatus();
-      }
-    }
-
     function updateGeminiBadgeStatus() {
       const badgePill = document.getElementById('receiptBadgePill');
       const bannerSub = document.getElementById('receiptBannerSubtitle');
@@ -1427,15 +1398,24 @@
       const canvas = document.getElementById('liveCameraCanvas');
       if (!video || !canvas) return;
 
-      const width = video.videoWidth || 1280;
-      const height = video.videoHeight || 720;
+      let width = video.videoWidth || 1280;
+      let height = video.videoHeight || 720;
+
+      // Resize to max 1600px on longest side to reduce payload & speed up API
+      const maxDim = 1600;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
       canvas.width = width;
       canvas.height = height;
 
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, width, height);
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
 
       closeLiveCameraModal();
 
@@ -1497,17 +1477,18 @@
       const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
       const toastText = document.getElementById('receiptScanToastText');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
 
-      let currentKey = getStoredGeminiApiKey();
-
-      // 1. Enter Scanning State
+      // 1. Enter Scanning State — shimmer animation
       if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all";
       if (badgePill) {
         badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
         badgePill.textContent = "Gemini AI...";
       }
       if (bannerTitle) bannerTitle.textContent = "Reading receipt with Gemini Vision AI...";
-      if (bannerSub) bannerSub.textContent = file ? `Processing ${file.name || 'image'}...` : "Reading merchant, total & items...";
+      if (bannerSub) bannerSub.innerHTML = file
+        ? `<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Processing ${escapeHtml(file.name || 'image')}...`
+        : '<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Reading merchant, total & items...';
       if (scanBtn) {
         scanBtn.disabled = true;
         scanBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Scanning...</span>';
@@ -1519,8 +1500,7 @@
 
       // 2. Prepare payload
       let payload = { 
-        filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg",
-        apiKey: currentKey
+        filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg"
       };
 
       if (file) {
@@ -1541,7 +1521,7 @@
         }
       }
 
-      // 3. Request AI parsing from serverless endpoint (or fallback)
+      // 3. Request AI parsing from serverless endpoint
       let parsed = null;
       const startTime = Date.now();
       try {
@@ -1560,13 +1540,28 @@
       if (elapsed < 1200) {
         await new Promise(r => setTimeout(r, 1200 - elapsed));
       }
+      const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
-      // Check if API key was rejected as invalid
+      // Handle API-level errors gracefully
       if (parsed && parsed.invalidApiKey) {
-        alert("⚠️ " + parsed.message);
-        localStorage.removeItem('finwise_gemini_api_key');
-        updateGeminiBadgeStatus();
-        parsed = null;
+        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-red-50/80 rounded-xl mb-4 border border-red-200 transition-all";
+        if (bannerTitle) bannerTitle.textContent = "⚠️ Invalid API Key";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please check your Gemini API key configuration.";
+        resetScanButtons(scanBtn, uploadBtn);
+        return;
+      }
+      if (parsed && (parsed.rateLimited || parsed.allModelsFailed)) {
+        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-amber-50/80 rounded-xl mb-4 border border-amber-200 transition-all";
+        if (badgePill) { badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"; badgePill.textContent = "Retry"; }
+        if (bannerTitle) bannerTitle.textContent = parsed.rateLimited ? "⏳ Rate Limited" : "⚠️ AI Unavailable";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please try again in a moment.";
+        resetScanButtons(scanBtn, uploadBtn);
+        if (toast && toastText) {
+          toastText.textContent = parsed.message;
+          toast.className = "mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-medium flex items-center justify-between";
+          toast.classList.remove('hidden');
+        }
+        return;
       }
 
       // Fallback presets if offline or network error or no key
@@ -1629,17 +1624,31 @@
         }, 2200);
       });
 
-      // 6. Reset Banner to Success State
+      // 6. Reset Banner to Success State with real scan time
       const isGeminiEngine = parsed.engine && parsed.engine.includes('gemini');
+      const scanTime = parsed.scanDuration || totalElapsed;
       if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
       if (badgePill) {
         badgePill.className = isGeminiEngine 
           ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"
           : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
-        badgePill.textContent = isGeminiEngine ? "Gemini AI" : "Extracted";
+        badgePill.textContent = isGeminiEngine ? `${scanTime}s` : "Extracted";
       }
       if (bannerTitle) bannerTitle.textContent = `${isGeminiEngine ? '✨ ' : ''}Extracted: ${parsed.merchant}`;
-      if (bannerSub) bannerSub.textContent = `Total: RM ${extractedAmount} · ${finalCategory}`;
+      if (bannerSub) bannerSub.textContent = `Total: ${curr} ${extractedAmount} · ${finalCategory}${isGeminiEngine ? ' · Gemini AI' : ''}`;
+      resetScanButtons(scanBtn, uploadBtn);
+
+      // 7. Show Toast
+      if (toast && toastText) {
+        toast.className = "mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between";
+        toastText.textContent = isGeminiEngine
+          ? `✨ Gemini AI extracted ${curr} ${extractedAmount} from ${parsed.merchant} in ${scanTime}s!`
+          : `✨ AI extracted ${curr} ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
+        toast.classList.remove('hidden');
+      }
+    }
+
+    function resetScanButtons(scanBtn, uploadBtn) {
       if (scanBtn) {
         scanBtn.disabled = false;
         scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
@@ -1647,14 +1656,6 @@
       if (uploadBtn) {
         uploadBtn.disabled = false;
         uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
-      }
-
-      // 7. Show Toast
-      if (toast && toastText) {
-        toastText.textContent = isGeminiEngine
-          ? `✨ Google Gemini AI extracted RM ${extractedAmount} from ${parsed.merchant}! Details filled below.`
-          : `✨ AI extracted RM ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
-        toast.classList.remove('hidden');
       }
     }
 
