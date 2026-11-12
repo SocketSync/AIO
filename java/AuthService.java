@@ -7,7 +7,7 @@ public class AuthService {
     public static boolean isUtmEmail(String email) {
         if (email == null) return false;
         String lower = email.trim().toLowerCase();
-        return lower.endsWith("@graduate.utm.my") || lower.endsWith("@utm.my");
+        return lower.endsWith("@finwise-app.xyz") || lower.endsWith("@finwise-app.xyz");
     }
 
     public static boolean validatePassword(String password) {

@@ -43,7 +43,7 @@ SimulationResult FinancialSimulator::simulateSemesterRunway(double startingBalan
     } else if (currentBalance < startingBalance * 0.15) {
         result.riskAssessment = "MODERATE: Low financial buffer remaining at semester end. Maintain caution on non-essential spending.";
     } else {
-        result.riskAssessment = "HEALTHY: Current burn rate maintains a sustainable surplus throughout the 18-week UTM semester.";
+        result.riskAssessment = "HEALTHY: Current burn rate maintains a sustainable surplus throughout the 18-week monthly budget.";
     }
 
     return result;

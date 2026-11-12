@@ -64,7 +64,7 @@ public class InsightsFragment extends Fragment {
 
         // Insight 1: Dining Optimization
         content.addView(createInsightCard(context, "🍔 Meal Spending Optimization", 
-                "You spend an average of RM 8.50 per meal at UTM Arked Cengal versus RM 16.00 outside campus. Eating on campus 3 more times per week can save you ~RM 90/month.", 
+                "You spend an average of RM 8.50 per meal at Central Cafe versus RM 16.00 outside campus. Eating on campus 3 more times per week can save you ~RM 90/month.", 
                 ThemeColors.SECONDARY, "HIGH IMPACT"));
 
         // Insight 2: Weekend Peak Warning

@@ -128,7 +128,7 @@ public class AddTransactionDialogFragment extends DialogFragment {
 
         // Name
         nameInput = new EditText(context);
-        nameInput.setHint("e.g. UTM Arked Meranti - Dinner");
+        nameInput.setHint("e.g. Local Bistro - Dinner");
         content.addView(ViewFactory.createInputContainer(context, "Transaction Title", "🏷️", nameInput));
 
         // Amount

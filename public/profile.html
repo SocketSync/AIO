@@ -627,27 +627,34 @@
       return false;
     }
 
-    // Render avatar HTML safely
+    // Render avatar HTML safely (XSS-hardened)
     function renderAvatarElement(targetElement, avatar, name) {
       const initial = (name ? name[0] : 'U').toUpperCase();
-      if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:'))) {
-        targetElement.innerHTML = `<img src="${avatar}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+      if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:image/'))) {
+        targetElement.innerHTML = `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
       } else if (avatar && isCustomAvatar(avatar)) {
         // Emoji avatar
-        targetElement.innerHTML = `<span class="text-3xl">${avatar}</span>`;
+        targetElement.innerHTML = `<span class="text-3xl">${escapeHtml(avatar)}</span>`;
       } else {
-        targetElement.innerHTML = `<span class="font-extrabold text-2xl">${initial}</span>`;
+        targetElement.innerHTML = `<span class="font-extrabold text-2xl">${escapeHtml(initial)}</span>`;
       }
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, m => ({
+      return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#39;'
       })[m]);
+    }
+
+    function withTimeout(promise, ms = 10000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Network request timed out")), ms))
+      ]);
     }
 
     // Modal controls for Avatar
@@ -855,13 +862,15 @@
       `;
 
       try {
-        const newName = document.getElementById('prof-name').value.trim();
-        const newEmail = document.getElementById('prof-email').value.trim().toLowerCase();
-        const newPhone = document.getElementById('prof-phone').value.trim();
-        const newOccupation = document.getElementById('prof-occupation').value.trim();
+        const newName = (document.getElementById('prof-name').value || '').replace(/[<>]/g, '').trim();
+        const newEmail = (document.getElementById('prof-email').value || '').trim().toLowerCase();
+        const newPhone = (document.getElementById('prof-phone').value || '').replace(/[<>]/g, '').trim();
+        const newOccupation = (document.getElementById('prof-occupation').value || '').replace(/[<>]/g, '').trim();
         const newCurrency = document.getElementById('prof-currency').value;
-        const newBudget = parseFloat(document.getElementById('prof-budget').value) || 2500.00;
-        const newGoal = parseFloat(document.getElementById('prof-goal').value) || 10000.00;
+        const parsedBudget = parseFloat(document.getElementById('prof-budget').value);
+        const newBudget = (Number.isFinite(parsedBudget) && parsedBudget >= 0) ? parsedBudget : 2500.00;
+        const parsedGoal = parseFloat(document.getElementById('prof-goal').value);
+        const newGoal = (Number.isFinite(parsedGoal) && parsedGoal >= 0) ? parsedGoal : 10000.00;
 
         const currentPass = document.getElementById('prof-current-pass').value;
         const newPass = document.getElementById('prof-new-pass').value;

@@ -82,24 +82,19 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 
--- 7. RLS Policies for Profiles (Multi-device cross-browser access)
+-- 7. RLS Policies for Profiles (Confidentiality: strict owner isolation auth.uid() = id)
 DROP POLICY IF EXISTS "Public profiles are readable by owner" ON public.profiles;
 DROP POLICY IF EXISTS "Public profiles are readable by all" ON public.profiles;
-CREATE POLICY "Public profiles are readable by all"
-    ON public.profiles FOR SELECT
-    USING (true);
-
 DROP POLICY IF EXISTS "Profiles are updatable by owner" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles are updatable by all" ON public.profiles;
-CREATE POLICY "Profiles are updatable by all"
-    ON public.profiles FOR UPDATE
-    USING (true);
-
 DROP POLICY IF EXISTS "Profiles are insertable by owner" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles are insertable by all" ON public.profiles;
-CREATE POLICY "Profiles are insertable by all"
-    ON public.profiles FOR INSERT
-    WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable all actions for users based on id" ON public.profiles;
+
+CREATE POLICY "Enable all actions for users based on id"
+    ON public.profiles FOR ALL TO authenticated
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
 
 -- 8. RLS Policies for Categories (Default categories readable by all users)
 DROP POLICY IF EXISTS "Categories readable by all" ON public.categories;
@@ -107,30 +102,21 @@ CREATE POLICY "Categories readable by all"
     ON public.categories FOR SELECT
     USING (true);
 
--- 9. RLS Policies for Transactions (Multi-device access & user isolation)
+-- 9. RLS Policies for Transactions (Confidentiality: strict owner isolation auth.uid() = user_id)
 DROP POLICY IF EXISTS "Users can read own transactions" ON public.transactions;
 DROP POLICY IF EXISTS "Transactions readable by all" ON public.transactions;
-CREATE POLICY "Transactions readable by all"
-    ON public.transactions FOR SELECT
-    USING (true);
-
 DROP POLICY IF EXISTS "Users can insert own transactions" ON public.transactions;
 DROP POLICY IF EXISTS "Transactions insertable by all" ON public.transactions;
-CREATE POLICY "Transactions insertable by all"
-    ON public.transactions FOR INSERT
-    WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Users can update own transactions" ON public.transactions;
 DROP POLICY IF EXISTS "Transactions updatable by all" ON public.transactions;
-CREATE POLICY "Transactions updatable by all"
-    ON public.transactions FOR UPDATE
-    USING (true);
-
 DROP POLICY IF EXISTS "Users can delete own transactions" ON public.transactions;
 DROP POLICY IF EXISTS "Transactions deletable by all" ON public.transactions;
-CREATE POLICY "Transactions deletable by all"
-    ON public.transactions FOR DELETE
-    USING (true);
+DROP POLICY IF EXISTS "Enable all actions for users based on user_id" ON public.transactions;
+
+CREATE POLICY "Enable all actions for users based on user_id"
+    ON public.transactions FOR ALL TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- 10. Automatically update updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()

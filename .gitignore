@@ -1,3 +1,13 @@
+# Environment Variables & Secrets (NEVER COMMIT)
+.env
+.env.*
+!.env.example
+
+# Local Account & Transaction Data Stores (NEVER COMMIT)
+accounts.json
+data/accounts.json
+data/*.json
+
 # Compiled class files
 *.class
 
@@ -20,6 +30,11 @@ Thumbs.db
 __pycache__/
 *.pyc
 
-# Flutter/Dart
+# Flutter/Dart & Android Build Artifacts
 .dart_tool/
-
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+FinWiseAndroid/.gradle/
+FinWiseAndroid/app/build/
+FinWiseAndroid/local.properties

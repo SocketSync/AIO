@@ -287,13 +287,20 @@
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, m => ({
+      return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#39;'
       })[m]);
+    }
+
+    function withTimeout(promise, ms = 10000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Network request timed out")), ms))
+      ]);
     }
 
     function loadLocalTransactions() {
@@ -393,11 +400,27 @@
       // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
       if (supabaseClient && isValidUUID(userId)) {
         try {
-          const { data, error } = await supabaseClient
-            .from('transactions')
-            .select('*')
-            .eq('user_id', userId)
-            .order('transaction_date', { ascending: false });
+          let { data, error } = await withTimeout(
+            supabaseClient
+              .from('transactions')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .eq('user_id', userId)
+              .order('transaction_date', { ascending: false }),
+            10000
+          );
+
+          if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackRes = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('transaction_date', { ascending: false }),
+              10000
+            );
+            data = fallbackRes.data;
+            error = fallbackRes.error;
+          }
 
           if (!error && Array.isArray(data)) {
             allTransactions = data.map(row => ({

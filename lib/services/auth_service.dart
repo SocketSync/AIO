@@ -182,10 +182,12 @@ class AuthService extends ChangeNotifier {
       final client = SupabaseService().client;
       if (client != null) {
         try {
-          final response = await client.auth.signInWithPassword(
-            email: cleanEmail,
-            password: password,
-          );
+          final response = await client.auth
+              .signInWithPassword(
+                email: cleanEmail,
+                password: password,
+              )
+              .timeout(const Duration(seconds: 10));
           if (response.user != null) {
             _setUserFromSupabase(response.user!);
             _isLoading = false;
@@ -237,11 +239,13 @@ class AuthService extends ChangeNotifier {
       final client = SupabaseService().client;
       if (client != null) {
         try {
-          final response = await client.auth.signUp(
-            email: cleanEmail,
-            password: password,
-            data: {'full_name': cleanName},
-          );
+          final response = await client.auth
+              .signUp(
+                email: cleanEmail,
+                password: password,
+                data: {'full_name': cleanName},
+              )
+              .timeout(const Duration(seconds: 10));
           if (response.user != null) {
             final sbUserId = response.user!.id;
             await client.from('profiles').upsert({
@@ -250,7 +254,7 @@ class AuthService extends ChangeNotifier {
               'display_name': cleanName,
               'currency': 'RM',
               'monthly_budget': 2500.00,
-            });
+            }).timeout(const Duration(seconds: 10));
           }
         } catch (e) {
           debugPrint('[AuthService] Supabase signUp notice: $e');
@@ -531,13 +535,13 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Sign out
+  /// Sign out and completely scrub active session state
   Future<void> signOut() async {
     if (SupabaseService.isConfigured) {
       try {
         final client = SupabaseService().client;
         if (client != null) {
-          await client.auth.signOut();
+          await client.auth.signOut().timeout(const Duration(seconds: 10));
         }
       } catch (e) {
         debugPrint('[AuthService] Supabase sign out error: $e');
@@ -545,11 +549,13 @@ class AuthService extends ChangeNotifier {
     }
 
     try {
-      await _googleSignIn.signOut();
+      await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint('[AuthService] Google sign out error: $e');
     }
     _currentUser = null;
+    _errorMessage = null;
+    _isLoading = false;
     notifyListeners();
   }
 }

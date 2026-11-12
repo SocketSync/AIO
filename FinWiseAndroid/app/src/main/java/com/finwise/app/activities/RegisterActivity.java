@@ -75,13 +75,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         // 1. Full Name
         nameInput = new EditText(this);
-        nameInput.setHint("e.g. Yeoh Keng Wei");
+        nameInput.setHint("e.g. Demo Finwise");
         nameInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         content.addView(ViewFactory.createInputContainer(this, "Full Name *", "👤", nameInput));
 
         // 2. Student Email
         emailInput = new EditText(this);
-        emailInput.setHint("e.g. yeoh.k@graduate.utm.my");
+        emailInput.setHint("e.g. demo@finwise-app.xyz");
         emailInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         LinearLayout emailBox = ViewFactory.createInputContainer(this, "Student Email Address *", "✉️", emailInput);
         LinearLayout.LayoutParams emailParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);

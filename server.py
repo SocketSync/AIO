@@ -186,6 +186,46 @@ def broadcast_sse_event(data):
             if d in SSE_CLIENTS:
                 SSE_CLIENTS.remove(d)
 
+def _strip_sensitive_account(acc):
+    """Confidentiality: Never expose passwordHash or sensitive tokens in API responses."""
+    if not isinstance(acc, dict):
+        return {}
+    return {
+        "id": acc.get("id"),
+        "name": acc.get("name"),
+        "email": acc.get("email"),
+        "phone": acc.get("phone", ""),
+        "occupation": acc.get("occupation", ""),
+        "currency": acc.get("currency", "RM"),
+        "monthlyBudget": acc.get("monthlyBudget", 2500.0),
+        "avatar": acc.get("avatar", "")
+    }
+
+def _validate_and_sanitize_tx(tx):
+    """Integrity: Validate numeric amount, constrain type ENUM, and strip HTML tags."""
+    if not isinstance(tx, dict):
+        return None
+    try:
+        amount = float(tx.get("amount", 0))
+    except (ValueError, TypeError):
+        return None
+    if amount <= 0 or amount > 1000000000:
+        return None
+    tx_type = str(tx.get("type", "expense")).lower().strip()
+    if tx_type not in ("income", "expense"):
+        tx_type = "expense"
+    raw_title = str(tx.get("title") or tx.get("description") or "Transaction").strip()
+    clean_title = raw_title.replace("<", "&lt;").replace(">", "&gt;")[:150]
+    raw_cat = str(tx.get("category") or "Other").strip()
+    clean_cat = raw_cat.replace("<", "&lt;").replace(">", "&gt;")[:60]
+    sanitized = dict(tx)
+    sanitized["amount"] = round(amount, 2)
+    sanitized["type"] = tx_type
+    sanitized["title"] = clean_title
+    sanitized["description"] = clean_title
+    sanitized["category"] = clean_cat
+    return sanitized
+
 class FinWiseHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
@@ -213,22 +253,22 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        # 1. Accounts list for multi-device sync
+        # 0. Public client configuration endpoint (Anon Key only; never service_role)
+        if path == "/api/config":
+            self._send_json(200, {
+                "success": True,
+                "supabaseUrl": os.environ.get("SUPABASE_URL", "https://vcxxsffdsznmqtpghrss.supabase.co"),
+                "supabaseAnonKey": os.environ.get("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeHhzZmZkc3pubXF0cGdocnNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMjgwOTMsImV4cCI6MjEwOTgwNDA5M30.bxxoU1PgcSeOMkss5kx71dI3P67eTL9bk9TzaJC_1VM"),
+                "appUrl": os.environ.get("APP_URL", "https://www.finwise-app.xyz")
+            })
+            return
+
+        # 1. Accounts list for multi-device sync (Confidentiality: passwordHash stripped)
         if path == "/api/accounts":
             accounts = load_accounts()
             safe_accounts = {}
             for email, acc in accounts.items():
-                safe_accounts[email] = {
-                    "id": acc.get("id"),
-                    "name": acc.get("name"),
-                    "email": acc.get("email"),
-                    "phone": acc.get("phone", ""),
-                    "occupation": acc.get("occupation", ""),
-                    "currency": acc.get("currency", "RM"),
-                    "monthlyBudget": acc.get("monthlyBudget", 2500.0),
-                    "avatar": acc.get("avatar", ""),
-                    "passwordHash": acc.get("passwordHash", "")
-                }
+                safe_accounts[email] = _strip_sensitive_account(acc)
             self._send_json(200, {"success": True, "accounts": safe_accounts})
             return
 
@@ -358,7 +398,7 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
             }
             save_accounts(accounts)
             print(f"[FinWise Server] Registered/Updated account across devices: {email} ({name})")
-            self._send_json(200, {"success": True, "message": "Account registered successfully", "account": accounts[email]})
+            self._send_json(200, {"success": True, "message": "Account registered successfully", "account": _strip_sensitive_account(accounts[email])})
             return
 
         if path == "/api/login":
@@ -379,7 +419,7 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
                 self._send_json(401, {"success": False, "message": "Incorrect password. Please try again."})
                 return
 
-            self._send_json(200, {"success": True, "message": "Login successful", "account": acc})
+            self._send_json(200, {"success": True, "message": "Login successful", "account": _strip_sensitive_account(acc)})
             return
 
         # Save or modify synchronized transactions (Live Multi-Device Push)
@@ -389,6 +429,8 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
 
             # Case A: Full transaction list update
             if isinstance(tx_data, list):
+                validated_list = [v for v in (_validate_and_sanitize_tx(item) for item in tx_data) if v is not None]
+                tx_data = validated_list
                 # Save to shared unified ledger
                 save_shared_transactions(tx_data, broadcast=True)
 
@@ -411,7 +453,7 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
                 return
 
             # Case B: Single transaction upsert
-            single_tx = payload.get("transaction")
+            single_tx = _validate_and_sanitize_tx(payload.get("transaction"))
             if isinstance(single_tx, dict) and single_tx.get("id"):
                 existing = load_shared_transactions()
                 found = False

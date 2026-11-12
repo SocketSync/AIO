@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Dash
         new AlertDialog.Builder(this)
                 .setTitle("Campus Notifications")
                 .setItems(new CharSequence[]{
-                        "🎉 Sem 2 Allowance Sync completed from UTM Portal.",
+                        "🎉 Sem 2 Allowance Sync completed from FinWise Cloud.",
                         "💡 Smart Spend Alert: 20% savings on food this week.",
                         "⚠️ Weekend peak warning: Grab expenses increased on Saturday.",
                         "🛡️ 256-bit AES encryption active on student device."
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Dash
 
         new AlertDialog.Builder(this)
                 .setTitle("Student Profile")
-                .setMessage("Name: " + name + "\nEmail: " + email + "\nMatric ID: " + (matric != null && !matric.isEmpty() ? matric : "N/A") + "\nCampus: Universiti Teknologi Malaysia (UTM)\nVerification: Verified Student Account ✓")
+                .setMessage("Name: " + name + "\nEmail: " + email + "\nMatric ID: " + (matric != null && !matric.isEmpty() ? matric : "N/A") + "\nCampus: FinWise Financial Platform\nVerification: Verified Student Account ✓")
                 .setPositiveButton("Close", null)
                 .show();
     }

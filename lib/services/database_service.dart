@@ -169,7 +169,8 @@ class DatabaseService {
             .from('profiles')
             .select()
             .eq('id', userId)
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 10));
 
         if (data != null) {
           final profile = UserProfile.fromJson(data);
@@ -196,7 +197,7 @@ class DatabaseService {
             'avatar_url': photoUrl,
             'currency': 'RM',
             'monthly_budget': 2500.00,
-          });
+          }).timeout(const Duration(seconds: 10));
           _userProfiles[userId] = newProfile;
           return newProfile;
         }
@@ -244,7 +245,10 @@ class DatabaseService {
           if (currency != null) 'currency': currency,
           if (monthlyBudget != null) 'monthly_budget': monthlyBudget,
         };
-        await client.from('profiles').upsert({'id': userId, ...updateMap});
+        await client
+            .from('profiles')
+            .upsert({'id': userId, ...updateMap})
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
         debugPrint('[DatabaseService] Supabase full profile update notice: $e');
       }
@@ -284,7 +288,8 @@ class DatabaseService {
         await client
             .from('profiles')
             .update({'monthly_budget': newBudget})
-            .eq('id', userId);
+            .eq('id', userId)
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
         debugPrint('[DatabaseService] Supabase budget update notice: $e');
       }
@@ -309,7 +314,8 @@ class DatabaseService {
             .from('transactions')
             .select()
             .eq('user_id', userId)
-            .order('transaction_date', ascending: false);
+            .order('transaction_date', ascending: false)
+            .timeout(const Duration(seconds: 10));
 
         if (response.isNotEmpty) {
           final items = response
@@ -331,8 +337,25 @@ class DatabaseService {
     return List.from(list);
   }
 
+  /// Validate and sanitize transaction inputs (Integrity: numeric amount, valid title)
+  TransactionRecord _validateAndSanitizeTransaction(TransactionRecord tx) {
+    if (tx.amount.isNaN || tx.amount.isInfinite || tx.amount <= 0 || tx.amount > 1000000000) {
+      throw ArgumentError('Transaction amount must be a positive number greater than 0.');
+    }
+    final sanitizedTitle = tx.title.trim().replaceAll('<', '').replaceAll('>', '');
+    if (sanitizedTitle.isEmpty) {
+      throw ArgumentError('Transaction title cannot be empty.');
+    }
+    final sanitizedNotes = tx.notes?.trim().replaceAll('<', '').replaceAll('>', '');
+    return tx.copyWith(
+      title: sanitizedTitle.length > 150 ? sanitizedTitle.substring(0, 150) : sanitizedTitle,
+      notes: sanitizedNotes,
+    );
+  }
+
   /// CREATE: Insert transaction into Supabase (or local store)
-  Future<TransactionRecord> createTransaction(TransactionRecord transaction) async {
+  Future<TransactionRecord> createTransaction(TransactionRecord rawTransaction) async {
+    final transaction = _validateAndSanitizeTransaction(rawTransaction);
     final client = _supabaseService.client;
     final userId = transaction.userId;
 
@@ -345,7 +368,8 @@ class DatabaseService {
             .from('transactions')
             .insert(payload)
             .select()
-            .single();
+            .single()
+            .timeout(const Duration(seconds: 10));
 
         final created = TransactionRecord.fromJson(inserted);
         // Force Cloud Refresh immediately to confirm database state
@@ -372,7 +396,8 @@ class DatabaseService {
   }
 
   /// UPDATE: Modify existing transaction
-  Future<TransactionRecord> updateTransaction(TransactionRecord updatedRecord) async {
+  Future<TransactionRecord> updateTransaction(TransactionRecord rawUpdatedRecord) async {
+    final updatedRecord = _validateAndSanitizeTransaction(rawUpdatedRecord);
     final client = _supabaseService.client;
     final userId = updatedRecord.userId;
 
@@ -384,7 +409,8 @@ class DatabaseService {
             .from('transactions')
             .update(payload)
             .eq('id', updatedRecord.id)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .timeout(const Duration(seconds: 10));
         debugPrint('[DatabaseService:Supabase] Updated transaction: ${updatedRecord.title}');
         // Force Cloud Refresh immediately
         await getTransactions(userId);
@@ -416,7 +442,8 @@ class DatabaseService {
             .from('transactions')
             .delete()
             .eq('id', transactionId)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .timeout(const Duration(seconds: 10));
         debugPrint('[DatabaseService:Supabase] Deleted transaction: $transactionId');
         // Force Cloud Refresh immediately
         await getTransactions(userId);

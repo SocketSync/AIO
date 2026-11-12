@@ -28,7 +28,7 @@ class Validation {
     }
 
     /**
-     * Check if email is a UTM student address
+     * Check if email is a FinWise user address
      */
     public static function isUtmEmail(string $email): bool {
         return (bool)preg_match('/@(graduate\.utm\.my|utm\.my)$/i', trim($email));

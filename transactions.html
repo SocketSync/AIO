@@ -433,13 +433,20 @@
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, m => ({
+      return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#39;'
       })[m]);
+    }
+
+    function withTimeout(promise, ms = 10000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Network request timed out")), ms))
+      ]);
     }
 
     function loadLocalTransactions() {
@@ -536,11 +543,27 @@
       // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
       if (supabaseClient && isValidUUID(userId)) {
         try {
-          const { data, error } = await supabaseClient
-            .from('transactions')
-            .select('*')
-            .eq('user_id', userId)
-            .order('transaction_date', { ascending: false });
+          let { data, error } = await withTimeout(
+            supabaseClient
+              .from('transactions')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .eq('user_id', userId)
+              .order('transaction_date', { ascending: false }),
+            10000
+          );
+
+          if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackRes = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('transaction_date', { ascending: false }),
+              10000
+            );
+            data = fallbackRes.data;
+            error = fallbackRes.error;
+          }
 
           if (!error && Array.isArray(data)) {
             allTransactions = data.map(row => ({
@@ -918,8 +941,8 @@
       // Populate Category dropdown
       const catSelect = document.getElementById('modal-category');
       const currentSelected = catSelect.value;
-      const cats = categoriesByType[type];
-      catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      const cats = categoriesByType[type] || categoriesByType.expense;
+      catSelect.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
 
       if (cats.includes(currentSelected)) {
         catSelect.value = currentSelected;
@@ -929,12 +952,20 @@
     async function handleSaveTransaction(event) {
       if (event && event.preventDefault) event.preventDefault();
       const amount = parseFloat(document.getElementById('modal-amount').value);
-      const desc = document.getElementById('modal-desc').value.trim();
-      const date = document.getElementById('modal-date').value;
-      const category = document.getElementById('modal-category').value;
-      const type = document.getElementById('modal-type').value;
+      const desc = (document.getElementById('modal-desc').value || '').replace(/[<>]/g, '').trim().slice(0, 150);
+      const date = document.getElementById('modal-date').value || new Date().toISOString().slice(0, 10);
+      const category = (document.getElementById('modal-category').value || 'Other Expenses').replace(/[<>]/g, '').trim();
+      const rawType = (document.getElementById('modal-type').value || '').toLowerCase().trim();
+      const type = (rawType === 'income' || rawType === 'expense') ? rawType : 'expense';
 
-      if (!amount || amount <= 0 || !desc || !date) return;
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000000) {
+        alert("Please enter a valid positive numeric amount (greater than 0).");
+        return;
+      }
+      if (!desc || !date) {
+        alert("Please enter a valid description and date.");
+        return;
+      }
 
       const oldId = editingTxId;
       const isUpdate = Boolean(oldId && isValidUUID(oldId));
@@ -962,20 +993,26 @@
           let error = null;
 
           if (isUpdate) {
-            const res = await supabaseClient
-              .from('transactions')
-              .update(payload)
-              .eq('id', oldId)
-              .eq('user_id', userId)
-              .select();
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .update(payload)
+                .eq('id', oldId)
+                .eq('user_id', userId)
+                .select(),
+              10000
+            );
             data = res.data;
             error = res.error;
           } else {
             // INSERT: Strip out any frontend ID creation. Let Supabase generate UUID automatically on INSERT!
-            const res = await supabaseClient
-              .from('transactions')
-              .insert(payload)
-              .select();
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .insert(payload)
+                .select(),
+              10000
+            );
             data = res.data;
             error = res.error;
           }

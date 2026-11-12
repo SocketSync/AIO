@@ -44,8 +44,38 @@ ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS date TIMESTAMPTZ;
 ALTER TABLE public.transactions ALTER COLUMN category_id DROP NOT NULL;
 ALTER TABLE public.transactions ALTER COLUMN transaction_date DROP NOT NULL;
 
--- 4. Enable Row Level Security (RLS) & establish unified policy
+-- 4. Enable Row Level Security (RLS), enforce strict policies & DB CHECK constraints
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+
+-- Profiles RLS Policies (strict owner isolation + scoped demo profile)
+DROP POLICY IF EXISTS "Public profiles are readable by all" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are updatable by all" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles are insertable by all" ON public.profiles;
+DROP POLICY IF EXISTS "Enable all actions for users based on id" ON public.profiles;
+DROP POLICY IF EXISTS "Allow demo profile operations" ON public.profiles;
+
+CREATE POLICY "Enable all actions for users based on id"
+ON public.profiles FOR ALL TO authenticated
+USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow demo profile operations"
+ON public.profiles FOR ALL TO anon
+USING (id = '00000000-0000-4000-8000-000000000001'::uuid)
+WITH CHECK (id = '00000000-0000-4000-8000-000000000001'::uuid);
+
+-- Integrity Constraints on public.transactions
+ALTER TABLE public.transactions DROP CONSTRAINT IF EXISTS chk_transactions_amount_nonnegative;
+ALTER TABLE public.transactions ADD CONSTRAINT chk_transactions_amount_nonnegative
+    CHECK (amount >= 0 AND amount <= 1000000000);
+
+ALTER TABLE public.transactions DROP CONSTRAINT IF EXISTS chk_transactions_title_nonempty;
+ALTER TABLE public.transactions ADD CONSTRAINT chk_transactions_title_nonempty
+    CHECK (char_length(trim(title)) >= 1 AND char_length(title) <= 150);
+
+ALTER TABLE public.transactions DROP CONSTRAINT IF EXISTS chk_transactions_type_valid;
+ALTER TABLE public.transactions ADD CONSTRAINT chk_transactions_type_valid
+    CHECK (type::text IN ('income', 'expense'));
 
 -- Drop legacy/conflicting policies
 DROP POLICY IF EXISTS "Enable all actions for users based on user_id" ON public.transactions;
@@ -136,3 +166,4 @@ INSERT INTO public.transactions (
   NOW(),
   'MRT transit weekly commute reload'
 );
+
