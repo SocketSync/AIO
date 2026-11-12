@@ -339,10 +339,10 @@
             <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
               <div class="flex items-center gap-1.5 whitespace-nowrap">
                 <span id="receiptBadgeTitle" class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart Receipt AI</span>
-                <span id="receiptBadgePill" class="bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">2s auto</span>
+                <span id="receiptBadgePill" class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">Gemini AI</span>
               </div>
               <span id="receiptBannerTitle" class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan Receipt with AI</span>
-              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-blue-900 font-semibold underline hover:text-blue-700" title="Configure Google Gemini API Key">Gemini Key</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
+              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
             </div>
           </div>
           <div class="flex gap-1.5 sm:gap-2 shrink-0">
@@ -1325,20 +1325,13 @@
     }
 
     function updateGeminiBadgeStatus() {
-      const key = getStoredGeminiApiKey();
       const badgePill = document.getElementById('receiptBadgePill');
       const bannerSub = document.getElementById('receiptBannerSubtitle');
       if (!badgePill || !bannerSub) return;
 
-      if (key) {
-        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
-        badgePill.textContent = "Gemini AI";
-        bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-emerald-700 font-semibold underline hover:text-emerald-800" title="Gemini API Key active. Click to update.">Key Active 🟢</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
-      } else {
-        badgePill.className = "bg-green-100 text-green-700 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
-        badgePill.textContent = "2s auto";
-        bannerSub.innerHTML = 'Extract merchant, total & items · <a href="javascript:void(0)" onclick="promptGeminiApiKey(event)" class="text-blue-900 font-semibold underline hover:text-blue-700" title="Configure Google Gemini API Key">Gemini Key</a> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
-      }
+      badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
+      badgePill.textContent = "Gemini AI";
+      bannerSub.innerHTML = 'Extract merchant, total & items · <span class="text-emerald-700 font-semibold" title="Google Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
     }
 
     async function triggerReceiptCameraFlow() {
@@ -1507,26 +1500,13 @@
 
       let currentKey = getStoredGeminiApiKey();
 
-      // If user uploaded/captured a real receipt but hasn't entered a Gemini Key, ask if they want to enter it now
-      if (file && !currentKey) {
-        const wantsKey = confirm("✨ Real-time receipt scanning uses Google Gemini AI.\n\nWould you like to enter your Gemini API Key now to read this receipt with Gemini Vision?\n\n• OK = Enter Gemini API Key\n• Cancel = Test with Demo receipt preset");
-        if (wantsKey) {
-          const inputKey = window.prompt("Paste your Google Gemini API Key (starts with AIzaSy...):");
-          if (inputKey && inputKey.trim()) {
-            localStorage.setItem('finwise_gemini_api_key', inputKey.trim());
-            currentKey = inputKey.trim();
-            updateGeminiBadgeStatus();
-          }
-        }
-      }
-
       // 1. Enter Scanning State
       if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all";
       if (badgePill) {
-        badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
-        badgePill.textContent = currentKey ? "Gemini AI..." : "Scanning...";
+        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
+        badgePill.textContent = "Gemini AI...";
       }
-      if (bannerTitle) bannerTitle.textContent = currentKey ? "Reading receipt with Gemini Vision AI..." : "Analyzing Receipt with AI...";
+      if (bannerTitle) bannerTitle.textContent = "Reading receipt with Gemini Vision AI...";
       if (bannerSub) bannerSub.textContent = file ? `Processing ${file.name || 'image'}...` : "Reading merchant, total & items...";
       if (scanBtn) {
         scanBtn.disabled = true;
