@@ -19,7 +19,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   final List<Widget> _pages = const [
     DashboardScreen(),
-    BudgetsScreen(),
+    BudgetsScreen(initialTab: 1),
     InsightsScreen(),
     SimulatorScreen(),
     ProfileScreen(),
@@ -67,8 +67,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               // 2. Budgets Tab
               _buildNavItem(
                 index: 1,
-                icon: Icons.account_balance_wallet,
-                label: 'Budgets',
+                icon: Icons.savings_rounded,
+                label: 'Goals',
               ),
 
               // 3. Center Add Floating Button
@@ -148,4 +148,3 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     );
   }
 }
-

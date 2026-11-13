@@ -125,9 +125,9 @@
       <form class="flex flex-col gap-3.5" onsubmit="event.preventDefault(); handleManualSignUp();">
         
         <!-- Status/Alert Banner -->
-        <div id="reg-alert" class="hidden mb-1 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
-          <span class="material-symbols-outlined text-[18px] shrink-0" id="reg-alert-icon"></span>
-          <span id="reg-alert-text"></span>
+        <div id="reg-alert" class="hidden mb-1 p-3 rounded-xl text-xs font-semibold flex items-start gap-2.5 transition-all">
+          <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5" id="reg-alert-icon"></span>
+          <div class="flex-1 min-w-0" id="reg-alert-text"></div>
         </div>
 
         <div class="flex flex-col gap-1.5">
@@ -470,21 +470,39 @@
       return sha256Sync(str);
     }
 
-    function showRegAlert(type, message) {
+    function escapeHtml(str) {
+      return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
+    }
+
+    function showRegAlert(type, message, isHtml = false) {
       const alertBox = document.getElementById('reg-alert');
       const icon = document.getElementById('reg-alert-icon');
       const text = document.getElementById('reg-alert-text');
-      alertBox.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      alertBox.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-amber-50', 'text-amber-900', 'border-amber-300');
       if (type === 'error') {
         alertBox.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
         icon.textContent = 'error';
-        icon.className = 'material-symbols-outlined text-[18px] text-red-600 shrink-0';
+        icon.className = 'material-symbols-outlined text-[18px] text-red-600 shrink-0 mt-0.5';
+      } else if (type === 'warning') {
+        alertBox.classList.add('bg-amber-50', 'text-amber-900', 'border', 'border-amber-300');
+        icon.textContent = 'warning';
+        icon.className = 'material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5';
       } else {
         alertBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
         icon.textContent = 'check_circle';
-        icon.className = 'material-symbols-outlined text-[18px] text-emerald-600 shrink-0';
+        icon.className = 'material-symbols-outlined text-[18px] text-emerald-600 shrink-0 mt-0.5';
       }
-      text.textContent = message;
+      if (isHtml) {
+        text.innerHTML = message;
+      } else {
+        text.textContent = message;
+      }
     }
 
     function hideRegAlert() {
@@ -549,6 +567,54 @@
             }
           }
         });
+
+        // Detect if the account has already been registered in Supabase:
+        // 1. Supabase returns user with empty identities array ([]) when email is already registered and email confirmation is required
+        // 2. signUpError contains "already registered" or "already exists"
+        // 3. Known public demo account
+        const isAlreadyRegistered = Boolean(
+          email === 'demo@finwise-app.xyz' ||
+          (signUpError && (
+            (signUpError.message && signUpError.message.toLowerCase().includes('already registered')) ||
+            (signUpError.message && signUpError.message.toLowerCase().includes('already exists')) ||
+            (signUpError.message && signUpError.message.toLowerCase().includes('user already exists')) ||
+            signUpError.code === 'user_already_exists' ||
+            signUpError.status === 422
+          )) ||
+          (signUpData && signUpData.user && Array.isArray(signUpData.user.identities) && signUpData.user.identities.length === 0)
+        );
+
+        if (isAlreadyRegistered) {
+          const forgotUrl = 'forgot_password.html?email=' + encodeURIComponent(email);
+          const loginUrl = 'login.html?email=' + encodeURIComponent(email);
+          showRegAlert(
+            'warning',
+            `<div>
+              <p class="font-bold text-amber-950 text-xs">Account already exists!</p>
+              <p class="mt-1 text-[11px] text-amber-900 leading-relaxed font-normal">
+                An account for <strong class="text-slate-900 font-semibold">${escapeHtml(email)}</strong> is already registered.
+              </p>
+              <p class="mt-1 text-[11px] text-amber-900 leading-relaxed font-normal">
+                Did you forget your password?
+              </p>
+              <div class="mt-2.5 flex items-center gap-3">
+                <a href="${forgotUrl}" class="inline-flex items-center gap-1 font-bold text-xs text-primary hover:underline">
+                  <span class="material-symbols-outlined text-[15px]">lock_reset</span>
+                  <span>Reset Password</span>
+                </a>
+                <span class="text-slate-300">•</span>
+                <a href="${loginUrl}" class="inline-flex items-center gap-1 font-bold text-xs text-secondary hover:underline">
+                  <span class="material-symbols-outlined text-[15px]">login</span>
+                  <span>Sign In</span>
+                </a>
+              </div>
+            </div>`,
+            true
+          );
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+          return;
+        }
 
         if (signUpError) {
           showRegAlert('error', signUpError.message || 'Registration error.');

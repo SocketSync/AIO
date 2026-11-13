@@ -147,7 +147,7 @@
             <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
               <span class="material-symbols-outlined text-[20px]">mail</span>
             </div>
-            <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-outline outline-none" id="email-input" placeholder="demo@finwise-app.xyz" required type="email" value="demo@finwise-app.xyz">
+            <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-outline outline-none" id="email-input" placeholder="e.g. name@example.com" required type="email" value="">
           </div>
         </div>
 
@@ -158,7 +158,7 @@
             <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
               <span class="material-symbols-outlined text-[20px]">lock</span>
             </div>
-            <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-text-primary placeholder:text-outline outline-none tracking-widest" id="password-input" placeholder="••••••••••••" required type="password" value="FinWise2026!">
+            <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-text-primary placeholder:text-outline outline-none tracking-widest" id="password-input" placeholder="••••••••••••" required type="password" value="">
             <button aria-label="Toggle password view" class="absolute right-2 p-1.5 text-text-muted hover:text-text-primary rounded-full transition-colors flex items-center justify-center" id="toggle-password-btn" onclick="togglePasswordVisibility()" type="button">
               <span class="material-symbols-outlined text-[20px]" id="password-visibility-icon">visibility</span>
             </button>
@@ -817,6 +817,14 @@
       }
 
       // 4. Check for alerts or messages
+      const urlEmail = urlParams.get('email');
+      if (urlEmail) {
+        const emailInput = document.getElementById('email-input');
+        if (emailInput && !emailInput.value) {
+          emailInput.value = decodeURIComponent(urlEmail);
+        }
+      }
+
       const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
                        (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
       if (errorMsg) {

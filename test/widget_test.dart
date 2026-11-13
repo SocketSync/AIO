@@ -99,8 +99,9 @@ void main() {
     expect(find.text('Total Net Balance'), findsOneWidget);
     expect(find.text('Recent Transactions'), findsOneWidget);
 
-    // Verify 4 Quick Action Modules Grid
+    // Verify Quick Action Modules Grid
     expect(find.text('Budgeting'), findsWidgets);
+    expect(find.text('Savings Goals'), findsWidgets);
     expect(find.text('AI Insights'), findsWidgets);
     expect(find.text('Forecast'), findsWidgets);
     expect(find.text('Simulator'), findsWidgets);
@@ -110,9 +111,30 @@ void main() {
     expect(find.text('Add Transaction'), findsWidgets);
   });
 
-  testWidgets(
-      '3. Add Transaction screen smoke test - renders inputs and form controls',
-      (WidgetTester tester) async {
+  testWidgets('Savings Goals route opens the goals screen and create dialog', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/goals');
+    await tester.pumpAndSettle();
+
+    expect(find.text('No savings goals yet'), findsOneWidget);
+    expect(find.text('+ Add New Goal'), findsOneWidget);
+
+    await tester.tap(find.text('+ Add New Goal'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('New Savings Goal'), findsOneWidget);
+    expect(find.text('Goal Name'), findsOneWidget);
+    expect(find.text('Target Amount (RM)'), findsOneWidget);
+  });
+
+  testWidgets('3. Add Transaction screen smoke test - renders inputs and form controls', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
