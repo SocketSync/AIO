@@ -432,42 +432,47 @@
 
         <!-- Smart Receipt AI Scanner Banner -->
         <div id="smartReceiptBanner"
-          class="flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
-          <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
-            <div id="receiptIconWrapper"
-              class="w-10 h-10 sm:w-11 sm:h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
-              <svg id="receiptDefaultIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3" />
-                <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none" />
-                <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5" />
-              </svg>
-            </div>
-            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
-              <div class="flex items-center gap-1.5 whitespace-nowrap">
-                <span id="receiptBadgeTitle"
-                  class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart
-                  Receipt AI</span>
-                <span id="receiptBadgePill"
-                  class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">Gemini
-                  AI</span>
+          class="p-3 sm:p-3.5 bg-indigo-50/70 rounded-xl mb-4 border border-indigo-100/80 transition-all flex flex-col gap-2.5">
+          <!-- Top Row: Icon + Title & Gemini AI Badge + Demo -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div id="receiptIconWrapper"
+                class="w-9 h-9 bg-blue-900 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white transition-all">
+                <svg id="receiptDefaultIcon" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3" />
+                  <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none" />
+                  <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5" />
+                </svg>
               </div>
-              <span id="receiptBannerTitle"
-                class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan
-                Receipt with AI</span>
-              <span id="receiptBannerSubtitle"
-                class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp;
-                items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini
-                  Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)"
-                  class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
+              <div class="flex flex-col min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span id="receiptBadgeTitle"
+                    class="text-[11px] font-bold text-blue-900 tracking-wider uppercase">Smart Receipt AI</span>
+                  <span id="receiptBadgePill"
+                    class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0">Gemini AI</span>
+                </div>
+                <span id="receiptBannerTitle"
+                  class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug">Scan Receipt with AI</span>
+              </div>
             </div>
+            <!-- Demo Link Button -->
+            <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)"
+              class="text-[11px] text-blue-900 bg-white border border-blue-200 hover:bg-blue-50 px-2.5 py-1 rounded-lg font-semibold shrink-0 transition-colors shadow-2xs">Demo</a>
           </div>
-          <div class="flex gap-1.5 sm:gap-2 shrink-0">
+
+          <!-- Subtitle / Status Line: Full width, zero truncation! -->
+          <div id="receiptBannerSubtitle"
+            class="text-[11px] text-gray-500 leading-normal border-t border-indigo-100/60 pt-1.5 flex items-center justify-between">
+            <span>Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini Active 🟢</span></span>
+          </div>
+
+          <!-- Action Buttons: Balanced 50/50 Grid -->
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
             <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()"
-              class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] shadow-sm whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="2">
+              class="bg-blue-900 text-white hover:bg-blue-800 rounded-lg py-2 px-3 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98] shadow-xs">
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                 <circle cx="12" cy="13" r="4" />
@@ -475,9 +480,8 @@
               <span>Scan</span>
             </button>
             <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()"
-              class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="2">
+              class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-lg py-2 px-3 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98] shadow-xs">
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
               </svg>
@@ -2275,9 +2279,9 @@
       const bannerSub = document.getElementById('receiptBannerSubtitle');
       if (!badgePill || !bannerSub) return;
 
-      badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
+      badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0";
       badgePill.textContent = "Gemini AI";
-      bannerSub.innerHTML = 'Extract merchant, total & items · <span class="text-emerald-700 font-semibold" title="Google Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
+      bannerSub.innerHTML = '<span>Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Google Gemini Vision AI active on server">Gemini Active 🟢</span></span>';
     }
 
     async function triggerReceiptCameraFlow() {
@@ -2428,16 +2432,16 @@
       const uploadBtn = document.getElementById('receiptUploadBtn');
       const toast = document.getElementById('receiptScanToast');
 
-      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-indigo-50/70 rounded-xl mb-4 border border-indigo-100/80 transition-all flex flex-col gap-2.5";
       if (bannerTitle) bannerTitle.textContent = "Scan Receipt with AI";
       if (scanBtn) {
         scanBtn.disabled = false;
-        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
+        scanBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
       }
       if (uploadBtn) {
         uploadBtn.disabled = false;
         uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
-        uploadBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+        uploadBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
       }
       if (toast) toast.classList.add('hidden');
       updateGeminiBadgeStatus();
@@ -2455,9 +2459,9 @@
       const curr = localStorage.getItem('finwise_currency') || 'RM';
 
       // 1. Enter Scanning State — shimmer animation
-      if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all";
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all flex flex-col gap-2.5";
       if (badgePill) {
-        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
+        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse shrink-0";
         badgePill.textContent = "Gemini AI...";
       }
       if (bannerTitle) bannerTitle.textContent = "Reading receipt with Gemini Vision AI...";
@@ -2519,15 +2523,15 @@
 
       // Handle API-level errors gracefully
       if (parsed && parsed.invalidApiKey) {
-        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-red-50/80 rounded-xl mb-4 border border-red-200 transition-all";
+        if (banner) banner.className = "p-3 sm:p-3.5 bg-red-50/80 rounded-xl mb-4 border border-red-200 transition-all flex flex-col gap-2.5";
         if (bannerTitle) bannerTitle.textContent = "⚠️ Invalid API Key";
         if (bannerSub) bannerSub.textContent = parsed.message || "Please check your Gemini API key configuration.";
         resetScanButtons(scanBtn, uploadBtn);
         return;
       }
       if (parsed && (parsed.rateLimited || parsed.allModelsFailed)) {
-        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-amber-50/80 rounded-xl mb-4 border border-amber-200 transition-all";
-        if (badgePill) { badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"; badgePill.textContent = "Retry"; }
+        if (banner) banner.className = "p-3 sm:p-3.5 bg-amber-50/80 rounded-xl mb-4 border border-amber-200 transition-all flex flex-col gap-2.5";
+        if (badgePill) { badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0"; badgePill.textContent = "Retry"; }
         if (bannerTitle) bannerTitle.textContent = parsed.rateLimited ? "⏳ Rate Limited" : "⚠️ AI Unavailable";
         if (bannerSub) bannerSub.textContent = parsed.message || "Please try again in a moment.";
         resetScanButtons(scanBtn, uploadBtn);
@@ -2634,11 +2638,11 @@
       // 6. Reset Banner to Success State with real scan time
       const isGeminiEngine = parsed.engine && parsed.engine.includes('gemini');
       const scanTime = parsed.scanDuration || totalElapsed;
-      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all flex flex-col gap-2.5";
       if (badgePill) {
         badgePill.className = isGeminiEngine
-          ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"
-          : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
+          ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0"
+          : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0";
         badgePill.textContent = isGeminiEngine ? `${scanTime}s` : "Extracted";
       }
       if (bannerTitle) bannerTitle.textContent = `${isGeminiEngine ? '✨ ' : ''}Extracted: ${parsed.merchant}`;
@@ -2658,11 +2662,12 @@
     function resetScanButtons(scanBtn, uploadBtn) {
       if (scanBtn) {
         scanBtn.disabled = false;
-        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
+        scanBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
       }
       if (uploadBtn) {
         uploadBtn.disabled = false;
         uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+        uploadBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
       }
     }
 
