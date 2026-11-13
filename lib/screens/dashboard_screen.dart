@@ -485,7 +485,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                           ),
                           Text(
-                            '4 Core Modules',
+                            '5 Core Modules',
                             style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -512,6 +512,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Icons.tune,
                               AppColors.secondary,
                             ),
+                          ),
+                          _buildQuickActionButton(
+                            title: 'Savings Goals',
+                            subtitle: 'Track your targets',
+                            icon: Icons.savings_rounded,
+                            iconColor: AppColors.primary,
+                            backgroundColor: AppColors.primaryFixedDim.withValues(alpha: 0.3),
+                            onTap: () => Navigator.of(context).pushNamed('/goals'),
                           ),
                           _buildQuickActionButton(
                             title: 'AI Insights',

@@ -58,6 +58,7 @@ class FinWiseApp extends StatelessWidget {
           '/forgot-password': (context) => const ForgotPasswordScreen(),
           '/dashboard': (context) => const MainNavigationShell(initialTab: 0),
           '/budgets': (context) => const MainNavigationShell(initialTab: 1),
+          '/goals': (context) => const MainNavigationShell(initialTab: 1),
           '/insights': (context) => const MainNavigationShell(initialTab: 2),
           '/simulator': (context) => const MainNavigationShell(initialTab: 3),
           '/add-transaction': (context) => const AddTransactionScreen(),
