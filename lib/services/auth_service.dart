@@ -56,7 +56,7 @@ class AuthService extends ChangeNotifier {
 
   static const _uuid = Uuid();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
+  late final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
   );
 
@@ -362,25 +362,27 @@ class AuthService extends ChangeNotifier {
       }
     }
 
-    // 3. Try device Google Sign-In
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    // Web OAuth is handled by Supabase; the device plugin needs a client ID.
+    if (!kIsWeb) {
+      try {
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      if (googleUser != null) {
-        final userId = generateUserUuid(googleUser.email);
-        _currentUser = AppUser(
-          id: userId,
-          email: googleUser.email,
-          displayName: googleUser.displayName ?? formatNameFromEmail(googleUser.email),
-          photoUrl: googleUser.photoUrl,
-          provider: 'google',
-        );
-        _isLoading = false;
-        notifyListeners();
-        return _currentUser;
+        if (googleUser != null) {
+          final userId = generateUserUuid(googleUser.email);
+          _currentUser = AppUser(
+            id: userId,
+            email: googleUser.email,
+            displayName: googleUser.displayName ?? formatNameFromEmail(googleUser.email),
+            photoUrl: googleUser.photoUrl,
+            provider: 'google',
+          );
+          _isLoading = false;
+          notifyListeners();
+          return _currentUser;
+        }
+      } catch (error) {
+        debugPrint('[AuthService] Device Google Sign-In notice: $error');
       }
-    } catch (error) {
-      debugPrint('[AuthService] Device Google Sign-In notice: $error');
     }
 
     _isLoading = false;

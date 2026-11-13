@@ -78,6 +78,8 @@ class SavingsGoalProvider extends ChangeNotifier {
       return null; // success
     } on ArgumentError catch (e) {
       return e.message.toString();
+    } on StateError {
+      return 'Savings goals require a configured Supabase backend.';
     } catch (e) {
       debugPrint('[SavingsGoalProvider] addGoal error: $e');
       return 'Failed to create goal. Please try again.';
@@ -113,6 +115,8 @@ class SavingsGoalProvider extends ChangeNotifier {
       return null;
     } on ArgumentError catch (e) {
       return e.message.toString();
+    } on StateError {
+      return 'Savings goals require a configured Supabase backend.';
     } catch (e) {
       debugPrint('[SavingsGoalProvider] updateGoal error: $e');
       return 'Failed to update goal. Please try again.';
@@ -149,6 +153,8 @@ class SavingsGoalProvider extends ChangeNotifier {
       return null;
     } on ArgumentError catch (e) {
       return e.message.toString();
+    } on StateError {
+      return 'Savings goals require a configured Supabase backend.';
     } catch (e) {
       debugPrint('[SavingsGoalProvider] depositToGoal error: $e');
       return 'Failed to record deposit. Please try again.';
@@ -172,6 +178,8 @@ class SavingsGoalProvider extends ChangeNotifier {
       );
       _goals.removeWhere((g) => g.id == goalId);
       return null;
+    } on StateError {
+      return 'Savings goals require a configured Supabase backend.';
     } catch (e) {
       debugPrint('[SavingsGoalProvider] deleteGoal error: $e');
       return 'Failed to delete goal. Please try again.';
