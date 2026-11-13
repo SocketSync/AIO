@@ -954,25 +954,32 @@
         const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
         const hasItems = rItems.length > 0;
         const rowKey = 'txp_' + String(item.id);
-        const isOpen = Boolean(expandedReceiptRows[rowKey]);
+        const isOpen = expandedReceiptRows[rowKey] !== false;
 
         return `
           <div class="bg-white rounded-xl shadow-sm border border-border-neutral overflow-hidden hover:shadow-md transition-all">
-            <div ${hasItems ? `onclick="toggleTxReceiptAccordion('${escapeHtml(rowKey)}')"` : ''} class="p-3 flex items-center justify-between gap-3 ${hasItems ? 'cursor-pointer' : ''}">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs">
+            <div ${hasItems ? `onclick="toggleTxReceiptAccordion('${escapeHtml(rowKey)}')"` : ''} class="p-3 flex items-start justify-between gap-3 ${hasItems ? 'cursor-pointer' : ''}">
+              <div class="flex items-start gap-3 min-w-0 flex-1">
+                <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs mt-0.5">
                   <span class="material-symbols-outlined text-[20px]">${catConfig.icon}</span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 min-w-0">
                     <p class="font-bold text-xs text-text-primary truncate">${escapeHtml(item.description)}</p>
-                    ${hasItems ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-50 text-primary text-[10px] font-bold border border-indigo-200/70 shrink-0" title="Tap to view ${rItems.length} receipt items">🧾 ${rItems.length}</span>` : ''}
+                    ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
                   </div>
-                  <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-0.5 flex-wrap">
+                  ${hasItems ? `
+                    <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} mt-1 text-[11px] text-slate-600 leading-snug">
+                      <p class="font-semibold text-text-muted">Details:</p>
+                      <div class="space-y-0.5">
+                        ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                  <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-1 flex-wrap">
                     <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded">${escapeHtml(item.category)}</span>
                     <span>·</span>
                     <span>${escapeHtml(item.date)}</span>
-                    ${hasItems ? `<span class="text-primary font-semibold">· Tap for items</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -991,24 +998,6 @@
                 </div>
               </div>
             </div>
-            ${hasItems ? `
-              <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} bg-slate-50/90 border-t border-slate-100 px-3 py-2.5 space-y-1.5">
-                <div class="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-wider">
-                  <span>🧾 Itemized Receipt (${rItems.length} items)</span>
-                  <span class="text-primary">Extracted by AI</span>
-                </div>
-                ${rItems.map(it => `
-                  <div class="flex items-center justify-between text-[11px] bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
-                    <div class="min-w-0 flex-1">
-                      <span class="font-semibold text-text-primary">${escapeHtml(it.item_name)}</span>
-                      <span class="text-text-muted ml-1">×${parseInt(it.quantity, 10) || 1}</span>
-                      ${it.category ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-semibold">${escapeHtml(it.category)}</span>` : ''}
-                    </div>
-                    <span class="font-bold text-text-primary shrink-0 ml-2">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
           </div>
         `;
       }).join('');
@@ -1017,7 +1006,7 @@
     }
 
     function toggleTxReceiptAccordion(rowKey) {
-      expandedReceiptRows[rowKey] = !expandedReceiptRows[rowKey];
+      expandedReceiptRows[rowKey] = expandedReceiptRows[rowKey] === false;
       const el = document.getElementById('acc-' + rowKey);
       if (el) el.classList.toggle('hidden', !expandedReceiptRows[rowKey]);
     }
@@ -1026,7 +1015,6 @@
       const box = document.getElementById('modalReceiptItemsPreview');
       const list = document.getElementById('modalReceiptItemsList');
       const countEl = document.getElementById('modalReceiptItemsCount');
-      const curr = getCurrency();
       if (!box || !list) return;
       if (!pendingReceiptItems || pendingReceiptItems.length === 0) {
         box.classList.add('hidden');
@@ -1036,18 +1024,15 @@
       }
       box.classList.remove('hidden');
       if (countEl) countEl.textContent = String(pendingReceiptItems.length);
-      list.innerHTML = pendingReceiptItems.map((it, idx) => `
-        <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-indigo-100/80 text-[11px]">
-          <div class="min-w-0 flex-1">
-            <p class="font-semibold text-text-primary truncate">${escapeHtml(it.item_name)} <span class="text-text-muted font-normal">×${it.quantity || 1}</span></p>
-            <span class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">${escapeHtml(it.category || 'General')}</span>
+      list.innerHTML = `
+        <p class="text-[11px] font-semibold text-text-muted">Details:</p>
+        ${pendingReceiptItems.map((it, idx) => `
+          <div class="flex items-center justify-between gap-2 text-[11px] text-slate-700 leading-snug">
+            <span class="truncate">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</span>
+            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none shrink-0" title="Remove item">×</button>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <span class="font-bold text-text-primary">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
-            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none" title="Remove item">×</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('')}
+      `;
     }
 
     function removePendingReceiptItem(index) {
@@ -1397,9 +1382,7 @@
       pendingReceiptItems = itemList;
       renderModalReceiptItemsPreview();
 
-      const itemNames = itemList.map(i => i.item_name);
-      const itemNote = itemNames.length ? ` (${itemNames.slice(0, 2).join(", ")})` : "";
-      const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
+      const extractedDesc = parsed.merchant || "Store Purchase";
 
       // Immediate 14-day duplicate purchase check inside modal
       const aiTipEl = document.getElementById('modalAiTipBanner');

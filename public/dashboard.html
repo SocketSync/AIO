@@ -1920,18 +1920,15 @@
       }
       box.classList.remove('hidden');
       if (countEl) countEl.textContent = String(pendingReceiptItems.length);
-      list.innerHTML = pendingReceiptItems.map((it, idx) => `
-        <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-indigo-100/80 text-[11px]">
-          <div class="min-w-0 flex-1">
-            <p class="font-semibold text-text-primary truncate">${escapeHtml(it.item_name)} <span class="text-text-muted font-normal">×${it.quantity || 1}</span></p>
-            <span class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">${escapeHtml(it.category || 'General')}</span>
+      list.innerHTML = `
+        <p class="text-[11px] font-semibold text-text-muted">Details:</p>
+        ${pendingReceiptItems.map((it, idx) => `
+          <div class="flex items-center justify-between gap-2 text-[11px] text-slate-700 leading-snug">
+            <span class="truncate">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</span>
+            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none shrink-0" title="Remove item">×</button>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <span class="font-bold text-text-primary">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
-            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none" title="Remove item">×</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('')}
+      `;
     }
 
     function removePendingReceiptItem(index) {
@@ -2292,9 +2289,7 @@
       pendingReceiptItems = itemList;
       renderModalReceiptItemsPreview();
 
-      const itemNames = itemList.map(i => i.item_name);
-      const itemNote = itemNames.length ? ` (${itemNames.slice(0, 2).join(", ")})` : "";
-      const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
+      const extractedDesc = parsed.merchant || "Store Purchase";
 
       // Show instant 14-day duplicate purchase tip inside modal if detected
       const aiTipEl = document.getElementById('modalAiTipBanner');
@@ -2563,7 +2558,7 @@
         </div>
       `).join("") : '<p class="text-xs text-text-muted">No expenses recorded for this month.</p>';
 
-      // Recent records (top 4) with itemized receipt badge & accordion
+      // Recent records (top 4) with minimalist Details line-item view directly beneath description
       const sorted = [...transactions].sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
       const recentHost = document.getElementById("recentRecords");
       const latest = sorted.slice(0, 4);
@@ -2571,39 +2566,29 @@
         const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
         const hasItems = rItems.length > 0;
         const rowKey = 'dash_rc_' + String(item.id);
-        const isOpen = Boolean(expandedReceiptRows[rowKey]);
+        const isOpen = expandedReceiptRows[rowKey] !== false;
         return `
         <div class="transition-colors">
-          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
+          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-start justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
                 <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
-                ${hasItems ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-50 text-primary text-[10px] font-bold border border-indigo-200/70 shrink-0" title="Tap to view ${rItems.length} receipt items">🧾 ${rItems.length}</span>` : ''}
+                ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
               </div>
-              <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}${hasItems ? ' · <span class="text-primary font-semibold">Tap to inspect items</span>' : ''}</p>
+              ${hasItems ? `
+                <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} mt-1 text-[11px] text-slate-600 leading-snug">
+                  <p class="font-semibold text-text-muted">Details:</p>
+                  <div class="space-y-0.5">
+                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
             </div>
             <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
               ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
             </span>
           </div>
-          ${hasItems ? `
-            <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} bg-slate-50/90 border-t border-slate-100 px-3 py-2.5 space-y-1.5">
-              <div class="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-wider">
-                <span>🧾 Itemized Receipt (${rItems.length} items)</span>
-                <button type="button" onclick="openTransactionDialog('${escapeHtml(item.id)}')" class="text-primary hover:underline font-bold">Edit</button>
-              </div>
-              ${rItems.map(it => `
-                <div class="flex items-center justify-between text-[11px] bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
-                  <div class="min-w-0 flex-1">
-                    <span class="font-semibold text-text-primary">${escapeHtml(it.item_name)}</span>
-                    <span class="text-text-muted ml-1">×${parseInt(it.quantity, 10) || 1}</span>
-                    ${it.category ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-semibold">${escapeHtml(it.category)}</span>` : ''}
-                  </div>
-                  <span class="font-bold text-text-primary shrink-0 ml-2">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
         </div>
       `}).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
 
@@ -2614,11 +2599,25 @@
       if (emptyTxEl) emptyTxEl.classList.toggle("hidden", sorted.length !== 0);
       const txRowsEl = document.getElementById("transactionRows");
       if (txRowsEl) {
-        txRowsEl.innerHTML = sorted.map(item => `
-          <div class="flex items-center justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
+        txRowsEl.innerHTML = sorted.map(item => {
+          const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
+          const hasItems = rItems.length > 0;
+          return `
+          <div class="flex items-start justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
             <div class="min-w-0 flex-1">
-              <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
-              <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+                ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
+              </div>
+              ${hasItems ? `
+                <div class="mt-1 text-[11px] text-slate-600 leading-snug">
+                  <p class="font-semibold text-text-muted">Details:</p>
+                  <div class="space-y-0.5">
+                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
             </div>
             <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
               ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
@@ -2628,14 +2627,14 @@
               <button aria-label="Delete" class="text-xs text-alert-coral font-semibold px-1.5 py-1 hover:bg-alert-coral-subtle rounded" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
             </div>
           </div>
-        `).join("");
+        `}).join("");
       }
 
       refreshDashboardAiInsight();
     }
 
     function toggleReceiptAccordion(rowKey) {
-      expandedReceiptRows[rowKey] = !expandedReceiptRows[rowKey];
+      expandedReceiptRows[rowKey] = expandedReceiptRows[rowKey] === false;
       const el = document.getElementById('acc-' + rowKey);
       if (el) el.classList.toggle('hidden', !expandedReceiptRows[rowKey]);
     }
