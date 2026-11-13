@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html class="h-full bg-surface-container-low" lang="en">
+
 <head>
   <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    name="viewport">
   <title>FinWise - Personal Financial Dashboard</title>
   <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -44,15 +48,27 @@
     };
   </script>
   <style>
-    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
-    .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
+    body {
+      font-family: 'Inter', sans-serif;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    .pt-safe {
+      padding-top: env(safe-area-inset-top, 16px);
+    }
   </style>
 </head>
+
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
   <!-- Desktop Mobile Frame Wrapper -->
-  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+  <div
+    class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
     <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
@@ -70,27 +86,34 @@
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
       <div class="h-16 px-4 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo"
+            class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
           <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
-          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI SMART</span>
+          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI
+            SMART</span>
         </div>
         <div class="flex items-center gap-1 relative">
           <!-- Notification Bell -->
-          <button aria-label="Notifications" onclick="showNotifModal()" class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
+          <button aria-label="Notifications" onclick="showNotifModal()"
+            class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-[22px]">notifications</span>
           </button>
-          
+
           <!-- User Profile Avatar Button -->
-          <button aria-label="User Profile" onclick="toggleProfileMenu()" id="headerProfileAvatarBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
-            <div id="headerProfileAvatar" class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden">
+          <button aria-label="User Profile" onclick="toggleProfileMenu()" id="headerProfileAvatarBtn"
+            class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+            <div id="headerProfileAvatar"
+              class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden">
               U
             </div>
           </button>
 
           <!-- Profile Dropdown Menu -->
-          <div id="profileMenu" class="hidden absolute right-0 top-14 z-50 w-64 rounded-xl bg-white border border-slate-200 shadow-xl p-3 flex flex-col gap-2">
+          <div id="profileMenu"
+            class="hidden absolute right-0 top-14 z-50 w-64 rounded-xl bg-white border border-slate-200 shadow-xl p-3 flex flex-col gap-2">
             <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-              <div id="menuAvatarIcon" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-base font-bold shadow-sm shrink-0 overflow-hidden">
+              <div id="menuAvatarIcon"
+                class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-base font-bold shadow-sm shrink-0 overflow-hidden">
                 U
               </div>
               <div class="min-w-0 flex-1">
@@ -98,21 +121,24 @@
                 <p id="profileMenuEmail" class="text-[11px] text-slate-500 truncate">user@gmail.com</p>
               </div>
             </div>
-            <div class="flex items-center gap-1 bg-growth-mint-subtle px-2 py-1 rounded-md text-[10px] font-bold text-secondary">
+            <div
+              class="flex items-center gap-1 bg-growth-mint-subtle px-2 py-1 rounded-md text-[10px] font-bold text-secondary">
               <span class="material-symbols-outlined text-[13px]">verified</span>
               <span>Google Account Verified</span>
             </div>
             <div class="text-[10px] text-text-muted px-1">
               Backend: <strong class="text-slate-700">Supabase Cloud PostgreSQL</strong>
             </div>
-            <a href="profile.html" class="w-full text-left px-2.5 py-2 text-xs font-bold rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center justify-between mt-1">
+            <a href="profile.html"
+              class="w-full text-left px-2.5 py-2 text-xs font-bold rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center justify-between mt-1">
               <span class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
                 <span>Edit Full Profile & Account</span>
               </span>
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </a>
-            <button onclick="logoutFromMenu()" class="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-lg text-alert-coral hover:bg-alert-coral-subtle/50 transition-colors flex items-center gap-1.5 mt-1">
+            <button onclick="logoutFromMenu()"
+              class="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-lg text-alert-coral hover:bg-alert-coral-subtle/50 transition-colors flex items-center gap-1.5 mt-1">
               <span class="material-symbols-outlined text-[16px]">logout</span>
               <span>Sign Out</span>
             </button>
@@ -134,22 +160,27 @@
           <p class="text-xs text-text-muted truncate" id="userSubtitle">Personal Financial Snapshot</p>
         </div>
         <!-- Month Selector Pill -->
-        <div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm shrink-0">
+        <div
+          class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm shrink-0">
           <span class="material-symbols-outlined text-[16px] text-primary-container">calendar_month</span>
-          <input id="selectedMonth" aria-label="Select month" type="month" class="w-28 bg-transparent text-xs font-bold text-text-primary outline-none" onchange="renderDashboard()">
+          <input id="selectedMonth" aria-label="Select month" type="month"
+            class="w-28 bg-transparent text-xs font-bold text-text-primary outline-none" onchange="renderDashboard()">
           <span class="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
         </div>
       </div>
 
       <!-- Main Balance Bento Card -->
-      <div class="relative overflow-hidden rounded-xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md">
+      <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md">
         <div class="relative z-10 flex flex-col gap-3">
           <!-- Card Top Row -->
           <div class="flex items-center justify-between text-white/80">
             <span class="text-[11px] font-bold tracking-wider uppercase">Total Available Balance</span>
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white">Active</span>
-              <button aria-label="Toggle Balance Visibility" class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn" onclick="toggleBalance()">
+              <button aria-label="Toggle Balance Visibility"
+                class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn"
+                onclick="toggleBalance()">
                 <span class="material-symbols-outlined text-[18px]" id="eyeIcon">visibility</span>
               </button>
             </div>
@@ -189,25 +220,29 @@
 
       <!-- Quick Action Buttons Grid -->
       <div class="grid grid-cols-4 gap-2">
-        <button onclick="window.location.href='transactions.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='transactions.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1">
             <span class="material-symbols-outlined text-[20px]">receipt_long</span>
           </div>
           <span class="text-[11px] font-semibold text-text-primary">Transactions</span>
         </button>
-        <button onclick="showAiModal()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="showAiModal()"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-emerald-50 text-secondary flex items-center justify-center mb-1">
             <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
           </div>
           <span class="text-[11px] font-semibold text-text-primary">AI Insights</span>
         </button>
-        <button onclick="window.location.href='summary.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='summary.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center mb-1">
             <span class="material-symbols-outlined text-[20px]">bar_chart</span>
           </div>
           <span class="text-[11px] font-semibold text-text-primary">Summary</span>
         </button>
-        <button onclick="window.location.href='profile.html'" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+        <button onclick="window.location.href='profile.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
           <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
             <span class="material-symbols-outlined text-[20px]">person</span>
           </div>
@@ -216,18 +251,22 @@
       </div>
 
       <!-- AI Purchase Insights Card (14-Day Receipt Agent) -->
-      <div id="aiPurchaseInsightCard" class="rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm">
+      <div id="aiPurchaseInsightCard"
+        class="rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm">
         <div class="flex items-start gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+          <div
+            class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
             <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-[11px] font-extrabold uppercase tracking-wider text-primary flex items-center gap-1">
                 <span>✨ FinWise Purchase Insights</span>
-                <span id="aiInsightBadge" class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">14-Day Scan</span>
+                <span id="aiInsightBadge"
+                  class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">14-Day Scan</span>
               </span>
-              <button type="button" onclick="showAiModal()" class="text-[10px] font-bold text-primary hover:underline shrink-0">Details →</button>
+              <button type="button" onclick="showAiModal()"
+                class="text-[10px] font-bold text-primary hover:underline shrink-0">Details →</button>
             </div>
             <p id="aiPurchaseInsightText" class="text-xs text-slate-700 mt-1 leading-relaxed font-medium">
               Analyzing your last 14 days of itemized receipts for smart savings tips...
@@ -240,13 +279,15 @@
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-text-primary">Recent Transactions</h2>
-          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5" onclick="window.location.href='transactions.html'">
+          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5"
+            onclick="window.location.href='transactions.html'">
             <span>View all</span>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
           </button>
         </div>
 
-        <div id="recentRecords" class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
+        <div id="recentRecords"
+          class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
           <div class="p-4 text-center text-xs text-text-muted">Loading transactions from Supabase...</div>
         </div>
       </div>
@@ -258,9 +299,18 @@
           <span id="monthlyTitle" class="text-xs text-text-muted font-medium"></span>
         </div>
         <div class="grid grid-cols-3 gap-2 pb-3 border-b border-slate-100">
-          <div><p class="text-[11px] text-text-muted">Income</p><p id="monthlyIncome" class="text-sm font-bold text-secondary">RM 0.00</p></div>
-          <div><p class="text-[11px] text-text-muted">Expenses</p><p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p></div>
-          <div><p class="text-[11px] text-text-muted">Net Cash Flow</p><p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p></div>
+          <div>
+            <p class="text-[11px] text-text-muted">Income</p>
+            <p id="monthlyIncome" class="text-sm font-bold text-secondary">RM 0.00</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-text-muted">Expenses</p>
+            <p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-text-muted">Net Cash Flow</p>
+            <p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p>
+          </div>
         </div>
         <div class="flex items-center justify-between mt-3 mb-1">
           <p class="text-[11px] font-semibold text-text-muted">Expenses by Category</p>
@@ -274,38 +324,51 @@
     </main>
 
     <!-- Live Camera Scanner Modal (Works on Laptop Webcams, USB Webcams, Phones & Tablets) -->
-    <div id="liveCameraModal" class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm" onclick="if(event.target===this)closeLiveCameraModal()">
-      <div class="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
+    <div id="liveCameraModal"
+      class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm"
+      onclick="if(event.target===this)closeLiveCameraModal()">
+      <div
+        class="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
         <!-- Header -->
         <div class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700 text-white">
           <div class="flex items-center gap-2">
             <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
             <span class="font-bold text-sm">AI Receipt Camera Scanner</span>
           </div>
-          <button type="button" onclick="closeLiveCameraModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 text-lg transition-colors leading-none">✕</button>
+          <button type="button" onclick="closeLiveCameraModal()"
+            class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 text-lg transition-colors leading-none">✕</button>
         </div>
 
         <!-- Viewfinder View -->
-        <div class="relative w-full bg-black flex items-center justify-center overflow-hidden" style="min-height: 280px; max-height: 380px;">
+        <div class="relative w-full bg-black flex items-center justify-center overflow-hidden"
+          style="min-height: 280px; max-height: 380px;">
           <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-          
+
           <!-- Viewfinder Reticle Overlay -->
-          <div class="absolute inset-5 pointer-events-none border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
+          <div
+            class="absolute inset-5 pointer-events-none border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
             <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
             <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg"></div>
-            <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg"></div>
-            <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg"></div>
-            
-            <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse"></div>
+            <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg">
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg">
+            </div>
 
-            <span class="absolute bottom-2 text-[11px] font-medium text-white/90 bg-black/70 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+            <div
+              class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse">
+            </div>
+
+            <span
+              class="absolute bottom-2 text-[11px] font-medium text-white/90 bg-black/70 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
               Hold receipt in front of camera
             </span>
           </div>
 
           <!-- Loading state -->
-          <div id="liveCameraLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-2 p-4 text-center">
-            <span class="inline-block w-8 h-8 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
+          <div id="liveCameraLoading"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-2 p-4 text-center">
+            <span
+              class="inline-block w-8 h-8 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
             <p class="text-xs text-slate-300 font-medium">Opening device camera...</p>
           </div>
         </div>
@@ -315,19 +378,32 @@
 
         <!-- Controls Footer -->
         <div class="p-3.5 bg-slate-800 border-t border-slate-700 flex items-center justify-between gap-2.5">
-          <button type="button" id="switchCameraBtn" onclick="toggleCameraFacing()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <button type="button" id="switchCameraBtn" onclick="toggleCameraFacing()"
+            class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             <span>Flip</span>
           </button>
 
           <!-- Snap & Scan Button -->
-          <button type="button" onclick="captureLiveCameraFrame()" class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <button type="button" onclick="captureLiveCameraFrame()"
+            class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
             <span>Snap &amp; AI Scan</span>
           </button>
 
-          <button type="button" onclick="closeLiveCameraModal(); triggerReceiptUploadFlow()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <button type="button" onclick="closeLiveCameraModal(); triggerReceiptUploadFlow()"
+            class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
             <span>Upload</span>
           </button>
         </div>
@@ -335,83 +411,134 @@
     </div>
 
     <!-- Add / Edit Transaction Modal Dialog -->
-    <div id="transactionDialog" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/50 p-3" onclick="if(event.target===this)closeTransactionDialog()">
-      <form id="transactionForm" class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl border border-slate-200" onsubmit="saveTransaction(event)">
+    <div id="transactionDialog"
+      class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/50 p-3"
+      onclick="if(event.target===this)closeTransactionDialog()">
+      <form id="transactionForm"
+        class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl border border-slate-200"
+        onsubmit="saveTransaction(event)">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
           <h2 id="transactionDialogTitle" class="text-base font-bold text-text-primary">Add Transaction</h2>
-          <button type="button" aria-label="Close" onclick="closeTransactionDialog()" class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
+          <button type="button" aria-label="Close" onclick="closeTransactionDialog()"
+            class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
         </div>
 
         <!-- Hidden Camera Input (Scan button - camera only) -->
-        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)" />
+        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden"
+          onchange="handleReceiptFileSelected(event)" />
         <!-- Hidden File Upload Input (Upload button - images + PDFs) -->
-        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden" onchange="handleReceiptFileSelected(event)" />
+        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden"
+          onchange="handleReceiptFileSelected(event)" />
 
         <!-- Smart Receipt AI Scanner Banner -->
-        <div id="smartReceiptBanner" class="flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
+        <div id="smartReceiptBanner"
+          class="flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
           <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
-            <div id="receiptIconWrapper" class="w-10 h-10 sm:w-11 sm:h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
-              <svg id="receiptDefaultIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3"/>
-                <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none"/>
-                <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5"/>
+            <div id="receiptIconWrapper"
+              class="w-10 h-10 sm:w-11 sm:h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
+              <svg id="receiptDefaultIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3" />
+                <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none" />
+                <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5" />
               </svg>
             </div>
             <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
               <div class="flex items-center gap-1.5 whitespace-nowrap">
-                <span id="receiptBadgeTitle" class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart Receipt AI</span>
-                <span id="receiptBadgePill" class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">Gemini AI</span>
+                <span id="receiptBadgeTitle"
+                  class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart
+                  Receipt AI</span>
+                <span id="receiptBadgePill"
+                  class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">Gemini
+                  AI</span>
               </div>
-              <span id="receiptBannerTitle" class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan Receipt with AI</span>
-              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
+              <span id="receiptBannerTitle"
+                class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan
+                Receipt with AI</span>
+              <span id="receiptBannerSubtitle"
+                class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp;
+                items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini
+                  Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)"
+                  class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
             </div>
           </div>
           <div class="flex gap-1.5 sm:gap-2 shrink-0">
-            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] shadow-sm whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()"
+              class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] shadow-sm whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
               <span>Scan</span>
             </button>
-            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()" class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()"
+              class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+              </svg>
               <span>Upload</span>
             </button>
           </div>
         </div>
 
         <!-- Receipt Scan Toast Notification -->
-        <div id="receiptScanToast" class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
+        <div id="receiptScanToast"
+          class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="text-base">✨</span>
             <span id="receiptScanToastText">Receipt parsed successfully!</span>
           </div>
-          <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-600 hover:text-emerald-900 font-bold ml-2">×</button>
+          <button type="button" onclick="this.parentElement.classList.add('hidden')"
+            class="text-emerald-600 hover:text-emerald-900 font-bold ml-2">×</button>
         </div>
 
         <!-- Type Selector -->
         <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionType">Transaction Type</label>
-        <select id="transactionType" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" onchange="updateCategoryOptions()">
+        <select id="transactionType"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          onchange="updateCategoryOptions()">
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
 
         <!-- Amount -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (<span id="formAmountCurrencyLabel">RM</span>)</label>
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (<span
+            id="formAmountCurrencyLabel">RM</span>)</label>
         <div class="relative flex items-center mb-3">
           <span id="formAmountCurrencyPrefix" class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
-          <input id="transactionAmount" class="w-full rounded-lg border border-slate-300 pl-11 pr-3 py-2.5 text-sm font-semibold outline-none focus:border-primary" type="number" min="0.01" step="0.01" required placeholder="0.00">
+          <input id="transactionAmount"
+            class="w-full rounded-lg border border-slate-300 pl-11 pr-3 py-2.5 text-sm font-semibold outline-none focus:border-primary"
+            type="number" min="0.01" step="0.01" required placeholder="0.00">
         </div>
 
         <!-- Category -->
         <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionCategory">Category</label>
-        <select id="transactionCategory" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" required></select>
+        <select id="transactionCategory"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          required></select>
 
         <!-- Description -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Description / Notes</label>
-        <input id="transactionDescription" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" maxlength="140" required placeholder="e.g. Village Grocer, Coffee Bistro">
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Description</label>
+        <input id="transactionDescription"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          maxlength="140" required placeholder="e.g. Aeon, Village Grocer, Starbucks">
+
+        <!-- Details (Line Items) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDetails">Details (Line Items)</label>
+        <textarea id="transactionDetails" rows="3" oninput="syncDetailsTextareaToPendingItems()"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary resize-y"
+          placeholder="1x Rice 1kg&#10;1x Soya milk x6"></textarea>
 
         <!-- Date -->
         <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date</label>
-        <input id="transactionDate" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" type="date" required>
+        <input id="transactionDate"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          type="date" required>
 
         <!-- Extracted Itemized Receipt Items Preview -->
         <div id="modalReceiptItemsPreview" class="hidden mb-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
@@ -420,16 +547,21 @@
               <span>🧾</span>
               <span>Itemized Receipt Breakdown (<span id="modalReceiptItemsCount">0</span>)</span>
             </span>
-            <button type="button" onclick="clearPendingReceiptItems()" class="text-[10px] font-semibold text-text-muted hover:text-alert-coral">Clear items</button>
+            <button type="button" onclick="clearPendingReceiptItems()"
+              class="text-[10px] font-semibold text-text-muted hover:text-alert-coral">Clear items</button>
           </div>
           <div id="modalReceiptItemsList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
         </div>
 
         <!-- Immediate AI Purchase Frequency Tip (when scanning) -->
-        <div id="modalAiTipBanner" class="hidden mb-4 rounded-xl border border-amber-200 bg-amber-50/90 p-2.5 text-[11px] text-amber-900 font-medium leading-relaxed"></div>
+        <div id="modalAiTipBanner"
+          class="hidden mb-4 rounded-xl border border-amber-200 bg-amber-50/90 p-2.5 text-[11px] text-amber-900 font-medium leading-relaxed">
+        </div>
 
         <!-- Submit Button -->
-        <button class="w-full rounded-xl bg-primary hover:bg-primary-container py-3 text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2" type="submit" id="saveTransactionBtn">
+        <button
+          class="w-full rounded-xl bg-primary hover:bg-primary-container py-3 text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+          type="submit" id="saveTransactionBtn">
           <span class="material-symbols-outlined text-[18px]">check</span>
           <span>Save Transaction</span>
         </button>
@@ -437,7 +569,9 @@
     </div>
 
     <!-- AI Purchase Insights Interactive Modal -->
-    <div id="aiPurchaseInsightsModal" class="hidden fixed inset-0 z-[75] items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3" onclick="if(event.target===this)closeAiModal()">
+    <div id="aiPurchaseInsightsModal"
+      class="hidden fixed inset-0 z-[75] items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3"
+      onclick="if(event.target===this)closeAiModal()">
       <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <div class="flex items-center gap-2">
@@ -453,14 +587,19 @@
             <span class="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
-        <div id="aiModalBody" class="rounded-xl bg-indigo-50/60 border border-indigo-100 p-3.5 text-xs text-slate-800 leading-relaxed font-medium"></div>
+        <div id="aiModalBody"
+          class="rounded-xl bg-indigo-50/60 border border-indigo-100 p-3.5 text-xs text-slate-800 leading-relaxed font-medium">
+        </div>
         <div id="aiModalOccurrences" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
-        <button type="button" onclick="closeAiModal()" class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-container transition-all">Got it, thanks FinWise!</button>
+        <button type="button" onclick="closeAiModal()"
+          class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-container transition-all">Got
+          it, thanks FinWise!</button>
       </div>
     </div>
 
     <!-- First-Time Google Login: Password Setup & Verification Modal -->
-    <div id="googlePasswordSetupModal" class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div id="googlePasswordSetupModal"
+      class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 flex flex-col gap-3.5">
         <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
           <div class="flex items-center gap-2.5">
@@ -472,7 +611,8 @@
               <p class="text-[11px] text-secondary font-semibold mt-0.5">Enable Dual Login (Google + Email)</p>
             </div>
           </div>
-          <button type="button" onclick="closeGooglePasswordModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+          <button type="button" onclick="closeGooglePasswordModal()"
+            class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
             <span class="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
@@ -482,32 +622,41 @@
             <span class="material-symbols-outlined text-[16px]">mail</span>
             <span>Verification Email Sent!</span>
           </p>
-          <p>We sent a confirmation link to <strong id="setupModalEmailText" class="text-slate-900">your Gmail</strong>. Click the email link or set your standard password below so you can log in using <strong>either Google or Email &amp; Password</strong>.</p>
+          <p>We sent a confirmation link to <strong id="setupModalEmailText" class="text-slate-900">your Gmail</strong>.
+            Click the email link or set your standard password below so you can log in using <strong>either Google or
+              Email &amp; Password</strong>.</p>
         </div>
 
         <div id="setupModalAlert" class="hidden p-2.5 rounded-xl text-xs font-semibold items-center gap-2"></div>
 
         <form id="googlePasswordSetupForm" onsubmit="handleInlinePasswordSetup(event)" class="flex flex-col gap-3">
           <div>
-            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupNewPass">Create Standard Password</label>
-            <input id="setupNewPass" type="password" required minlength="6" placeholder="At least 6 characters" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupNewPass">Create Standard
+              Password</label>
+            <input id="setupNewPass" type="password" required minlength="6" placeholder="At least 6 characters"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupConfirmPass">Confirm Password</label>
-            <input id="setupConfirmPass" type="password" required minlength="6" placeholder="Re-enter password" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupConfirmPass">Confirm
+              Password</label>
+            <input id="setupConfirmPass" type="password" required minlength="6" placeholder="Re-enter password"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
           </div>
-          <button type="submit" id="setupSavePassBtn" class="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+          <button type="submit" id="setupSavePassBtn"
+            class="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
             <span class="material-symbols-outlined text-[16px]">lock_check</span>
             <span>Confirm &amp; Enable Dual Login</span>
           </button>
         </form>
 
         <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
-          <button type="button" onclick="resendGooglePasswordEmail()" id="resendSetupEmailBtn" class="text-primary font-semibold hover:underline flex items-center gap-1">
+          <button type="button" onclick="resendGooglePasswordEmail()" id="resendSetupEmailBtn"
+            class="text-primary font-semibold hover:underline flex items-center gap-1">
             <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
             <span>Resend Verification Email</span>
           </button>
-          <button type="button" onclick="closeGooglePasswordModal()" class="text-text-muted hover:text-text-primary font-medium">
+          <button type="button" onclick="closeGooglePasswordModal()"
+            class="text-text-muted hover:text-text-primary font-medium">
             I'll use the email link
           </button>
         </div>
@@ -517,24 +666,32 @@
     <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
+          onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px]">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='transactions.html'">
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='transactions.html'">
           <span class="material-symbols-outlined text-[22px]">receipt_long</span>
           <span class="text-[10px]">Transactions</span>
         </button>
         <div class="flex-1 flex items-center justify-center">
-          <button onclick="showAddTransactionModal()" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+          <button onclick="showAddTransactionModal()"
+            class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='summary.html'">
           <span class="material-symbols-outlined text-[22px]">bar_chart</span>
           <span class="text-[10px]">Summary</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
           <span class="text-[10px]">Profile</span>
         </button>
@@ -542,287 +699,6 @@
     </nav>
 
   </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════ -->
-  <!-- AI FINANCE ASSISTANT — Floating Action Button + Chat Interface    -->
-  <!-- ═══════════════════════════════════════════════════════════════════ -->
-
-  <!-- Gemini Sparkle SVG (reusable inline) -->
-  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
-    <symbol id="gemini-sparkle" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
-    </symbol>
-  </svg>
-
-  <!-- FAB: Floating Action Button -->
-  <button id="aiAssistantFAB" onclick="toggleAiAssistant()" aria-label="Open AI Assistant"
-    class="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-blue-900 text-white flex items-center justify-center shadow-lg shadow-blue-900/40 hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200 group">
-    <svg class="w-7 h-7 text-white group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
-    </svg>
-    <!-- Pulse ring -->
-    <span class="absolute inset-0 rounded-full bg-blue-400/30 animate-ping pointer-events-none"></span>
-  </button>
-
-  <!-- Chat Interface Overlay -->
-  <div id="aiAssistantChat" class="hidden fixed inset-0 z-[80] flex flex-col items-center justify-end bg-black/40 backdrop-blur-[2px]" onclick="if(event.target===this)toggleAiAssistant()">
-    <div class="w-full max-w-md h-[92vh] bg-slate-100 rounded-t-2xl flex flex-col shadow-2xl overflow-hidden animate-slideUp" style="animation: slideUp 0.3s ease-out">
-
-      <!-- ─── HEADER ─── -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-          </div>
-          <div>
-            <h2 class="text-sm font-bold text-slate-900 leading-tight">Quick AI Assistant</h2>
-            <p class="text-[10px] text-slate-500 font-medium">Smart finance • Instant logging</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <!-- User avatar -->
-          <div id="aiChatAvatar" class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-[11px] font-bold overflow-hidden">U</div>
-          <button onclick="toggleAiAssistant()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-            <span class="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ─── SUB-HEADER ─── -->
-      <div class="bg-white px-4 py-2 flex items-center justify-between border-b border-slate-100 shrink-0">
-        <div class="flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-          <span class="text-[11px] font-semibold text-slate-600">FinWise powered by Gemini</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-[9px] font-bold text-blue-700">Gemini 1.5 Pro</span>
-          <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[9px] font-bold text-slate-500">Natural Language</span>
-        </div>
-      </div>
-
-      <!-- ─── SCROLLABLE CHAT BODY ─── -->
-      <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3 scroll-smooth" id="aiChatBody">
-
-        <!-- Quick Prompts Row -->
-        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-          <button onclick="aiSendQuickPrompt('I ate nasi lemak RM7')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
-            <span class="text-sm">🍔</span>
-            <span>I ate nasi lemak RM7</span>
-          </button>
-          <button onclick="aiSendQuickPrompt('Grabbed Grab ride RM12')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
-            <span class="text-sm">🚗</span>
-            <span>Grab ride RM12</span>
-          </button>
-          <button onclick="aiSendQuickPrompt('Coffee at Starbucks RM18.50')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
-            <span class="text-sm">☕</span>
-            <span>Coffee RM18.50</span>
-          </button>
-          <button onclick="aiSendQuickPrompt('Paid electricity bill RM124')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
-            <span class="text-sm">💡</span>
-            <span>Electric bill RM124</span>
-          </button>
-          <button onclick="aiSendQuickPrompt('Show my spending summary')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
-            <span class="text-sm">📊</span>
-            <span>Spending summary</span>
-          </button>
-        </div>
-
-        <!-- Live Budget Impact Widget -->
-        <div class="bg-blue-900 rounded-xl p-3.5 text-white shadow-md">
-          <div class="flex items-center justify-between mb-2.5">
-            <div class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-blue-300" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-              <span class="text-[10px] font-bold tracking-wider uppercase text-blue-200">Live Budget Impact</span>
-            </div>
-            <span class="px-2 py-0.5 rounded-full bg-white/15 text-[9px] font-bold text-blue-200">Auto-Sync UTM</span>
-          </div>
-          <div class="flex items-center justify-between gap-2 mb-3">
-            <div class="flex flex-col">
-              <span class="text-[10px] text-blue-300/80 font-medium">Current Daily Buffer</span>
-              <span id="aiBudgetCurrent" class="text-lg font-extrabold text-white">RM 32.18</span>
-            </div>
-            <span class="material-symbols-outlined text-blue-400 text-[20px]">arrow_forward</span>
-            <div class="flex flex-col items-end">
-              <span class="text-[10px] text-blue-300/80 font-medium">After Queued Logs</span>
-              <span id="aiBudgetAfter" class="text-xl font-extrabold text-white">RM 22.68</span>
-            </div>
-          </div>
-          <div class="w-full h-2 rounded-full bg-white/15 overflow-hidden">
-            <div id="aiBudgetBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-300 transition-all duration-700" style="width: 71%"></div>
-          </div>
-          <p class="text-[10px] text-blue-300/80 font-medium mt-1.5 text-right">71% monthly target intact</p>
-        </div>
-
-        <!-- Message 1: User Audio Note (Right-aligned) -->
-        <div class="flex justify-end">
-          <div class="max-w-[85%] flex flex-col items-end gap-1">
-            <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
-              <div class="flex items-center gap-1.5 mb-1">
-                <span class="material-symbols-outlined text-[14px] text-blue-300">mic</span>
-                <span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">Audio Note Transcribed</span>
-              </div>
-              <p>I eat nasi lemak this afternoon cost me RM7</p>
-            </div>
-            <div class="flex items-center gap-1.5 px-1">
-              <span class="text-[10px] text-slate-400">2:34 PM</span>
-              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Message 2: AI Parsed Expense (Left-aligned) -->
-        <div class="flex gap-2 items-start">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-          </div>
-          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
-            <div class="flex items-center gap-2 mb-2.5">
-              <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
-            </div>
-            <!-- Expense Grid -->
-            <div class="grid grid-cols-3 gap-2 mb-3 text-center">
-              <div class="bg-slate-50 rounded-lg p-2">
-                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
-                <p class="text-[11px] font-bold text-slate-900">Nasi Lemak</p>
-              </div>
-              <div class="bg-slate-50 rounded-lg p-2">
-                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
-                <p class="text-[11px] font-bold text-slate-900">Food & Dining</p>
-              </div>
-              <div class="bg-slate-50 rounded-lg p-2">
-                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
-                <p class="text-[11px] font-extrabold text-blue-900">RM 7.00</p>
-              </div>
-            </div>
-            <!-- Action Buttons -->
-            <button onclick="aiConfirmExpense('Nasi Lemak', 7.00, 'Food & Dining')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
-              Confirm & Record RM 7.00
-            </button>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
-              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
-            </div>
-            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
-              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-              Parsed by Gemini Vision
-            </p>
-          </div>
-        </div>
-
-        <!-- Message 3: User Image (Right-aligned) -->
-        <div class="flex justify-end">
-          <div class="max-w-[85%] flex flex-col items-end gap-1">
-            <div class="bg-blue-900 rounded-2xl rounded-br-md overflow-hidden shadow-sm">
-              <div class="w-full h-36 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                <div class="flex flex-col items-center gap-1.5 text-slate-400">
-                  <span class="material-symbols-outlined text-[28px]">receipt_long</span>
-                  <span class="text-[10px] font-medium">Receipt Photo</span>
-                </div>
-              </div>
-              <p class="text-white text-[12px] px-3.5 py-2 leading-snug">Scanned Arked Cengal receipt for dinner.</p>
-            </div>
-            <div class="flex items-center gap-1.5 px-1">
-              <span class="text-[10px] text-slate-400">6:48 PM</span>
-              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Message 4: AI Receipt Parsed (Left-aligned) -->
-        <div class="flex gap-2 items-start">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-          </div>
-          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
-            <div class="flex items-center gap-2 mb-2.5">
-              <span class="text-xs font-bold text-slate-900">Receipt Parsed</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">99.4% Match</span>
-            </div>
-            <!-- Merchant -->
-            <div class="flex items-center gap-2 mb-2.5 p-2 bg-slate-50 rounded-lg">
-              <span class="material-symbols-outlined text-[18px] text-blue-900">storefront</span>
-              <div>
-                <p class="text-[10px] text-slate-400 font-medium">Merchant</p>
-                <p class="text-[12px] font-bold text-slate-900">UTM Arked Cengal</p>
-              </div>
-            </div>
-            <!-- Itemized List -->
-            <div class="space-y-1.5 mb-2.5">
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-600">Nasi Ayam Penyet</span>
-                <span class="font-bold text-slate-900">RM 6.00</span>
-              </div>
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-600">Teh Tarik Ais</span>
-                <span class="font-bold text-slate-900">RM 2.50</span>
-              </div>
-              <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-600">Kuih Seri Muka</span>
-                <span class="font-bold text-slate-900">RM 1.00</span>
-              </div>
-              <div class="border-t border-dashed border-slate-200 pt-1.5 flex items-center justify-between text-[12px]">
-                <span class="font-bold text-slate-700">Total</span>
-                <span class="font-extrabold text-blue-900">RM 9.50</span>
-              </div>
-            </div>
-            <!-- Action Buttons -->
-            <button onclick="aiConfirmExpense('UTM Arked Cengal (Nasi Ayam Penyet, Teh Tarik Ais, Kuih Seri Muka)', 9.50, 'Food & Dining')" class="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 active:scale-[0.98] transition-all shadow-sm mb-1.5">
-              ✓ Confirm & Add to Ledger
-            </button>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Retake Photo</button>
-              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Change Category</button>
-            </div>
-            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
-              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-              Parsed by Gemini Vision · 99.4% confidence
-            </p>
-          </div>
-        </div>
-
-        <!-- Spacer for input area -->
-        <div class="h-4"></div>
-      </div>
-
-      <!-- ─── FIXED BOTTOM INPUT AREA ─── -->
-      <div class="bg-white border-t border-slate-200 px-3 py-2.5 shrink-0 pb-safe">
-        <div class="flex items-center gap-2">
-          <button onclick="triggerAiCameraCapture()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-blue-900 transition-colors shrink-0">
-            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
-          </button>
-          <div class="flex-1 relative flex items-center">
-            <input id="aiChatInput" type="text" placeholder="Speak or type..." onkeydown="if(event.key==='Enter')aiSendMessage()"
-              class="w-full pl-3 pr-10 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400">
-            <button onclick="aiStartVoice()" class="absolute right-2 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-900 transition-colors">
-              <span class="material-symbols-outlined text-[18px]">mic</span>
-            </button>
-          </div>
-          <button onclick="aiSendMessage()" class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center text-white hover:bg-blue-800 active:scale-95 transition-all shadow-sm shrink-0">
-            <span class="material-symbols-outlined text-[18px]">send</span>
-          </button>
-        </div>
-        <p class="text-[9px] text-slate-400 text-center mt-1.5 font-medium">Multi-currency enabled • Powered by Google Gemini</p>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- AI Assistant Slide-Up Animation -->
-  <style>
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes slideDown {
-      from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(100%); opacity: 0; }
-    }
-    .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
-    .animate-slideDown { animation: slideDown 0.25s ease-in forwards; }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
 
   <script>
     // Supabase Live Client Configuration
@@ -941,7 +817,118 @@
       if (desc && dateStr) {
         cache["sig_" + String(desc).trim().toLowerCase() + "_" + String(dateStr).slice(0, 10)] = cleanItems;
       }
-      try { localStorage.setItem(getReceiptCacheStorageKey(), JSON.stringify(cache)); } catch (_) {}
+      try { localStorage.setItem(getReceiptCacheStorageKey(), JSON.stringify(cache)); } catch (_) { }
+    }
+
+    function formatReceiptItemsToDetailsText(items) {
+      if (!Array.isArray(items) || items.length === 0) return "";
+      return items
+        .map(it => {
+          const qty = parseInt(it && it.quantity, 10) || 1;
+          const name = String((it && (it.item_name || it.name)) || "").trim();
+          return name ? `${qty}x ${name}` : "";
+        })
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    function parseDetailsTextToReceiptItems(text, fallbackCategory = "General", existingItems = []) {
+      const raw = String(text || "").trim();
+      if (!raw) return [];
+      const existingByName = {};
+      if (Array.isArray(existingItems)) {
+        for (const it of existingItems) {
+          const key = String((it && it.item_name) || "").trim().toLowerCase();
+          if (key) existingByName[key] = it;
+        }
+      }
+      let lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length === 1 && lines[0].includes(",") && /\b\d+\s*[x×]\s*/i.test(lines[0])) {
+        lines = lines[0].split(",").map(l => l.trim()).filter(Boolean);
+      }
+      const parsed = [];
+      for (const line of lines) {
+        const cleanLine = line.replace(/^[-*•]\s*/, "").replace(/[<>]/g, "").trim();
+        if (!cleanLine) continue;
+        let qty = 1;
+        let name = cleanLine;
+        const m = cleanLine.match(/^(\d+)\s*[x×]\s+(.+)$/i);
+        if (m) {
+          qty = Math.min(Math.max(parseInt(m[1], 10) || 1, 1), 999);
+          name = m[2].trim();
+        }
+        if (!name) continue;
+        const prev = existingByName[name.toLowerCase()];
+        parsed.push({
+          item_name: name.slice(0, 120),
+          price: prev && Number.isFinite(Number(prev.price)) ? Number(prev.price) : 0,
+          quantity: qty,
+          category: (prev && prev.category) || fallbackCategory || "General"
+        });
+      }
+      return parsed.slice(0, 40);
+    }
+
+    function syncDetailsTextareaToPendingItems() {
+      const detailsEl = document.getElementById("transactionDetails");
+      const catEl = document.getElementById("transactionCategory");
+      if (!detailsEl) return;
+      const cat = (catEl && catEl.value) || "General";
+      pendingReceiptItems = parseDetailsTextToReceiptItems(detailsEl.value, cat, pendingReceiptItems);
+      renderModalReceiptItemsPreview();
+    }
+
+    function getBuiltinDemoReceiptItems(title, category) {
+      const lower = String(title || "").toLowerCase();
+      if (!lower) return [];
+      if (lower.includes("aeon")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Rice 1kg", quantity: 1, price: 18.50, category: "Groceries" },
+          { item_name: "Soya milk x6", quantity: 1, price: 16.00, category: "Groceries" }
+        ], category);
+      }
+      if (lower.includes("village grocer")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Organic Bananas", quantity: 1, price: 14.50, category: "Groceries" },
+          { item_name: "Farm Fresh Milk 2L", quantity: 2, price: 18.90, category: "Groceries" },
+          { item_name: "Artisan Sourdough Loaf", quantity: 1, price: 16.00, category: "Groceries" }
+        ], category);
+      }
+      if (lower.includes("jd sports")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Casual Running Shoes", quantity: 1, price: 169.00, category: "Clothing" },
+          { item_name: "Athletic Crew Socks", quantity: 1, price: 20.00, category: "Clothing" }
+        ], category);
+      }
+      if (lower.includes("coffee") || lower.includes("bistro") || lower.includes("starbucks")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Flat White Coffee", quantity: 1, price: 13.00, category: "Food & Dining" },
+          { item_name: "Sourdough Avocado Toast", quantity: 1, price: 15.00, category: "Food & Dining" }
+        ], category);
+      }
+      if (lower.includes("electricity") || lower.includes("utilities")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "TNB Electricity Tariff", quantity: 1, price: 88.80, category: "Bills & Utilities" },
+          { item_name: "Air Selangor Water Bill", quantity: 1, price: 27.00, category: "Bills & Utilities" }
+        ], category);
+      }
+      if (lower.includes("touch n go") || lower.includes("transit")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "MRT Weekly Pass Reload", quantity: 1, price: 50.00, category: "Transportation" }
+        ], category);
+      }
+      if (lower.includes("fuel") || lower.includes("shell") || lower.includes("petronas")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "RON95 Fuel Pump", quantity: 1, price: 85.00, category: "Transportation" }
+        ], category);
+      }
+      if (lower.includes("watsons") || lower.includes("guardian")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Vitamin C Tablets", quantity: 1, price: 28.90, category: "Health & Wellness" },
+          { item_name: "Facial Cleanser", quantity: 1, price: 19.90, category: "Health & Wellness" }
+        ], category);
+      }
+      return [];
     }
 
     function resolveReceiptItemsForRow(row) {
@@ -949,15 +936,19 @@
         return normalizeReceiptItemsClient(row.receipt_items, row.category);
       }
       const cache = getReceiptItemsCache();
-      if (row.id && Array.isArray(cache["id_" + row.id])) {
+      if (row.id && Array.isArray(cache["id_" + row.id]) && cache["id_" + row.id].length > 0) {
         return cache["id_" + row.id];
       }
       const titleKey = (row.title || row.description || "").trim().toLowerCase();
       const dateKey = String(row.transaction_date || row.date || "").slice(0, 10);
-      if (titleKey && dateKey && Array.isArray(cache["sig_" + titleKey + "_" + dateKey])) {
+      if (titleKey && dateKey && Array.isArray(cache["sig_" + titleKey + "_" + dateKey]) && cache["sig_" + titleKey + "_" + dateKey].length > 0) {
         return cache["sig_" + titleKey + "_" + dateKey];
       }
-      return [];
+      if (row.notes && String(row.notes).trim()) {
+        const fromNotes = parseDetailsTextToReceiptItems(row.notes, row.category || "General");
+        if (fromNotes.length > 0) return fromNotes;
+      }
+      return getBuiltinDemoReceiptItems(row.title || row.description, row.category);
     }
 
     function withTimeout(promise, ms = 10000) {
@@ -979,7 +970,7 @@
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return window.crypto.randomUUID();
       }
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -1051,7 +1042,7 @@
             localStorage.setItem("finwise_user_id", session.user.id);
             return session.user.id;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
       const stored = localStorage.getItem("finwise_user_id");
       if (isValidUUID(stored)) return stored;
@@ -1093,7 +1084,7 @@
 
       // 1. Check for error in query or hash
       const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
-                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+        (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
       if (errorMsg) {
         console.warn("OAuth error detected:", errorMsg);
         window.location.replace('login.html?error=' + encodeURIComponent(errorMsg));
@@ -1142,7 +1133,7 @@
             await saveSupabaseSession(session.user);
             return;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
 
       // 5. Check active logged in user session in LocalStorage
@@ -1419,7 +1410,7 @@
             avatar = accounts[email].avatar;
             localStorage.setItem('finwise_user_avatar', avatar);
           }
-        } catch (_) {}
+        } catch (_) { }
       }
 
       document.getElementById('greetingName').textContent = 'Hello, ' + name + '!';
@@ -1496,7 +1487,7 @@
           localStorage.setItem(seededKey, 'true');
           return [];
         }
-      } catch (_) {}
+      } catch (_) { }
 
       const now = new Date();
       const rowsToInsert = defaults.map(item => {
@@ -1546,7 +1537,7 @@
           localStorage.setItem(seededKey, 'true');
           try {
             await supabaseClient.auth.updateUser({ data: { cloud_tx_seeded: true } });
-          } catch (_) {}
+          } catch (_) { }
           return data;
         }
       } catch (e) {
@@ -1566,7 +1557,7 @@
           let { data, error } = await withTimeout(
             supabaseClient
               .from('transactions')
-              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, receipt_items')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, notes, receipt_items')
               .eq('user_id', userId)
               .order('transaction_date', { ascending: false }),
             10000
@@ -1600,6 +1591,7 @@
               category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
               date: (row.transaction_date || row.date || localDateString()).slice(0, 10),
+              notes: row.notes || "",
               receipt_items: resolveReceiptItemsForRow(row)
             }));
             persistLocalTransactions();
@@ -1671,7 +1663,7 @@
             supabaseClient.auth.signOut({ scope: 'local' }),
             new Promise(resolve => setTimeout(resolve, 600))
           ]);
-        } catch (_) {}
+        } catch (_) { }
       }
 
       // 2. Preserve only accounts registry and user-specific transaction histories
@@ -1696,14 +1688,14 @@
       }
 
       // 5. Clear sessionStorage
-      try { sessionStorage.clear(); } catch (_) {}
+      try { sessionStorage.clear(); } catch (_) { }
 
       // 6. Expire any session cookies
       try {
         document.cookie.split(";").forEach(c => {
           document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
-      } catch (_) {}
+      } catch (_) { }
 
       // 7. Redirect to login.html with clean flag
       window.location.replace('login.html?logout=true');
@@ -1848,7 +1840,7 @@
             updateDashboardAiInsightBanner(apiData);
           }
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     function updateDashboardAiInsightBanner(result) {
@@ -1881,7 +1873,7 @@
         const occs = Array.isArray(result.occurrences) ? result.occurrences : [];
         occEl.innerHTML = occs.length > 0
           ? `<p class="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Matched Purchases (Last 14 Days)</p>` +
-            occs.map(o => `
+          occs.map(o => `
               <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
                 <div class="min-w-0">
                   <p class="font-semibold text-text-primary truncate">${escapeHtml(o.itemName)}</p>
@@ -1933,11 +1925,15 @@
 
     function removePendingReceiptItem(index) {
       pendingReceiptItems.splice(index, 1);
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) detailsEl.value = formatReceiptItemsToDetailsText(pendingReceiptItems);
       renderModalReceiptItemsPreview();
     }
 
     function clearPendingReceiptItems() {
       pendingReceiptItems = [];
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) detailsEl.value = "";
       renderModalReceiptItemsPreview();
     }
 
@@ -1965,6 +1961,13 @@
       pendingReceiptItems = record && Array.isArray(record.receipt_items)
         ? normalizeReceiptItemsClient(record.receipt_items, record.category)
         : [];
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) {
+        detailsEl.value = formatReceiptItemsToDetailsText(pendingReceiptItems) || (record && record.notes ? record.notes : "");
+        if (!pendingReceiptItems.length && detailsEl.value.trim()) {
+          pendingReceiptItems = parseDetailsTextToReceiptItems(detailsEl.value, (record && record.category) || "General");
+        }
+      }
       renderModalReceiptItemsPreview();
       const aiTipEl = document.getElementById('modalAiTipBanner');
       if (aiTipEl) { aiTipEl.classList.add('hidden'); aiTipEl.textContent = ''; }
@@ -2190,7 +2193,7 @@
       }
 
       // 2. Prepare payload
-      let payload = { 
+      let payload = {
         filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg"
       };
 
@@ -2208,7 +2211,7 @@
               reader.readAsDataURL(file);
             });
             payload.mimeType = file.type || "image/jpeg";
-          } catch (_) {}
+          } catch (_) { }
         }
       }
 
@@ -2224,7 +2227,7 @@
         if (res.ok) {
           parsed = await res.json();
         }
-      } catch (_) {}
+      } catch (_) { }
 
       // Ensure minimum 1.2s scan feedback so user feels the AI at work
       const elapsed = Date.now() - startTime;
@@ -2258,6 +2261,15 @@
       // Fallback presets if offline or network error or no key
       if (!parsed || !parsed.merchant) {
         const presets = [
+          {
+            merchant: "Aeon",
+            amount: 34.50,
+            category: "Groceries",
+            receipt_items: [
+              { item_name: "Rice 1kg", price: 18.50, quantity: 1, category: "Groceries" },
+              { item_name: "Soya milk x6", price: 16.00, quantity: 1, category: "Groceries" }
+            ]
+          },
           { merchant: "Village Grocer", amount: 68.40, category: "Groceries", items: ["Organic Bananas", "Milk", "Bread"] },
           { merchant: "Starbucks Coffee", amount: 26.50, category: "Food & Dining", items: ["Caramel Macchiato", "Croissant"] },
           { merchant: "Shell Station", amount: 80.00, category: "Transportation", items: ["RON95 Fuel"] },
@@ -2269,7 +2281,7 @@
       const todayStr = new Date().toISOString().slice(0, 10);
       const extractedDate = (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr;
       const extractedAmount = Number(parsed.amount || 25.00).toFixed(2);
-      
+
       const expenseList = (typeof transactionCategories !== 'undefined' && transactionCategories.expense) ? transactionCategories.expense : [];
       const incomeList = (typeof transactionCategories !== 'undefined' && transactionCategories.income) ? transactionCategories.income : [];
       let finalType = "expense";
@@ -2323,11 +2335,14 @@
       const descInput = document.getElementById("transactionDescription");
       if (descInput) descInput.value = extractedDesc;
 
+      const detailsInput = document.getElementById("transactionDetails");
+      if (detailsInput) detailsInput.value = formatReceiptItemsToDetailsText(itemList);
+
       const dateInput = document.getElementById("transactionDate");
       if (dateInput) dateInput.value = extractedDate;
 
       // 5. Visual Flash Effect on inputs to highlight auto-fill
-      [amtInput, descInput, dateInput, catSelect].forEach(el => {
+      [amtInput, descInput, detailsInput, dateInput, catSelect].forEach(el => {
         if (!el) return;
         el.classList.add("ring-2", "ring-emerald-500", "border-emerald-500", "bg-emerald-50/40");
         setTimeout(() => {
@@ -2340,7 +2355,7 @@
       const scanTime = parsed.scanDuration || totalElapsed;
       if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
       if (badgePill) {
-        badgePill.className = isGeminiEngine 
+        badgePill.className = isGeminiEngine
           ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"
           : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
         badgePill.textContent = isGeminiEngine ? `${scanTime}s` : "Extracted";
@@ -2399,12 +2414,17 @@
         return;
       }
       const dateStr = document.getElementById("transactionDate").value || localDateString();
+      const detailsEl = document.getElementById("transactionDetails");
+      const detailsRaw = detailsEl ? detailsEl.value.replace(/[<>]/g, "").trim() : "";
       const oldId = editingTransactionId;
       const isUpdate = Boolean(oldId && isValidUUID(oldId));
       const userId = await getAuthenticatedUserId();
       const categoryId = categoryIdMap[category] || "other";
       const isoDate = dateStr.includes("T") ? dateStr : (dateStr + "T12:00:00Z");
-      const itemsToSave = normalizeReceiptItemsClient(pendingReceiptItems, category);
+      const itemsToSave = detailsRaw
+        ? parseDetailsTextToReceiptItems(detailsRaw, category, pendingReceiptItems)
+        : normalizeReceiptItemsClient(pendingReceiptItems, category);
+      const detailsText = formatReceiptItemsToDetailsText(itemsToSave) || detailsRaw;
 
       if (itemsToSave.length > 0) {
         cacheReceiptItemsForTx(oldId, description, dateStr, itemsToSave);
@@ -2424,6 +2444,7 @@
             category: category,
             transaction_date: isoDate,
             date: isoDate,
+            notes: detailsText || null,
             receipt_items: itemsToSave
           };
 
@@ -2463,7 +2484,8 @@
               amount: Math.round(amount * 100) / 100,
               type: type,
               category_id: categoryId,
-              transaction_date: isoDate
+              transaction_date: isoDate,
+              notes: detailsText || null
             };
             if (isUpdate) {
               await supabaseClient
@@ -2572,7 +2594,7 @@
           <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-start justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
                 ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
               </div>
               ${hasItems ? `
@@ -2606,7 +2628,7 @@
           <div class="flex items-start justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
                 ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
               </div>
               ${hasItems ? `
@@ -2666,332 +2688,8 @@
       updateCategoryOptions();
       await loadTransactions();
       initRealtimeSync();
-      initAiAssistant();
     })();
-
-    // ═══════════════════════════════════════════════════════════════
-    // AI FINANCE ASSISTANT — Logic
-    // ═══════════════════════════════════════════════════════════════
-
-    let aiChatOpen = false;
-
-    function toggleAiAssistant() {
-      const chat = document.getElementById('aiAssistantChat');
-      const fab = document.getElementById('aiAssistantFAB');
-      const panel = chat?.querySelector('.max-w-md');
-
-      if (aiChatOpen) {
-        // Close
-        if (panel) {
-          panel.classList.remove('animate-slideUp');
-          panel.classList.add('animate-slideDown');
-        }
-        setTimeout(() => {
-          chat.classList.add('hidden');
-          chat.classList.remove('flex');
-          if (panel) { panel.classList.remove('animate-slideDown'); panel.classList.add('animate-slideUp'); }
-        }, 250);
-        fab.classList.remove('hidden');
-        aiChatOpen = false;
-      } else {
-        // Open
-        chat.classList.remove('hidden');
-        chat.classList.add('flex');
-        fab.classList.add('hidden');
-        aiChatOpen = true;
-        updateAiBudgetWidget();
-        syncAiAssistantAvatar();
-        // Scroll to bottom
-        setTimeout(() => {
-          const body = document.getElementById('aiChatBody');
-          if (body) body.scrollTop = body.scrollHeight;
-        }, 100);
-      }
-    }
-
-    function initAiAssistant() {
-      // Sync user avatar into chat header
-      syncAiAssistantAvatar();
-    }
-
-    function syncAiAssistantAvatar() {
-      const name = localStorage.getItem('finwise_user_name') || 'User';
-      const chatAvatar = document.getElementById('aiChatAvatar');
-      if (chatAvatar) chatAvatar.textContent = (name[0] || 'U').toUpperCase();
-    }
-
-    function updateAiBudgetWidget() {
-      const curr = localStorage.getItem('finwise_currency') || 'RM';
-      const budget = parseFloat(localStorage.getItem('finwise_monthly_budget') || '1000');
-      const now = new Date();
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const daysLeft = daysInMonth - now.getDate() + 1;
-
-      const expenses = (typeof transactions !== 'undefined' ? transactions : [])
-        .filter(t => t.type === 'expense' && t.date && t.date.startsWith(localDateString().slice(0, 7)))
-        .reduce((s, t) => s + Number(t.amount), 0);
-
-      const remaining = Math.max(0, budget - expenses);
-      const dailyBuffer = daysLeft > 0 ? remaining / daysLeft : 0;
-      const pct = Math.min(100, Math.max(0, Math.round((remaining / budget) * 100)));
-
-      const currentEl = document.getElementById('aiBudgetCurrent');
-      const afterEl = document.getElementById('aiBudgetAfter');
-      const barEl = document.getElementById('aiBudgetBar');
-
-      if (currentEl) currentEl.textContent = `${curr} ${dailyBuffer.toFixed(2)}`;
-      if (afterEl) afterEl.textContent = `${curr} ${Math.max(0, dailyBuffer - 9.50).toFixed(2)}`;
-      if (barEl) {
-        barEl.style.width = pct + '%';
-        barEl.parentElement.nextElementSibling.textContent = `${pct}% monthly target intact`;
-      }
-    }
-
-    function aiSendQuickPrompt(text) {
-      const input = document.getElementById('aiChatInput');
-      if (input) {
-        input.value = text;
-        aiSendMessage();
-      }
-    }
-
-    function aiSendMessage() {
-      const input = document.getElementById('aiChatInput');
-      const body = document.getElementById('aiChatBody');
-      if (!input || !body) return;
-
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      const curr = localStorage.getItem('finwise_currency') || 'RM';
-      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      // Add user bubble
-      const userBubble = document.createElement('div');
-      userBubble.className = 'flex justify-end';
-      userBubble.innerHTML = `
-        <div class="max-w-[85%] flex flex-col items-end gap-1">
-          <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
-            <p>${escapeHtml(text)}</p>
-          </div>
-          <div class="flex items-center gap-1.5 px-1">
-            <span class="text-[10px] text-slate-400">${timeStr}</span>
-            <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
-          </div>
-        </div>
-      `;
-      body.appendChild(userBubble);
-
-      // Add AI typing indicator
-      const typingEl = document.createElement('div');
-      typingEl.className = 'flex gap-2 items-start ai-typing-indicator';
-      typingEl.innerHTML = `
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-          <svg class="w-4 h-4 text-white animate-spin" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-        </div>
-        <div class="bg-white rounded-2xl rounded-bl-md px-3.5 py-2.5 shadow-sm border border-slate-100">
-          <div class="flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:0ms"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:150ms"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:300ms"></span>
-          </div>
-        </div>
-      `;
-      body.appendChild(typingEl);
-      body.scrollTop = body.scrollHeight;
-
-      // Parse expense from natural language
-      setTimeout(() => {
-        typingEl.remove();
-        const parsed = parseNaturalExpense(text);
-
-        const aiMsg = document.createElement('div');
-        aiMsg.className = 'flex gap-2 items-start';
-
-        if (parsed) {
-          aiMsg.innerHTML = `
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-            </div>
-            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
-              <div class="flex items-center gap-2 mb-2.5">
-                <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
-                <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
-              </div>
-              <div class="grid grid-cols-3 gap-2 mb-3 text-center">
-                <div class="bg-slate-50 rounded-lg p-2">
-                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
-                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.item)}</p>
-                </div>
-                <div class="bg-slate-50 rounded-lg p-2">
-                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
-                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.category)}</p>
-                </div>
-                <div class="bg-slate-50 rounded-lg p-2">
-                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
-                  <p class="text-[11px] font-extrabold text-blue-900">${curr} ${parsed.amount.toFixed(2)}</p>
-                </div>
-              </div>
-              <button onclick="aiConfirmExpense('${escapeHtml(parsed.item)}', ${parsed.amount}, '${escapeHtml(parsed.category)}')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
-                Confirm & Record ${curr} ${parsed.amount.toFixed(2)}
-              </button>
-              <div class="grid grid-cols-2 gap-1.5">
-                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
-                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
-              </div>
-              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
-                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-                Parsed by Gemini Vision
-              </p>
-            </div>
-          `;
-        } else {
-          aiMsg.innerHTML = `
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-            </div>
-            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
-              <p class="text-[13px] text-slate-700 leading-relaxed">I understood your message but couldn't detect a clear expense amount. Try saying something like <strong>"coffee RM12"</strong> or <strong>"grab ride RM15.50"</strong>.</p>
-              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
-                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
-                FinWise AI Assistant
-              </p>
-            </div>
-          `;
-        }
-        body.appendChild(aiMsg);
-        body.scrollTop = body.scrollHeight;
-      }, 1200);
-    }
-
-    function parseNaturalExpense(text) {
-      const lower = text.toLowerCase();
-      // Match RM amount
-      const amtMatch = lower.match(/rm\s*([\d,.]+)/i) || lower.match(/([\d,.]+)\s*(?:ringgit|rm)/i) || lower.match(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?\s*(?:rm)?\s*([\d,.]+)/i);
-      if (!amtMatch) return null;
-
-      const amount = parseFloat(amtMatch[1].replace(/,/g, ''));
-      if (!amount || amount <= 0 || amount > 100000) return null;
-
-      // Guess category from keywords
-      let category = 'Other Expenses';
-      const item = text.replace(/rm\s*[\d,.]+/gi, '').replace(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?/gi, '').replace(/(?:this|today|yesterday|morning|afternoon|evening|tonight|for|at|on)/gi, '').trim() || 'Purchase';
-      const cleanItem = item.replace(/\s+/g, ' ').trim();
-      const firstWord = cleanItem.split(' ').slice(0, 4).join(' ');
-
-      if (/(?:makan|eat|ate|food|nasi|rice|chicken|ayam|mee|roti|burger|pizza|sushi|dim sum|cafe|restaurant|bistro|mamak|kopitiam|starbucks|mcd|kfc|subway|lunch|dinner|breakfast|snack|drink|coffee|tea|teh|latte|boba|juice|lemak)/i.test(lower)) {
-        category = 'Food & Dining';
-      } else if (/(?:grab|uber|taxi|bus|train|lrt|mrt|fuel|petrol|diesel|parking|toll|shell|petronas)/i.test(lower)) {
-        category = 'Transportation';
-      } else if (/(?:grocer|supermarket|tesco|aeon|jaya grocer|village grocer|mydin|econsave|99|mart|familymart)/i.test(lower)) {
-        category = 'Groceries';
-      } else if (/(?:shop|buy|bought|purchase|uniqlo|h&m|zara|nike|adidas|lazada|shopee|online)/i.test(lower)) {
-        category = 'Shopping';
-      } else if (/(?:movie|cinema|concert|game|netflix|spotify|youtube|entertainment|ticket|karaoke)/i.test(lower)) {
-        category = 'Entertainment';
-      } else if (/(?:bill|utility|electric|water|internet|wifi|phone|astro|tnb|indah water|tm|celcom|digi|maxis)/i.test(lower)) {
-        category = 'Bills & Utilities';
-      } else if (/(?:doctor|clinic|hospital|pharmacy|medicine|watson|guardian|health|gym|dental)/i.test(lower)) {
-        category = 'Health & Wellness';
-      }
-
-      return { item: firstWord.length > 2 ? (firstWord[0].toUpperCase() + firstWord.slice(1)) : 'Purchase', amount, category };
-    }
-
-    async function aiConfirmExpense(description, amount, category) {
-      // Directly save to Supabase via existing saveTransaction flow
-      const userId = await getAuthenticatedUserId();
-      const categoryId = categoryIdMap[category] || 'other';
-      const dateStr = localDateString();
-      const isoDate = dateStr + 'T12:00:00Z';
-
-      if (supabaseClient) {
-        try {
-          await withTimeout(
-            supabaseClient.from('transactions').insert({
-              user_id: userId,
-              title: description,
-              amount: Math.round(amount * 100) / 100,
-              type: 'expense',
-              category_id: categoryId,
-              category: category,
-              transaction_date: isoDate,
-              date: isoDate
-            }).select(),
-            10000
-          );
-        } catch (e) {
-          console.warn('AI Assistant save error:', e);
-        }
-      }
-
-      // Show confirmation in chat
-      const body = document.getElementById('aiChatBody');
-      const curr = localStorage.getItem('finwise_currency') || 'RM';
-      if (body) {
-        const confirmation = document.createElement('div');
-        confirmation.className = 'flex gap-2 items-start';
-        confirmation.innerHTML = `
-          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <span class="material-symbols-outlined text-white text-[16px]">check</span>
-          </div>
-          <div class="max-w-[85%] bg-emerald-50 rounded-2xl rounded-bl-md p-3 shadow-sm border border-emerald-200">
-            <p class="text-[12px] font-bold text-emerald-800">✅ Recorded: ${curr} ${amount.toFixed(2)}</p>
-            <p class="text-[11px] text-emerald-700 mt-0.5">${escapeHtml(description)} → ${escapeHtml(category)}</p>
-            <p class="text-[9px] text-emerald-500 mt-1">Saved to your ledger • Synced to Supabase Cloud</p>
-          </div>
-        `;
-        body.appendChild(confirmation);
-        body.scrollTop = body.scrollHeight;
-      }
-
-      // Refresh dashboard
-      await loadTransactions();
-      updateAiBudgetWidget();
-    }
-
-    function triggerAiCameraCapture() {
-      // Re-use the existing receipt scanner flow
-      toggleAiAssistant();
-      showAddTransactionModal();
-      setTimeout(() => triggerReceiptCameraFlow(), 300);
-    }
-
-    function aiStartVoice() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Voice input is not supported on this browser. Try Chrome or Edge.');
-        return;
-      }
-
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-MY';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      const micBtn = document.querySelector('#aiChatInput + button');
-      if (micBtn) {
-        micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-red-500 animate-pulse">mic</span>';
-      }
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const input = document.getElementById('aiChatInput');
-        if (input) input.value = transcript;
-        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
-      };
-
-      recognition.onerror = () => {
-        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
-      };
-
-      recognition.onend = () => {
-        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
-      };
-
-      recognition.start();
-    }
   </script>
 </body>
+
 </html>

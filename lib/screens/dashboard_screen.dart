@@ -48,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           required String categoryId,
           required DateTime date,
           String? notes,
+          List<Map<String, dynamic>> receiptItems = const [],
         }) async {
           final provider = Provider.of<TransactionProvider>(context, listen: false);
           final updated = transaction.copyWith(
@@ -57,6 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             categoryId: categoryId,
             date: date,
             notes: notes,
+            receiptItems: receiptItems,
           );
           final success = await provider.updateTransaction(updated);
           if (mounted && success) {

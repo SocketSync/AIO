@@ -30,7 +30,10 @@ class _TransactionCardState extends State<TransactionCard> {
     final isIncome = transaction.isIncome;
     final currencyFormat = NumberFormat.currency(symbol: 'RM ', decimalDigits: 2);
     final dateFormat = DateFormat('MMM d, yyyy');
-    final hasReceiptItems = transaction.receiptItems.isNotEmpty;
+    final effectiveItems = transaction.receiptItems.isNotEmpty
+        ? transaction.receiptItems
+        : TransactionRecord.parseDetailsText(transaction.notes, category: category.name);
+    final hasReceiptItems = effectiveItems.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -81,7 +84,7 @@ class _TransactionCardState extends State<TransactionCard> {
                       children: [
                         Expanded(
                           child: Text(
-                            transaction.title,
+                            'Description: ${transaction.title}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -111,7 +114,7 @@ class _TransactionCardState extends State<TransactionCard> {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      ...transaction.receiptItems.map((item) {
+                      ...effectiveItems.map((item) {
                         final itemName = (item['item_name'] ?? 'Item').toString();
                         final qty = (item['quantity'] as num?)?.toInt() ?? 1;
                         return Padding(
@@ -149,7 +152,7 @@ class _TransactionCardState extends State<TransactionCard> {
                         ),
                       ],
                     ),
-                    if (transaction.notes != null && transaction.notes!.isNotEmpty) ...[
+                    if (!hasReceiptItems && transaction.notes != null && transaction.notes!.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         transaction.notes!,

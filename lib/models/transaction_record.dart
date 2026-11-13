@@ -97,6 +97,61 @@ class TransactionRecord {
     return map;
   }
 
+  static String formatReceiptItemsToDetails(List<Map<String, dynamic>> items) {
+    if (items.isEmpty) return '';
+    return items
+        .map((it) {
+          final qty = (it['quantity'] as num?)?.toInt() ?? 1;
+          final name = (it['item_name'] ?? it['name'] ?? '').toString().trim();
+          return name.isEmpty ? '' : '${qty < 1 ? 1 : qty}x $name';
+        })
+        .where((s) => s.isNotEmpty)
+        .join('\n');
+  }
+
+  static List<Map<String, dynamic>> parseDetailsText(
+    String? text, {
+    String category = 'General',
+  }) {
+    final raw = (text ?? '').trim();
+    if (raw.isEmpty) return const [];
+    var lines = raw
+        .split(RegExp(r'\r?\n'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    if (lines.length == 1 &&
+        lines.first.contains(',') &&
+        RegExp(r'\b\d+\s*[x×]\s*', caseSensitive: false).hasMatch(lines.first)) {
+      lines = lines.first
+          .split(',')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .toList();
+    }
+    final qtyRegex = RegExp(r'^(\d+)\s*[x×]\s+(.+)$', caseSensitive: false);
+    final parsed = <Map<String, dynamic>>[];
+    for (final line in lines) {
+      final clean = line.replaceFirst(RegExp(r'^[-*•]\s*'), '').trim();
+      if (clean.isEmpty) continue;
+      int qty = 1;
+      String name = clean;
+      final match = qtyRegex.firstMatch(clean);
+      if (match != null) {
+        qty = int.tryParse(match.group(1) ?? '1') ?? 1;
+        name = (match.group(2) ?? '').trim();
+      }
+      if (name.isEmpty) continue;
+      parsed.add({
+        'item_name': name.length > 120 ? name.substring(0, 120) : name,
+        'price': 0.0,
+        'quantity': qty < 1 ? 1 : (qty > 999 ? 999 : qty),
+        'category': category.isEmpty ? 'General' : category,
+      });
+    }
+    return parsed.take(40).toList();
+  }
+
   static List<Map<String, dynamic>> _parseReceiptItems(dynamic raw) {
     if (raw is! List) return const [];
     final parsed = <Map<String, dynamic>>[];
@@ -123,6 +178,14 @@ class TransactionRecord {
   }
 
   factory TransactionRecord.fromJson(Map<String, dynamic> json) {
+    final notesStr = json['notes'] as String?;
+    var items = _parseReceiptItems(json['receipt_items']);
+    if (items.isEmpty && notesStr != null && notesStr.trim().isNotEmpty) {
+      items = parseDetailsText(
+        notesStr,
+        category: (json['category'] ?? 'General').toString(),
+      );
+    }
     return TransactionRecord(
       id: (json['id'] ?? '').toString(),
       userId: (json['user_id'] ?? 'default_user').toString(),
@@ -137,8 +200,8 @@ class TransactionRecord {
           : (json['date'] != null
               ? DateTime.parse(json['date'] as String)
               : DateTime.now()),
-      notes: json['notes'] as String?,
-      receiptItems: _parseReceiptItems(json['receipt_items']),
+      notes: notesStr,
+      receiptItems: items,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),

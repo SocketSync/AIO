@@ -13,6 +13,7 @@ class AddEditTransactionDialog extends StatefulWidget {
     required String categoryId,
     required DateTime date,
     String? notes,
+    List<Map<String, dynamic>> receiptItems,
   }) onSave;
 
   const AddEditTransactionDialog({
@@ -47,7 +48,10 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
     _amountController = TextEditingController(
       text: item != null ? item.amount.toStringAsFixed(2) : '',
     );
-    _notesController = TextEditingController(text: item?.notes ?? '');
+    final initialDetails = item != null && item.receiptItems.isNotEmpty
+        ? TransactionRecord.formatReceiptItemsToDetails(item.receiptItems)
+        : (item?.notes ?? '');
+    _notesController = TextEditingController(text: initialDetails);
   }
 
   @override
@@ -85,13 +89,19 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
   void _handleSubmit() {
     if (_formKey.currentState?.validate() ?? false) {
       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
+      final rawDetails = _notesController.text.trim();
+      final categoryName = CategoryItem.getById(_selectedCategoryId).name;
+      final parsedItems = rawDetails.isEmpty
+          ? const <Map<String, dynamic>>[]
+          : TransactionRecord.parseDetailsText(rawDetails, category: categoryName);
       widget.onSave(
         title: _titleController.text.trim(),
         amount: amount,
         type: _selectedType,
         categoryId: _selectedCategoryId,
         date: _selectedDate,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: rawDetails.isEmpty ? null : rawDetails,
+        receiptItems: parsedItems,
       );
       Navigator.of(context).pop();
     }
@@ -410,9 +420,9 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // Notes Field
+                // Details (Line Items) Field
                 const Text(
-                  'Notes (Optional)',
+                  'Details (Line Items)',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
                 ),
                 const SizedBox(height: 6),
@@ -424,10 +434,10 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                   ),
                   child: TextFormField(
                     controller: _notesController,
-                    maxLines: 2,
+                    maxLines: 3,
                     style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
                     decoration: const InputDecoration(
-                      hintText: 'Add additional receipt details or tags...',
+                      hintText: '1x Rice 1kg\n1x Soya milk x6',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(12),
                     ),

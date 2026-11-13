@@ -73,13 +73,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() => _isSubmitting = true);
 
     final provider = Provider.of<TransactionProvider>(context, listen: false);
+    final rawDetails = _notesController.text.trim();
+    final categoryName = CategoryItem.getById(_selectedCategoryId).name;
+    final parsedItems = rawDetails.isEmpty
+        ? const <Map<String, dynamic>>[]
+        : TransactionRecord.parseDetailsText(rawDetails, category: categoryName);
     final success = await provider.addTransaction(
       title: _descriptionController.text.trim(),
       amount: amount,
       type: _selectedType,
       categoryId: _selectedCategoryId,
       date: _selectedDate,
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+      notes: rawDetails.isEmpty ? null : rawDetails,
+      receiptItems: parsedItems,
     );
 
     setState(() => _isSubmitting = false);
@@ -480,9 +486,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // 6. Optional Notes
+                    // 6. Details (Line Items)
                     const Text(
-                      'Notes (Optional)',
+                      'Details (Line Items)',
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 8),
@@ -497,7 +503,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         maxLines: 3,
                         style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
                         decoration: const InputDecoration(
-                          hintText: 'Add additional receipt information, reference or vendor tags...',
+                          hintText: '1x Rice 1kg\n1x Soya milk x6',
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(14),
                         ),
