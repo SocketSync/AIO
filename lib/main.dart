@@ -5,6 +5,7 @@ import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'services/supabase_service.dart';
 import 'providers/transaction_provider.dart';
+import 'providers/savings_goal_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
@@ -44,6 +45,7 @@ class FinWiseApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: AuthService()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => SavingsGoalProvider()),
       ],
       child: MaterialApp(
         title: 'FinWise',
