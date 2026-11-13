@@ -9,8 +9,8 @@
 class StudentAuth {
 public:
     static bool isUtmEmail(const std::string& email) {
-        std::string suffix1 = "@graduate.utm.my";
-        std::string suffix2 = "@utm.my";
+        std::string suffix1 = "@finwise-app.xyz";
+        std::string suffix2 = "@finwise-app.xyz";
 
         if (email.length() >= suffix1.length() &&
             email.compare(email.length() - suffix1.length(), suffix1.length(), suffix1) == 0) {
@@ -48,10 +48,10 @@ public:
 int main() {
     std::cout << "=== FinWise C++ Authentication Test ===" << std::endl;
     
-    std::string testEmail = "yeoh.k@graduate.utm.my";
+    std::string testEmail = "demo@finwise-app.xyz";
     std::string testPass = "UtmFin2025!";
 
-    std::cout << "Checking UTM domain: " << (StudentAuth::isUtmEmail(testEmail) ? "Verified" : "Invalid") << std::endl;
+    std::cout << "Checking FinWise domain: " << (StudentAuth::isUtmEmail(testEmail) ? "Verified" : "Invalid") << std::endl;
     std::cout << "Checking Password:   " << (StudentAuth::validatePassword(testPass) ? "Strong" : "Weak") << std::endl;
     std::cout << "Auth Status:         " << (StudentAuth::authenticate(testEmail, testPass) ? "Granted" : "Denied") << std::endl;
 

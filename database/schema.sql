@@ -16,11 +16,21 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
     avatar_url TEXT,
+    phone VARCHAR(30),
+    occupation VARCHAR(100),
     currency VARCHAR(10) DEFAULT 'RM',
     monthly_budget NUMERIC(12, 2) DEFAULT 2500.00,
+    password_hash TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration safety: ensure modern fields exist if table was already created
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone VARCHAR(30);
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS occupation VARCHAR(100);
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'RM';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS monthly_budget NUMERIC(12, 2) DEFAULT 2500.00;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS password_hash TEXT;
 
 -- 3. Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -72,49 +82,41 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 
--- 7. RLS Policies for Profiles
+-- 7. RLS Policies for Profiles (Confidentiality: strict owner isolation auth.uid() = id)
 DROP POLICY IF EXISTS "Public profiles are readable by owner" ON public.profiles;
-CREATE POLICY "Public profiles are readable by owner"
-    ON public.profiles FOR SELECT
-    USING (auth.uid() = id);
-
+DROP POLICY IF EXISTS "Public profiles are readable by all" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles are updatable by owner" ON public.profiles;
-CREATE POLICY "Profiles are updatable by owner"
-    ON public.profiles FOR UPDATE
-    USING (auth.uid() = id);
-
+DROP POLICY IF EXISTS "Profiles are updatable by all" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles are insertable by owner" ON public.profiles;
-CREATE POLICY "Profiles are insertable by owner"
-    ON public.profiles FOR INSERT
+DROP POLICY IF EXISTS "Profiles are insertable by all" ON public.profiles;
+DROP POLICY IF EXISTS "Enable all actions for users based on id" ON public.profiles;
+
+CREATE POLICY "Enable all actions for users based on id"
+    ON public.profiles FOR ALL TO authenticated
+    USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
 
--- 8. RLS Policies for Categories (Default categories readable by all authenticated users)
-DROP POLICY IF EXISTS "Categories readable by authenticated users" ON public.categories;
-CREATE POLICY "Categories readable by authenticated users"
+-- 8. RLS Policies for Categories (Default categories readable by all users)
+DROP POLICY IF EXISTS "Categories readable by all" ON public.categories;
+CREATE POLICY "Categories readable by all"
     ON public.categories FOR SELECT
-    TO authenticated
     USING (true);
 
--- 9. RLS Policies for Transactions (Strict User Isolation)
+-- 9. RLS Policies for Transactions (Confidentiality: strict owner isolation auth.uid() = user_id)
 DROP POLICY IF EXISTS "Users can read own transactions" ON public.transactions;
-CREATE POLICY "Users can read own transactions"
-    ON public.transactions FOR SELECT
-    USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Transactions readable by all" ON public.transactions;
 DROP POLICY IF EXISTS "Users can insert own transactions" ON public.transactions;
-CREATE POLICY "Users can insert own transactions"
-    ON public.transactions FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Transactions insertable by all" ON public.transactions;
 DROP POLICY IF EXISTS "Users can update own transactions" ON public.transactions;
-CREATE POLICY "Users can update own transactions"
-    ON public.transactions FOR UPDATE
-    USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Transactions updatable by all" ON public.transactions;
 DROP POLICY IF EXISTS "Users can delete own transactions" ON public.transactions;
-CREATE POLICY "Users can delete own transactions"
-    ON public.transactions FOR DELETE
-    USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Transactions deletable by all" ON public.transactions;
+DROP POLICY IF EXISTS "Enable all actions for users based on user_id" ON public.transactions;
+
+CREATE POLICY "Enable all actions for users based on user_id"
+    ON public.transactions FOR ALL TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- 10. Automatically update updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -123,7 +125,7 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS set_profiles_updated_at ON public.profiles;
 CREATE TRIGGER set_profiles_updated_at
@@ -137,3 +139,96 @@ CREATE TRIGGER set_transactions_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- 11. Auto-create User Profile on Google Auth Signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, email, display_name, avatar_url, phone, occupation)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.email, 'user@finwise.app'),
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1), 'FinWise Member'),
+        NEW.raw_user_meta_data->>'avatar_url',
+        NEW.raw_user_meta_data->>'phone',
+        NEW.raw_user_meta_data->>'occupation'
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
+        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url),
+        phone = COALESCE(EXCLUDED.phone, profiles.phone),
+        occupation = COALESCE(EXCLUDED.occupation, profiles.occupation);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_new_user();
+
+-- 12. Protect Demo Account Profile from Alteration or Deletion
+CREATE OR REPLACE FUNCTION public.protect_demo_profile()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'DELETE' AND OLD.id = '00000000-0000-4000-8000-000000000001'::uuid) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    IF (TG_OP = 'UPDATE' AND (OLD.id = '00000000-0000-4000-8000-000000000001'::uuid OR NEW.id = '00000000-0000-4000-8000-000000000001'::uuid)) THEN
+        RAISE EXCEPTION 'Demo account profile cannot be altered. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_demo_profile ON public.profiles;
+CREATE TRIGGER trg_protect_demo_profile
+    BEFORE UPDATE OR DELETE ON public.profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION public.protect_demo_profile();
+
+-- 13. Super Secure PostgreSQL RPC: Delete User Account & Purge from Supabase
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+    current_user_id UUID;
+    current_email TEXT;
+BEGIN
+    current_user_id := auth.uid();
+    IF current_user_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required to delete account.';
+    END IF;
+
+    -- STRICT SECURITY CHECK: Prohibit deleting the demo account
+    IF current_user_id = '00000000-0000-4000-8000-000000000001'::uuid THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    SELECT email INTO current_email FROM auth.users WHERE id = current_user_id;
+    IF current_email = 'demo@finwise-app.xyz' THEN
+        RAISE EXCEPTION 'Demo account profile cannot be deleted. The demo account is strictly reserved for testing input and output transactions.';
+    END IF;
+
+    -- 1. Purge all transactions belonging to this user
+    DELETE FROM public.transactions WHERE user_id = current_user_id;
+
+    -- 2. Purge user profile
+    DELETE FROM public.profiles WHERE id = current_user_id;
+
+    -- 3. Purge user from auth.users (cascades sessions, refresh tokens, identities)
+    DELETE FROM auth.users WHERE id = current_user_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'message', 'User profile, transactions, and authentication record permanently deleted.'
+    );
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM public;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;

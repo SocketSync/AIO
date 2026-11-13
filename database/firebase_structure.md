@@ -7,6 +7,8 @@ User profile document:
 - `email`: string (Gmail)
 - `displayName`: string
 - `avatarUrl`: string (optional)
+- `phone`: string (e.g. "+60 12-345 6789")
+- `occupation`: string (e.g. "Senior Software Engineer")
 - `currency`: string (default "RM")
 - `monthlyBudget`: number (default 2500.0)
 - `createdAt`: timestamp

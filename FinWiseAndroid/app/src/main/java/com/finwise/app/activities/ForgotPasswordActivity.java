@@ -78,7 +78,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         content.addView(desc);
 
         emailInput = new EditText(this);
-        emailInput.setHint("e.g. yeoh.k@graduate.utm.my");
+        emailInput.setHint("e.g. demo@finwise-app.xyz");
         emailInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         content.addView(ViewFactory.createInputContainer(this, "Student Email Address", "✉️", emailInput));
 

@@ -28,7 +28,6 @@ $input = Security::getJsonInput();
 
 $fullName        = trim((string)($input['full_name'] ?? ''));
 $email           = strtolower(trim((string)($input['email'] ?? '')));
-$matricId        = trim((string)($input['matric_id'] ?? ''));
 $password        = (string)($input['password'] ?? '');
 $confirmPassword = (string)($input['confirm_password'] ?? '');
 
@@ -62,13 +61,12 @@ if ($existingUser) {
     try {
         $passwordHash = Security::hashPassword($password);
         $insertStmt = $pdo->prepare("
-            INSERT INTO users (full_name, email, matric_id, password_hash, email_verified) 
-            VALUES (:full_name, :email, :matric_id, :password_hash, 0)
+            INSERT INTO users (full_name, email, password_hash, email_verified) 
+            VALUES (:full_name, :email, :password_hash, 0)
         ");
         $insertStmt->execute([
             'full_name'     => $fullName,
             'email'         => $email,
-            'matric_id'     => !empty($matricId) ? $matricId : null,
             'password_hash' => $passwordHash
         ]);
         $userId = (int)$pdo->lastInsertId();

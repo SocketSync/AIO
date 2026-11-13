@@ -1,17 +1,19 @@
 <?php
 /**
- * FinWise - Student Authentication Handler
- * Language: PHP
+ * FinWise - Authentication Service
+ * Target: General public and young adults (Independent financial app)
+ * Authentication: Google Sign-In (Gmail)
  */
 
-class StudentAuth {
+class AuthService {
     
     /**
-     * Validate UTM student email
+     * Check if email is a valid Gmail address or Google-compatible email
      */
-    public static function isUtmEmail($email) {
+    public static function isGmail($email) {
         $email = strtolower(trim($email));
-        return (substr($email, -16) === '@graduate.utm.my' || substr($email, -7) === '@utm.my');
+        return (filter_var($email, FILTER_VALIDATE_EMAIL) && 
+               (substr($email, -10) === '@gmail.com' || substr($email, -17) === '@googlemail.com'));
     }
 
     /**
@@ -31,30 +33,29 @@ class StudentAuth {
     }
 
     /**
-     * Authenticate student login
+     * Authenticate user with Google Gmail account
      */
-    public static function login($studentId, $password) {
-        if (empty($studentId) || empty($password)) {
+    public static function loginWithGoogle($email, $displayName, $idToken = null) {
+        if (empty($email)) {
             return [
                 'success' => false,
-                'message' => 'Please enter both student ID/email and password.'
+                'message' => 'Gmail address is required.'
             ];
         }
 
-        // Demo student credential check
         return [
             'success' => true,
-            'message' => 'Login successful. Welcome to FinWise!',
-            'student' => [
-                'name' => 'Yeoh Kean Shen',
-                'email' => $studentId,
-                'campus' => 'UTM Skudai'
+            'message' => 'Google authentication successful. Welcome to FinWise!',
+            'user' => [
+                'name' => $displayName ?: 'Google User',
+                'email' => $email,
+                'provider' => 'google'
             ]
         ];
     }
 
     /**
-     * Register new student
+     * Register new user with Gmail
      */
     public static function register($fullName, $email, $password) {
         if (empty($fullName) || empty($email) || empty($password)) {
@@ -64,10 +65,10 @@ class StudentAuth {
             ];
         }
 
-        if (!self::isUtmEmail($email)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return [
                 'success' => false,
-                'message' => 'Please use a valid UTM email (@graduate.utm.my or @utm.my).'
+                'message' => 'Please provide a valid email address.'
             ];
         }
 
@@ -80,8 +81,12 @@ class StudentAuth {
 
         return [
             'success' => true,
-            'message' => 'Account registered successfully!'
+            'message' => 'Account registered successfully! Welcome to FinWise.',
+            'user' => [
+                'name' => $fullName,
+                'email' => $email,
+                'provider' => 'email'
+            ]
         ];
     }
 }
-

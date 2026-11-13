@@ -10,11 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = isset($_POST['email']) ? $_POST['email'] : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
-    $result = StudentAuth::register($fullName, $email, $password);
+    $result = AuthService::register($fullName, $email, $password);
     $message = $result['message'];
     $messageType = $result['success'] ? 'success' : 'error';
     if ($result['success']) {
-        header("refresh:2;url=login.php");
+        header("refresh:2;url=login.html");
     }
 }
 ?>
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="shell-type" content="mobile_stack">
-  <title>FinWise - Student Registration</title>
+  <title>FinWise - Account Registration</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,8 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="px-margin pt-space-md pb-space-sm flex flex-col gap-space-sm">
           <div class="flex items-center justify-between">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-semibold uppercase tracking-wider shadow-sm">
-              <span class="material-symbols-outlined text-[14px]">school</span>
-              Student Onboarding
+              <span class="material-symbols-outlined text-[14px]">shield</span>
+              Account Setup
             </span>
             <span class="text-xs text-text-muted font-medium">Step 1 of 2</span>
           </div>
@@ -112,75 +112,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div class="mt-space-xs">
             <p class="text-sm text-on-surface-variant leading-relaxed">
-              Join thousands of UTM students building smarter saving habits and budgeting with AI.
+              Join thousands of users building smarter saving habits and budgeting with FinWise AI.
             </p>
-          </div>
-        </div>
-
-        <!-- UTM Perk Delight Banner -->
-        <div class="px-margin mb-space-md">
-          <div class="relative overflow-hidden bg-gradient-to-r from-primary-container to-primary text-on-primary rounded-xl p-space-md shadow-md">
-            <div class="flex items-start gap-3 relative z-10">
-              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-secondary-fixed text-[24px]">verified</span>
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <span class="text-sm font-semibold text-secondary-fixed">UTM Student Benefit</span>
-                <p class="text-xs text-white/90 leading-tight">
-                  Register with your student ID to unlock <strong class="text-white font-semibold">FinWise Pro &amp; AI Assistant</strong> free throughout this academic year.
-                </p>
-              </div>
-            </div>
-            <div class="absolute -right-4 -bottom-6 w-24 h-24 rounded-full bg-secondary-fixed/10 pointer-events-none blur-lg"></div>
           </div>
         </div>
 
         <!-- Registration Form -->
         <form class="px-margin flex flex-col gap-space-md" method="POST" action="register.php">
-          
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-medium text-text-muted flex items-center justify-between">
-              <span>Campus / Institution</span>
-              <span class="text-secondary font-semibold text-xs">Verified Partner</span>
-            </label>
-            <div class="relative bg-surface-container-lowest rounded-xl p-space-sm flex items-center gap-3 shadow-sm border border-slate-200">
-              <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0 text-primary">
-                <span class="material-symbols-outlined text-[20px]">account_balance</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-text-primary truncate">Universiti Teknologi Malaysia (UTM)</p>
-                <p class="text-xs text-text-muted truncate">Skudai &amp; Kuala Lumpur Campuses</p>
-              </div>
-              <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
-            </div>
-          </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-medium text-text-muted" for="fullName">Full Name (as per Student ID)</label>
+            <label class="text-xs font-medium text-text-muted" for="fullName">Full Name</label>
             <div class="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm border border-slate-200">
               <div class="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                 <span class="material-symbols-outlined text-[20px]">person</span>
               </div>
-              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="fullName" name="full_name" placeholder="e.g. Yeoh Kean Shen" type="text" value="Yeoh Kean Shen" required>
+              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="fullName" name="full_name" placeholder="e.g. Demo Finwise" type="text" value="Demo Finwise" required>
             </div>
           </div>
 
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
-              <label class="text-xs font-medium text-text-muted" for="email">University / Student Email</label>
+              <label class="text-xs font-medium text-text-muted" for="email">Email Address</label>
               <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-secondary bg-growth-mint-subtle px-2 py-0.5 rounded-full">
-                <span class="material-symbols-outlined text-[12px]">bolt</span> Instant Perks
+                <span class="material-symbols-outlined text-[12px]">verified</span> Secure Auth
               </span>
             </div>
             <div class="relative bg-surface-container-lowest rounded-xl flex items-center shadow-sm border border-slate-200">
               <div class="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
-                <span class="material-symbols-outlined text-[20px]">school</span>
+                <span class="material-symbols-outlined text-[20px]">mail</span>
               </div>
-              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="email" name="email" placeholder="keanshen@graduate.utm.my" type="email" value="keanshen@graduate.utm.my" required>
+              <input class="w-full py-3.5 pr-space-md bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none" id="email" name="email" placeholder="demo@finwise-app.xyz" type="email" value="demo@finwise-app.xyz" required>
             </div>
             <p class="text-xs text-text-muted flex items-center gap-1 pl-1">
               <span class="material-symbols-outlined text-[14px] text-secondary">info</span>
-              Use @utm.my or @graduate.utm.my for instant student status validation.
+              Enter your email address to receive immediate account access.
             </p>
           </div>
 
@@ -190,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="pl-space-md pr-space-xs text-text-muted flex items-center pointer-events-none">
                 <span class="material-symbols-outlined text-[20px]">lock</span>
               </div>
-              <input class="w-full py-3.5 pr-10 bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none tracking-wider" id="password" name="password" type="password" value="UtmFin2025!" required>
+              <input class="w-full py-3.5 pr-10 bg-transparent text-sm text-text-primary placeholder:text-outline focus:outline-none tracking-wider" id="password" name="password" type="password" value="FinWise2026!" required>
               <button aria-label="Toggle password visibility" class="absolute right-3 text-text-muted hover:text-text-primary flex items-center justify-center p-1" id="togglePassword" onclick="togglePasswordVisibility()" type="button">
                 <span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility_off</span>
               </button>
@@ -228,34 +193,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
             </label>
             <label class="text-xs text-text-muted cursor-pointer select-none" for="termsCheck">
-              I agree to the <a class="text-primary font-semibold hover:underline" href="#">Terms of Service</a>, <a class="text-primary font-semibold hover:underline" href="#">Privacy Policy</a>, and consent to student verification.
+              I agree to the <a class="text-primary font-semibold hover:underline" href="#">Terms of Service</a> and <a class="text-primary font-semibold hover:underline" href="#">Privacy Policy</a>.
             </label>
           </div>
 
           <button type="submit" class="w-full mt-space-sm h-12 bg-primary hover:bg-primary-container text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-transform cursor-pointer">
-            <span>Continue to Setup Goals</span>
+            <span>Create FinWise Account</span>
             <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
         </form>
 
         <div class="px-margin my-space-lg flex items-center gap-3">
           <div class="flex-1 h-px bg-surface-container-high"></div>
-          <span class="text-xs text-text-muted uppercase tracking-wider">Fast Student Sign-In</span>
+          <span class="text-xs text-text-muted uppercase tracking-wider">Fast Sign-In</span>
           <div class="flex-1 h-px bg-surface-container-high"></div>
         </div>
 
         <div class="px-margin flex flex-col gap-space-sm">
-          <a href="login.php" class="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-between px-space-md shadow-sm active:scale-[0.99] transition-transform border border-slate-200">
-            <div class="flex items-center gap-3">
-              <div class="w-7 h-7 rounded-full bg-amber-900/10 flex items-center justify-center text-amber-900 font-bold text-xs">
-                UTM
-              </div>
-              <span class="text-sm font-semibold">Sign in via UTM SSO (ID Access)</span>
-            </div>
-            <span class="material-symbols-outlined text-text-muted text-[18px]">open_in_new</span>
-          </a>
-
-          <a href="login.php" class="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-center gap-3 px-space-md shadow-sm active:scale-[0.99] transition-transform border border-slate-200">
+          <a href="login.html" class="w-full h-12 bg-surface-container-lowest hover:bg-surface-container-low text-text-primary rounded-xl flex items-center justify-center gap-3 px-space-md shadow-sm active:scale-[0.99] transition-transform border border-slate-200">
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
               <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4"></path>
               <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z" fill="#34A853"></path>
@@ -271,17 +226,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="flex items-center gap-2">
               <div class="flex -space-x-2">
                 <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-[10px] flex items-center justify-center ring-2 ring-surface">
-                  NR
+                  KY
                 </div>
                 <div class="w-7 h-7 rounded-full bg-secondary text-white font-bold text-[10px] flex items-center justify-center ring-2 ring-surface">
-                  AF
+                  AY
                 </div>
                 <div class="w-7 h-7 rounded-full bg-primary-container text-white font-bold text-[10px] flex items-center justify-center ring-2 ring-surface">
-                  CL
+                  FW
                 </div>
               </div>
               <p class="text-xs text-text-muted">
-                <strong class="text-text-primary font-medium">3,420+</strong> UTM students registered
+                <strong class="text-text-primary font-medium">10,000+</strong> active FinWise members
               </p>
             </div>
             <span class="inline-flex items-center gap-1 text-xs text-secondary font-semibold">

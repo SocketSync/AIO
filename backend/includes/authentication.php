@@ -30,7 +30,7 @@ class Authentication {
      */
     public static function findUserById(int $id): ?array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare("SELECT id, full_name, email, matric_id, email_verified, created_at FROM users WHERE id = :id LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, full_name, email, phone, occupation, avatar_url, currency, monthly_budget, email_verified, created_at FROM users WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         $user = $stmt->fetch();
         return $user ?: null;
@@ -47,7 +47,7 @@ class Authentication {
 
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare("
-            SELECT id, full_name, email, matric_id, email_verified, token_expires_at 
+            SELECT id, full_name, email, phone, occupation, avatar_url, currency, monthly_budget, email_verified, token_expires_at 
             FROM users 
             WHERE auth_token = :token LIMIT 1
         ");

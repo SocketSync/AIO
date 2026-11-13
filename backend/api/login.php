@@ -42,9 +42,9 @@ if (empty($password)) {
 
 $pdo = Database::getConnection();
 
-// Support login via either email or matric_id
+// Query user by email
 $stmt = $pdo->prepare("
-    SELECT id, full_name, email, matric_id, password_hash, email_verified 
+    SELECT id, full_name, email, phone, occupation, avatar_url, currency, monthly_budget, password_hash, email_verified 
     FROM users 
     WHERE email = :email
     LIMIT 1
@@ -80,7 +80,11 @@ Security::jsonResponse(true, 'Login successful. Welcome back!', [
         'id'             => (int)$user['id'],
         'full_name'      => $user['full_name'],
         'email'          => $user['email'],
-        'matric_id'      => $user['matric_id'],
+        'phone'          => $user['phone'] ?? '',
+        'occupation'     => $user['occupation'] ?? '',
+        'avatar_url'     => $user['avatar_url'] ?? '',
+        'currency'       => $user['currency'] ?? 'RM',
+        'monthly_budget' => (float)($user['monthly_budget'] ?? 2500.00),
         'email_verified' => true
     ],
     'token'      => $session['token'],

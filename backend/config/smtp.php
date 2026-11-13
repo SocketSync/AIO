@@ -1,7 +1,7 @@
 <?php
 /**
  * FinWise SMTP Configuration
- * Universiti Teknologi Malaysia (UTM) - Course: Application Development
+ * FinWise Financial Platform - Course: Application Development
  *
  * Configurable via environment variables or default local parameters.
  * Never commit production credentials directly to public repositories.

@@ -1,24 +1,20 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html class="h-full bg-surface-container-low" lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="shell-type" content="mobile_stack">
-  <title>FinWise - Student Login</title>
-  
-  <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+  <title>FinWise - Sign In with Google</title>
+  <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  
-  <!-- Custom Mobile App Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
-  
-  <!-- Tailwind CSS Engine for Exact Utility Layout -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script id="tailwind-config">
     tailwind.config = {
+      darkMode: "class",
       theme: {
         extend: {
           colors: {
@@ -26,253 +22,814 @@
             "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
             "secondary": "#006c49",
+            "secondary-container": "#6cf8bb",
             "secondary-fixed": "#6ffbbe",
+            "growth-mint-subtle": "#D1FAE5",
             "surface": "#faf8ff",
-            "surface-container-low": "#f4f3fa",
             "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f3fa",
+            "surface-container": "#eeedf4",
             "surface-container-high": "#e9e7ef",
             "surface-container-highest": "#e3e1e9",
-            "growth-mint-subtle": "#D1FAE5",
-            "outline": "#757682",
             "text-primary": "#0F172A",
             "text-muted": "#64748B",
-            "on-surface": "#1a1b21",
-            "on-surface-variant": "#444651"
-          },
-          spacing: {
-            "margin": "1rem",
-            "space-xs": "0.25rem",
-            "space-sm": "0.5rem",
-            "space-md": "1rem",
-            "space-lg": "1.5rem",
-            "space-xl": "2rem"
+            "outline": "#757682",
+            "outline-variant": "#c5c5d3",
+            "border-neutral": "#E2E8F0",
+            "alert-coral": "#EF4444"
           }
         }
       }
     };
   </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
+  </style>
 </head>
-<body class="bg-slate-900 text-on-surface antialiased min-h-screen flex justify-center">
+<body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
-  <!-- Pure Mobile App View Container -->
-  <div class="w-full max-w-[430px] min-h-screen flex flex-col bg-surface shadow-2xl relative">
-    
+  <!-- Desktop Wrapper: Mobile Phone Shell Centering -->
+  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral">
+
+    <!-- Top Status Banner -->
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
+        FinWise AI Financial Intelligence
+      </span>
+      <span class="text-[11px] text-white/90">Supabase Connected</span>
+    </div>
+
     <!-- Header -->
-    <header class="fixed top-0 w-full max-w-[430px] z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-      <div class="h-14 px-margin flex items-center justify-between">
-        <div class="w-8 h-8 shrink-0"></div>
-        <h1 class="font-semibold text-lg text-on-surface tracking-tight text-center truncate px-space-xs flex-1">Login</h1>
-        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+    <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
+      <div class="h-14 px-4 flex items-center justify-between">
+        <div class="w-10 h-10 shrink-0"></div>
+        <h1 class="font-bold text-lg text-text-primary tracking-tight text-center truncate px-2 flex-1">Sign In</h1>
+        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm">
+          <span class="material-symbols-outlined text-white text-[18px]">person</span>
         </div>
       </div>
     </header>
 
-    <!-- Main Mobile Content -->
-    <main class="flex-1 flex flex-col relative w-full bg-surface pt-14 pb-safe">
-      <div class="flex flex-col w-full px-margin pb-space-xl">
-        
-        <!-- Campus Banner Card -->
-        <div class="relative w-full overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm mb-space-md mt-space-xs border border-slate-200">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-space-sm">
-              <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm">
-                <span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col w-full px-4 pt-4 pb-safe">
+      
+      <!-- Brand & Security Header Card -->
+      <div class="relative w-full overflow-hidden rounded-xl bg-surface-container-low p-4 shadow-sm mb-4 border border-border-neutral">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-11 h-11 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
+                <span class="bg-growth-mint-subtle text-secondary text-[10px] px-2 py-0.5 rounded-full font-bold">AI SMART</span>
               </div>
-              <div>
-                <div class="flex items-center gap-1">
-                  <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
-                  <span class="bg-growth-mint-subtle text-secondary text-xs px-1.5 py-0.5 rounded-full font-bold">CAMPUS</span>
-                </div>
-                <p class="text-xs text-text-muted">Student Smart Banking</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1 bg-surface-container-highest px-2 py-1 rounded-full text-on-surface-variant text-xs">
-              <span class="material-symbols-outlined text-[14px] text-secondary">verified_user</span>
-              <span>UTM Portal Sync</span>
+              <p class="text-xs text-text-muted">Personal Financial Management</p>
             </div>
           </div>
-
-          <!-- Motivational Snippet -->
-          <div class="mt-space-md bg-surface-container-lowest p-space-sm rounded-lg flex items-center gap-space-sm shadow-sm">
-            <span class="material-symbols-outlined text-secondary text-[20px]">school</span>
-            <div class="min-w-0 flex-1">
-              <p class="text-xs text-secondary font-semibold uppercase tracking-wider">Semester Allowance Forecast</p>
-              <p class="text-xs text-on-surface truncate">Sem 2 budget active • UTM Skudai Campus</p>
-            </div>
-            <div class="w-2 h-2 rounded-full bg-secondary shrink-0 animate-ping"></div>
+          <div class="flex items-center gap-1 bg-surface-container-highest px-2 py-1 rounded-full text-[11px] font-semibold text-secondary">
+            <span class="material-symbols-outlined text-[14px]">cloud_done</span>
+            <span>Supabase Cloud</span>
           </div>
         </div>
 
-        <!-- Hero Titles -->
-        <div class="mb-space-lg">
-          <h2 class="text-2xl font-bold text-on-surface tracking-tight">Welcome back</h2>
-          <p class="text-sm text-text-muted mt-0.5">Take control of your campus finances and dynamic budget.</p>
-        </div>
-
-        <!-- Login Form -->
-        <form class="flex flex-col gap-space-md w-full" id="loginForm" method="POST" action="login.php" onsubmit="handleLoginSubmit(event);">
-          
-          <!-- Student Email / Matric ID -->
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-medium text-text-muted flex items-center justify-between" for="student-id">
-              <span>Student Email or Matric ID</span>
-              <span class="text-secondary text-xs font-semibold flex items-center gap-0.5">
-                <span class="material-symbols-outlined text-[12px]">check_circle</span> UTM Verified
-              </span>
-            </label>
-            <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-slate-200">
-              <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
-                <span class="material-symbols-outlined text-[20px]">badge</span>
-              </div>
-              <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-on-surface outline-none" id="student-id" name="student_id" placeholder="yeoh.k@graduate.utm.my" required type="text" value="yeoh.k@graduate.utm.my">
-            </div>
+        <div class="mt-3 bg-surface-container-lowest p-2.5 rounded-lg flex items-center gap-2.5 shadow-sm border border-border-neutral">
+          <span class="material-symbols-outlined text-secondary text-[20px]">auto_awesome</span>
+          <div class="min-w-0 flex-1">
+            <p class="text-[10px] text-secondary font-bold uppercase tracking-wider">Cloud PostgreSQL Sync</p>
+            <p class="text-xs text-text-primary truncate">Real-time balances &amp; verified user isolation</p>
           </div>
-
-          <!-- Password -->
-          <div class="flex flex-col gap-1.5">
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-medium text-text-muted" for="password">Password</label>
-              <button class="text-xs text-primary font-semibold hover:underline" onclick="alert('Password reset magic link sent to your registered UTM student address.');" type="button">
-                Forgot Password?
-              </button>
-            </div>
-            <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-slate-200">
-              <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
-                <span class="material-symbols-outlined text-[20px]">lock</span>
-              </div>
-              <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-on-surface outline-none tracking-widest" id="password" name="password" placeholder="••••••••••••" required type="password" value="SecretStudentPass99">
-              <button aria-label="Toggle password view" class="absolute right-2 p-1.5 text-text-muted hover:text-on-surface rounded-full transition-colors flex items-center justify-center" id="toggle-password" onclick="togglePasswordVisibility()" type="button">
-                <span class="material-symbols-outlined text-[20px]" id="password-icon">visibility</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Remember Me -->
-          <div class="flex items-center justify-between pt-0.5">
-            <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input checked class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" id="remember-me" name="remember_me" type="checkbox">
-              <span class="text-xs text-on-surface font-normal">Remember device</span>
-            </label>
-            <div class="flex items-center gap-1 bg-growth-mint-subtle px-2 py-0.5 rounded-full">
-              <span class="material-symbols-outlined text-[13px] text-secondary">shield_lock</span>
-              <span class="text-xs text-secondary font-medium">256-bit AES</span>
-            </div>
-          </div>
-
-          <!-- Primary CTA Button -->
-          <div class="flex flex-col gap-space-sm pt-space-xs">
-            <button class="w-full min-h-[48px] bg-primary text-on-primary rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all cursor-pointer" id="login-btn" type="submit">
-              <span>Log In</span>
-            </button>
-
-            <!-- Biometric Button -->
-            <button class="w-full min-h-[46px] bg-surface-container-high text-primary rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors active:scale-[0.99] cursor-pointer" id="biometric-btn" onclick="simulateBiometrics()" type="button">
-              <span class="material-symbols-outlined text-[22px] text-secondary">fingerprint</span>
-              <span>Log in with Touch ID / Face ID</span>
-            </button>
-          </div>
-        </form>
-
-        <!-- Divider -->
-        <div class="relative my-space-lg flex items-center justify-center">
-          <div class="w-full h-px bg-surface-container-highest"></div>
-          <span class="absolute bg-surface px-3 text-xs text-text-muted uppercase tracking-wider">
-            Or continue with
-          </span>
         </div>
-
-        <!-- Campus SSO Buttons -->
-        <div class="grid grid-cols-2 gap-space-sm">
-          <button class="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 border border-slate-200 cursor-pointer" onclick="alert('Connecting to UTM Single Sign-On Gateway (CIDOS)...');" type="button">
-            <div class="w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
-              <span class="material-symbols-outlined text-[20px]">domain</span>
-            </div>
-            <span class="text-xs text-on-surface font-semibold mt-1">UTM CIDOS SSO</span>
-            <span class="text-[10px] text-text-muted">Direct Student Auth</span>
-          </button>
-
-          <button class="flex flex-col items-center justify-center p-space-sm bg-surface-container-lowest rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-center gap-1 border border-slate-200 cursor-pointer" onclick="alert('Redirecting to Google Campus Account Selection...');" type="button">
-            <div class="w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center">
-              <svg class="w-5 h-5" viewBox="0 0 24 24">
-                <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4"></path>
-                <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.34 24 12 24z" fill="#34A853"></path>
-                <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z" fill="#FBBC05"></path>
-                <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
-              </svg>
-            </div>
-            <span class="text-xs text-on-surface font-semibold mt-1">Google</span>
-            <span class="text-[10px] text-text-muted">Campus G-Suite</span>
-          </button>
-        </div>
-
-        <!-- Recent Campus Activity Pill -->
-        <div class="mt-space-lg bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between border border-slate-200 cursor-pointer" onclick="alert('Top 10% saver in Kolej Tuanku Canselor (RM 450 saved this term)!')">
-          <div class="flex items-center gap-space-sm min-w-0">
-            <div class="w-8 h-8 rounded-full bg-growth-mint-subtle flex items-center justify-center text-secondary shrink-0">
-              <span class="material-symbols-outlined text-[16px]">savings</span>
-            </div>
-            <div class="truncate">
-              <p class="text-xs text-on-surface font-semibold truncate">RM 450.00 Saved this term</p>
-              <p class="text-[11px] text-text-muted">Top 10% saver in Kolej Tuanku Canselor</p>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
-        </div>
-
-        <!-- Sign-Up Prompt Footer -->
-        <div class="mt-space-xl text-center pb-space-sm">
-          <p class="text-sm text-text-muted">
-            Don't have an account? 
-            <a class="text-primary font-bold hover:underline ml-1" href="register.html">Sign Up</a>
-          </p>
-          <p class="text-xs text-outline mt-2 flex items-center justify-center gap-1">
-            <span class="material-symbols-outlined text-[14px]">lock_clock</span> FinWise for Higher Ed v2.4.1
-          </p>
-        </div>
-
       </div>
+
+      <!-- Hero Titles -->
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Welcome back</h2>
+        <p class="text-sm text-text-muted mt-0.5">Sign in with your Google account to manage your budget and cash flow.</p>
+      </div>
+
+      <!-- PRIMARY AUTH METHOD: GOOGLE GMAIL SIGN-IN BUTTON -->
+      <div class="mb-4">
+        <button id="google-login-btn" onclick="fetchGoogleAccount()" type="button" class="w-full min-h-[50px] bg-white hover:bg-slate-50 text-text-primary font-semibold text-sm rounded-xl border border-slate-300 shadow-sm flex items-center justify-center gap-3 px-4 transition-all active:scale-[0.99] cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+            <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4"></path>
+            <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.34 24 12 24z" fill="#34A853"></path>
+            <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z" fill="#FBBC05"></path>
+            <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
+          </svg>
+          <span id="google-btn-text">Continue with Google (Gmail)</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="relative my-3 flex items-center justify-center">
+        <div class="w-full h-px bg-surface-container-highest"></div>
+        <span class="absolute bg-surface px-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+          Or sign in with email
+        </span>
+      </div>
+
+      <!-- Direct Login Form -->
+      <form class="flex flex-col gap-3.5 w-full" id="finwise-login-form" onsubmit="event.preventDefault(); handleDirectLogin();">
+        
+        <!-- Status/Alert Banner -->
+        <div id="auth-alert" class="hidden mb-1 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-[18px] shrink-0" id="auth-alert-icon"></span>
+          <span id="auth-alert-text"></span>
+        </div>
+
+        <!-- Gmail / Email Field -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-text-muted" for="email-input">Email Address</label>
+          <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-border-neutral focus-within:border-primary transition-all">
+            <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
+              <span class="material-symbols-outlined text-[20px]">mail</span>
+            </div>
+            <input class="w-full bg-transparent pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-outline outline-none" id="email-input" placeholder="demo@finwise-app.xyz" required type="email" value="demo@finwise-app.xyz">
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-text-muted" for="password-input">Password</label>
+          <div class="relative flex items-center bg-surface-container-lowest rounded-lg shadow-sm border border-border-neutral focus-within:border-primary transition-all">
+            <div class="absolute left-3 flex items-center pointer-events-none text-text-muted">
+              <span class="material-symbols-outlined text-[20px]">lock</span>
+            </div>
+            <input class="w-full bg-transparent pl-10 pr-12 py-3 text-sm text-text-primary placeholder:text-outline outline-none tracking-widest" id="password-input" placeholder="••••••••••••" required type="password" value="FinWise2026!">
+            <button aria-label="Toggle password view" class="absolute right-2 p-1.5 text-text-muted hover:text-text-primary rounded-full transition-colors flex items-center justify-center" id="toggle-password-btn" onclick="togglePasswordVisibility()" type="button">
+              <span class="material-symbols-outlined text-[20px]" id="password-visibility-icon">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Security & Remember Me -->
+        <div class="flex items-center justify-between pt-0.5">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input checked class="w-4 h-4 rounded text-primary-container accent-primary cursor-pointer" id="remember-me-checkbox" type="checkbox">
+            <span class="text-xs text-text-primary font-medium">Remember device</span>
+          </label>
+          <a href="forgot_password.html" class="text-xs font-semibold text-primary hover:underline">Forgot password?</a>
+        </div>
+
+        <!-- Actions CTA -->
+        <div class="flex flex-col gap-2 pt-2">
+          <button class="w-full min-h-[48px] bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all cursor-pointer" id="login-btn" type="submit">
+            <span>Log In</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- 1-Click Fast Demo Account Login -->
+        <div class="pt-2 flex flex-col gap-1.5">
+          <p class="text-[11px] font-semibold text-text-muted">Or try the live public demo account:</p>
+          <button type="button" id="try-demo-btn" onclick="quickFillAccount('demo@finwise-app.xyz', 'Demo Finwise')" class="w-full py-2.5 px-3 bg-surface-container-lowest hover:bg-surface-container border border-border-neutral rounded-xl text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer shadow-sm group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">D</div>
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-text-primary truncate">Try Demo (Demo Finwise)</p>
+                <p class="text-[10px] text-text-muted truncate">demo@finwise-app.xyz • Cloud Synced</p>
+              </div>
+            </div>
+            <span class="px-2 py-1 rounded-lg bg-growth-mint-subtle text-secondary text-[10px] font-bold shrink-0 group-hover:bg-secondary group-hover:text-white transition-colors">Try Demo →</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Sign Up with Google Footer -->
+      <div class="mt-auto pt-6 pb-4 flex flex-col items-center gap-2">
+        <p class="text-xs text-text-muted">
+          Don't have an account?
+          <a class="text-primary font-bold hover:underline ml-1" href="register.html">Sign Up with Google</a>
+        </p>
+        <p class="text-[10px] text-outline text-center">
+          Independent Public Application • Protected by Google OAuth
+        </p>
+      </div>
+
     </main>
   </div>
 
+  <!-- GOOGLE ACCOUNT CHOOSER & FETCHER MODAL -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4" id="google-modal">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 transform transition-all duration-200 scale-95 opacity-0" id="google-modal-content">
+      
+      <!-- Google Brand Header -->
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+            <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4"></path>
+            <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.34 24 12 24z" fill="#34A853"></path>
+            <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z" fill="#FBBC05"></path>
+            <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
+          </svg>
+          <span class="font-bold text-sm text-slate-800">Google Accounts</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-full bg-growth-mint-subtle text-secondary font-bold text-[10px]">Supabase Live</span>
+          <button onclick="closeGoogleModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <h3 class="text-base font-bold text-slate-900" id="google-modal-title">Sign in with Google</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Fetch your Google account to continue to <strong class="text-slate-800">FinWise</strong></p>
+      </div>
+
+      <!-- Setup Guidance Box -->
+      <div id="google-setup-notice" class="mb-3 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-left text-[11px] text-amber-900">
+        <div class="flex items-start gap-1.5">
+          <span class="material-symbols-outlined text-amber-700 text-[16px] shrink-0 mt-0.5">info</span>
+          <div>
+            <p class="font-semibold">Fetch your Google account:</p>
+            <p class="text-[10px] text-amber-800 leading-snug">Enter your Gmail address below to immediately retrieve your profile and connect to Supabase.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Gmail Fetch Input Box -->
+      <div class="mb-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <label class="block text-xs font-semibold text-slate-700 mb-1" for="custom-gmail-input">Your Gmail Address</label>
+        <div class="flex flex-col gap-2">
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined text-slate-400 text-[18px] absolute left-2.5 pointer-events-none">mail</span>
+            <input type="email" id="custom-gmail-input" placeholder="e.g. your.name@gmail.com" oninput="onGmailInputChanged(this.value)" class="w-full bg-white border border-slate-300 rounded-lg pl-9 pr-2.5 py-2 text-xs text-slate-800 outline-none focus:border-primary">
+          </div>
+          <p id="detected-name-hint" class="text-[10px] text-secondary font-medium hidden">Detected Name: <span id="detected-name-text"></span></p>
+          <button onclick="submitCustomGmail()" class="w-full bg-primary hover:bg-primary-container text-white text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-all">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#ffffff"></path>
+              <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.34 24 12 24z" fill="#ffffff"></path>
+              <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z" fill="#ffffff"></path>
+              <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#ffffff"></path>
+            </svg>
+            <span>Fetch &amp; Sign In with Google</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Test Account -->
+      <div class="mb-2">
+        <p class="text-[11px] font-semibold text-slate-500 mb-1.5">Or use the public demo account:</p>
+        <div class="flex flex-col gap-1.5">
+          <button onclick="closeGoogleModal(); quickFillAccount('demo@finwise-app.xyz', 'Demo Finwise')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-left group">
+            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+              D
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-slate-900 truncate">Demo Finwise</p>
+              <p class="text-[10px] text-slate-500 truncate">demo@finwise-app.xyz</p>
+            </div>
+            <span class="material-symbols-outlined text-slate-400 group-hover:text-primary text-[16px]">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Authorizing status spinner (hidden by default) -->
+      <div id="google-auth-status" class="hidden flex-col items-center justify-center py-4 text-center">
+        <div class="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+        <p class="text-xs font-bold text-slate-800" id="google-status-text">Fetching Google Account...</p>
+        <p class="text-[11px] text-slate-500">Creating session &amp; synchronizing with Supabase</p>
+      </div>
+
+      <p class="text-[10px] text-slate-400 leading-normal text-center mt-3">
+        Protected by Google OAuth • Synced with Supabase PostgreSQL
+      </p>
+
+    </div>
+  </div>
+
   <script>
+    const SUPABASE_URL = "https://vcxxsffdsznmqtpghrss.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeHhzZmZkc3pubXF0cGdocnNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMjgwOTMsImV4cCI6MjEwOTgwNDA5M30.bxxoU1PgcSeOMkss5kx71dI3P67eTL9bk9TzaJC_1VM";
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
     function togglePasswordVisibility() {
-      const pwd = document.getElementById('password');
-      const icon = document.getElementById('password-icon');
-      if (pwd.type === 'password') {
-        pwd.type = 'text';
+      const input = document.getElementById('password-input');
+      const icon = document.getElementById('password-visibility-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
         icon.textContent = 'visibility_off';
       } else {
-        pwd.type = 'password';
+        input.type = 'password';
         icon.textContent = 'visibility';
       }
     }
 
-    function simulateBiometrics() {
-      const btn = document.getElementById('biometric-btn');
-      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin text-secondary">sync</span><span>Authenticating biometric sensor...</span>';
-      setTimeout(() => {
-        btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span><span>Identity Verified!</span>';
-        setTimeout(() => {
-          btn.innerHTML = '<span class="material-symbols-outlined text-[22px] text-secondary">fingerprint</span><span>Log in with Touch ID / Face ID</span>';
-        }, 1500);
-      }, 900);
+    function formatNameFromEmail(email) {
+      const prefix = email.split('@')[0];
+      return prefix
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(w => w.length > 0)
+        .map(w => w[0].toUpperCase() + w.slice(1))
+        .join(' ');
     }
 
-    function handleLoginSubmit(event) {
-      // If run in static browser preview
-      if (window.location.protocol === 'file:') {
-        event.preventDefault();
-        const btn = document.getElementById('login-btn');
-        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Opening Campus Vault...</span>';
-        setTimeout(() => {
-          btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span><span>Welcome back, Yeoh!</span>';
-          setTimeout(() => {
-            btn.innerHTML = '<span>Log In</span>';
-          }, 1500);
-        }, 1000);
+    function onGmailInputChanged(value) {
+      const hint = document.getElementById('detected-name-hint');
+      const text = document.getElementById('detected-name-text');
+      if (value && value.includes('@')) {
+        const name = formatNameFromEmail(value);
+        text.textContent = name;
+        hint.classList.remove('hidden');
+      } else {
+        hint.classList.add('hidden');
       }
     }
+
+    function openGoogleAccountModal(mode, noticeMsg) {
+      const modal = document.getElementById('google-modal');
+      const content = document.getElementById('google-modal-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+        document.getElementById('custom-gmail-input').focus();
+      }, 10);
+    }
+
+    function closeGoogleModal() {
+      const modal = document.getElementById('google-modal');
+      const content = document.getElementById('google-modal-content');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        document.getElementById('google-auth-status').classList.add('hidden');
+      }, 200);
+    }
+
+    function submitCustomGmail() {
+      const input = document.getElementById('custom-gmail-input');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid Gmail address (e.g. your.name@gmail.com).');
+        input.focus();
+        return;
+      }
+      const name = formatNameFromEmail(email);
+      selectGoogleAccount(name, email, name[0] || 'G');
+    }
+
+    async function fetchGoogleAccount() {
+      const btn = document.getElementById('google-login-btn');
+      const btnText = document.getElementById('google-btn-text');
+      const originalText = btnText.textContent;
+      btnText.textContent = 'Connecting to Google...';
+
+      if (supabaseClient) {
+        try {
+          const redirectTarget = window.location.href.includes('/public/')
+            ? window.location.origin + '/public/dashboard.html'
+            : window.location.origin + '/dashboard.html';
+
+          const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTarget,
+              queryParams: {
+                prompt: 'select_account'
+              }
+            }
+          });
+
+          if (error) {
+            console.warn("Supabase Google OAuth notice:", error.message);
+            btnText.textContent = originalText;
+            openGoogleAccountModal('login', error.message);
+            return;
+          }
+        } catch (err) {
+          console.warn("OAuth notice:", err);
+          btnText.textContent = originalText;
+          openGoogleAccountModal('login', err.message);
+          return;
+        }
+      } else {
+        btnText.textContent = originalText;
+        openGoogleAccountModal('login');
+      }
+    }
+
+    function isCustomAvatar(av) {
+      if (!av || typeof av !== 'string') return false;
+      const trimmed = av.trim();
+      if (!trimmed) return false;
+      if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return true;
+      if (trimmed.length > 1 || !/^[A-Za-z0-9]$/.test(trimmed)) return true;
+      return false;
+    }
+
+    async function selectGoogleAccount(name, email, initial) {
+      const cleanEmail = email.trim().toLowerCase();
+      closeGoogleModal();
+      if (supabaseClient) {
+        try {
+          const redirectTarget = window.location.pathname.includes('/public/')
+            ? window.location.origin + '/public/dashboard.html'
+            : window.location.origin + '/dashboard.html';
+
+          await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectTarget,
+              queryParams: {
+                login_hint: cleanEmail,
+                prompt: 'select_account'
+              }
+            }
+          });
+          return;
+        } catch (_) {}
+      }
+      fetchGoogleAccount();
+    }
+
+    function sha256Sync(ascii) {
+      function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+      var mathPow = Math.pow, maxWord = mathPow(2, 32), lengthProperty = 'length', i, j, result = '', words = [];
+      ascii = unescape(encodeURIComponent(ascii));
+      var asciiBitLength = ascii[lengthProperty] * 8, hash = [], k = [], primeCounter = 0, isComposite = {};
+      for (var candidate = 2; primeCounter < 64; candidate++) {
+        if (!isComposite[candidate]) {
+          for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+          hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        }
+      }
+      ascii += '\x80';
+      while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
+      for (i = 0; i < ascii[lengthProperty]; i++) {
+        j = ascii.charCodeAt(i);
+        words[i >> 2] |= j << ((3 - i) % 4) * 8;
+      }
+      words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+      words[words[lengthProperty]] = (asciiBitLength) | 0;
+      for (j = 0; j < words[lengthProperty];) {
+        var w = words.slice(j, j += 16), oldHash = hash;
+        hash = hash.slice(0, 8);
+        for (i = 0; i < 64; i++) {
+          var w15 = w[i - 15], w2 = w[i - 2];
+          var a = hash[0], e = hash[4];
+          var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);
+          var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+          hash = [(temp1 + temp2) | 0].concat(hash);
+          hash[4] = (hash[4] + temp1) | 0;
+        }
+        for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+      }
+      for (i = 0; i < 8; i++) {
+        for (var i2 = 3; i2 >= 0; i2--) {
+          var c = (hash[i] >> (i2 * 8)) & 255;
+          result += ((c < 16) ? '0' : '') + c.toString(16);
+        }
+      }
+      return result;
+    }
+
+    async function sha256(str) {
+      try {
+        if (window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === 'function') {
+          const buffer = new TextEncoder().encode(str);
+          const hash = await crypto.subtle.digest('SHA-256', buffer);
+          return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      } catch (_) {}
+      return sha256Sync(str);
+    }
+
+    const DEMO_ACCOUNTS = {
+      "demo@finwise-app.xyz": {
+        id: "00000000-0000-4000-8000-000000000001",
+        name: "Demo Finwise",
+        email: "demo@finwise-app.xyz",
+        phone: "",
+        occupation: "",
+        currency: "RM",
+        monthlyBudget: 2500.00,
+        avatar: "D"
+      }
+    };
+
+    function showAuthAlert(type, message) {
+      const alertBox = document.getElementById('auth-alert');
+      const icon = document.getElementById('auth-alert-icon');
+      const text = document.getElementById('auth-alert-text');
+      alertBox.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      if (type === 'error') {
+        alertBox.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+        icon.textContent = 'error';
+        icon.className = 'material-symbols-outlined text-[18px] text-red-600 shrink-0';
+      } else {
+        alertBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+        icon.textContent = 'check_circle';
+        icon.className = 'material-symbols-outlined text-[18px] text-emerald-600 shrink-0';
+      }
+      text.textContent = message;
+    }
+
+    function hideAuthAlert() {
+      const alertBox = document.getElementById('auth-alert');
+      if (alertBox) alertBox.classList.add('hidden');
+    }
+
+    function quickFillAccount(email, name) {
+      document.getElementById('email-input').value = email;
+      document.getElementById('password-input').value = 'FinWise2026!';
+      handleDirectLogin();
+    }
+
+    async function completeUserSession(userId, name, email, provider, profileMeta = {}) {
+      const cleanEmail = (email || '').toLowerCase().trim();
+      const scopedKey = 'finwise_user_avatar_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      const demoPreset = DEMO_ACCOUNTS[cleanEmail] || {};
+
+      const candidateAvatar = profileMeta.avatar || localStorage.getItem(scopedKey) || demoPreset.avatar || '';
+      const finalAvatar = isCustomAvatar(candidateAvatar) ? candidateAvatar : (name[0] || 'U').toUpperCase();
+      const finalCurrency = profileMeta.currency || demoPreset.currency || 'RM';
+      const finalBudget = profileMeta.monthlyBudget || demoPreset.monthlyBudget || 2500.00;
+      const finalPhone = profileMeta.phone || demoPreset.phone || '';
+      const finalOccupation = profileMeta.occupation || demoPreset.occupation || '';
+
+      localStorage.setItem('finwise_user_name', name);
+      localStorage.setItem('finwise_user_email', cleanEmail);
+      localStorage.setItem('finwise_user_id', userId);
+      localStorage.setItem('finwise_auth_provider', provider);
+      localStorage.setItem('finwise_user_avatar', finalAvatar);
+      localStorage.setItem(scopedKey, finalAvatar);
+      localStorage.setItem('finwise_user_phone', finalPhone);
+      localStorage.setItem('finwise_user_occupation', finalOccupation);
+      localStorage.setItem('finwise_currency', finalCurrency);
+      localStorage.setItem('finwise_monthly_budget', finalBudget.toString());
+
+      localStorage.setItem('finwise_session', JSON.stringify({
+        id: userId,
+        name: name,
+        email: cleanEmail,
+        avatar: finalAvatar,
+        provider: provider,
+        authenticatedAt: new Date().toISOString()
+      }));
+
+      // Sync profile to Supabase Cloud (using valid schema columns)
+      if (supabaseClient && userId) {
+        try {
+          await supabaseClient.from('profiles').upsert({
+            id: userId,
+            email: cleanEmail,
+            display_name: name,
+            avatar_url: isCustomAvatar(finalAvatar) ? finalAvatar : null,
+            currency: finalCurrency,
+            monthly_budget: Number(finalBudget)
+          }, { onConflict: 'id' });
+        } catch (_) {}
+      }
+
+      window.location.href = 'dashboard.html';
+    }
+
+    async function handleDirectLogin() {
+      hideAuthAlert();
+      const emailInput = document.getElementById('email-input');
+      const passInput = document.getElementById('password-input');
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passInput.value;
+      const loginBtn = document.getElementById('login-btn');
+
+      if (!email || !password) {
+        showAuthAlert('error', 'Please enter both your email address and password.');
+        return;
+      }
+
+      const originalBtnHtml = loginBtn.innerHTML;
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `
+        <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+        <span>Authenticating with Supabase...</span>
+      `;
+
+      try {
+        if (!supabaseClient) {
+          throw new Error('Supabase Cloud client is not initialized.');
+        }
+
+        // 1. Primary Cloud Authentication: Sign in via Supabase Auth (supports both Demo & Dual-Login Google/Email accounts)
+        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (!authError && authData && authData.user) {
+          const user = authData.user;
+          const meta = user.user_metadata || {};
+          const demoPreset = DEMO_ACCOUNTS[email] || {};
+
+          // Fetch latest profile from Supabase profiles table
+          let profRow = null;
+          try {
+            const { data: pData } = await supabaseClient
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .maybeSingle();
+            profRow = pData;
+          } catch (_) {}
+
+          const displayName = (profRow && profRow.display_name) || meta.full_name || meta.name || demoPreset.name || formatNameFromEmail(email);
+          showAuthAlert('success', 'Authenticated with Supabase Cloud! Welcome back, ' + displayName + '.');
+
+          await completeUserSession(user.id, displayName, email, 'email', {
+            avatar: (profRow && profRow.avatar_url) || meta.avatar_url || meta.picture || demoPreset.avatar,
+            currency: (profRow && profRow.currency) || meta.currency || demoPreset.currency || 'RM',
+            monthlyBudget: (profRow && profRow.monthly_budget) || meta.monthly_budget || demoPreset.monthlyBudget || 2500.00,
+            phone: meta.phone || demoPreset.phone || '',
+            occupation: meta.occupation || demoPreset.occupation || ''
+          });
+          return;
+        }
+
+        // 2. Demo Account Cloud Migration Handling (demo@finwise-app.xyz)
+        if (email === 'demo@finwise-app.xyz' || DEMO_ACCOUNTS[email]) {
+          const demoAcc = DEMO_ACCOUNTS[email] || DEMO_ACCOUNTS['demo@finwise-app.xyz'];
+          if (password !== 'FinWise2026!') {
+            showAuthAlert('error', 'Incorrect password. Please enter FinWise2026! for the demo account.');
+            passInput.focus();
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalBtnHtml;
+            return;
+          }
+
+          // Check if Supabase profiles table allows direct demo upsert (if migration SQL has been run)
+          const { error: directUpsertErr } = await supabaseClient.from('profiles').upsert({
+            id: demoAcc.id,
+            email: demoAcc.email,
+            display_name: demoAcc.name,
+            currency: demoAcc.currency,
+            monthly_budget: demoAcc.monthlyBudget
+          }, { onConflict: 'id' });
+
+          showAuthAlert('success', 'Connected Demo Account (' + demoAcc.name + ') to Supabase Cloud!');
+          await completeUserSession(demoAcc.id, demoAcc.name, demoAcc.email, 'email', demoAcc);
+          return;
+        }
+
+        // 3. Standard Account Error Handling
+        if (authError) {
+          const msg = (authError.message || '').toLowerCase();
+          if (msg.includes('email not confirmed') || msg.includes('confirm')) {
+            showAuthAlert('error', 'Please confirm your email address via the verification link sent to ' + email + '.');
+          } else if (msg.includes('invalid') || msg.includes('credentials')) {
+            showAuthAlert('error', 'Invalid email or password. If you signed in with Google previously and have not set a password yet, please sign in with Google or click "Forgot Password" to set one.');
+          } else {
+            showAuthAlert('error', authError.message);
+          }
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = originalBtnHtml;
+          return;
+        }
+
+      } catch (err) {
+        showAuthAlert('error', 'Authentication error: ' + (err.message || err));
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalBtnHtml;
+      }
+    }
+
+    // Automatically wipe all stale login tokens and active sessions
+    async function autoClearLoginTokens() {
+      if (supabaseClient) {
+        try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
+      }
+      localStorage.removeItem('finwise_session');
+      localStorage.removeItem('finwise_user_email');
+      localStorage.removeItem('finwise_user_name');
+      localStorage.removeItem('finwise_user_id');
+      localStorage.removeItem('finwise_user_avatar');
+      localStorage.removeItem('finwise_auth_provider');
+
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth-token') || k.includes('access_token'))) {
+          localStorage.removeItem(k);
+        }
+      }
+      try { sessionStorage.clear(); } catch (_) {}
+      try {
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      } catch (_) {}
+    }
+
+    async function saveOAuthUserAndRedirect(user) {
+      const meta = user.user_metadata || {};
+      const email = (user.email || "").toLowerCase().trim();
+      const demoPreset = DEMO_ACCOUNTS[email] || {};
+      const name = meta.full_name || meta.name || demoPreset.name || (email ? formatNameFromEmail(email) : "Google User");
+      const avatar = meta.avatar_url || meta.picture || "";
+      const initial = (name[0] || 'G').toUpperCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      localStorage.setItem('finwise_user_name', name);
+      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_id', user.id);
+      localStorage.setItem('finwise_auth_provider', 'google');
+      if (avatar) {
+        localStorage.setItem('finwise_user_avatar', avatar);
+        localStorage.setItem(scopedKey, avatar);
+      } else if (!localStorage.getItem('finwise_user_avatar')) {
+        localStorage.setItem('finwise_user_avatar', initial);
+      }
+
+      localStorage.setItem('finwise_session', JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        avatar: avatar || initial,
+        provider: 'google',
+        authenticatedAt: new Date().toISOString()
+      }));
+
+      // Sync profile to Supabase profiles table using valid schema columns
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('profiles').upsert({
+            id: user.id,
+            email: email,
+            display_name: name,
+            avatar_url: avatar || null,
+            currency: meta.currency || demoPreset.currency || 'RM',
+            monthly_budget: Number(meta.monthly_budget || demoPreset.monthlyBudget || 2500.00)
+          }, { onConflict: 'id' });
+        } catch (_) {}
+      }
+
+      window.location.replace('dashboard.html');
+    }
+
+    // Initialize Login Page: automatically purge stale tokens on load (unless incoming OAuth callback)
+    (async function initLoginPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isLogout = urlParams.get('logout') === 'true';
+      const isDeleted = urlParams.get('deleted') === 'true';
+      const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
+
+      // Check for incoming OAuth redirect callback (#access_token=... or ?code=...)
+      const accessToken = hashParams ? hashParams.get('access_token') : null;
+      const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      const code = urlParams.get('code');
+      const isOAuthCallback = Boolean(accessToken || code);
+
+      // 1. Fresh OAuth Hash Callback (#access_token=...&refresh_token=...)
+      if (accessToken && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
+          if (!error && data && data.user) {
+            saveOAuthUserAndRedirect(data.user);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // 2. Fresh OAuth PKCE Code callback (?code=...)
+      if (code && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (!error && data && data.session && data.session.user) {
+            saveOAuthUserAndRedirect(data.session.user);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // 3. Normal visit to Login Page: Automatically clear previous/stale login tokens & sessions!
+      // No manual clicking needed! All stale sessions and tokens are wiped automatically.
+      if (!isOAuthCallback) {
+        await autoClearLoginTokens();
+      }
+
+      // 4. Check for alerts or messages
+      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
+                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+      if (errorMsg) {
+        showAuthAlert('error', 'Google Sign-in notice: ' + decodeURIComponent(errorMsg));
+        history.replaceState(null, null, window.location.pathname);
+      } else if (isDeleted) {
+        showAuthAlert('success', 'Your profile, transactions, and cloud account have been permanently deleted from Supabase.');
+        history.replaceState(null, null, window.location.pathname);
+      } else if (isLogout) {
+        showAuthAlert('success', 'Logged out successfully. All login tokens automatically cleared.');
+        history.replaceState(null, null, window.location.pathname);
+      }
+    })();
   </script>
 </body>
 </html>

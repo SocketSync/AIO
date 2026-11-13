@@ -68,7 +68,7 @@ public class SimulatorFragment extends Fragment {
         content.addView(title);
 
         TextView sub = new TextView(context);
-        sub.setText("Engineered with C++ Simulation algorithms to forecast your UTM semester runway.");
+        sub.setText("Engineered with C++ Simulation algorithms to forecast your monthly budget runway.");
         sub.setTextColor(ThemeColors.TEXT_MUTED);
         sub.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
         sub.setPadding(0, 0, 0, ViewFactory.dp(context, 16));
@@ -181,7 +181,7 @@ public class SimulatorFragment extends Fragment {
             balance = Double.parseDouble(startingBalanceInput.getText().toString().trim());
         } catch (Exception ignored) {}
 
-        int totalDays = 126; // 18 weeks UTM semester
+        int totalDays = 126; // 18 weeks monthly budget
         double dailyRate = selectedDailySpend;
         double finalBalance = balance - (dailyRate * totalDays);
         int daysUntilDepleted = (int) (balance / dailyRate);

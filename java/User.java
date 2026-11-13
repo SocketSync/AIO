@@ -14,7 +14,7 @@ public class User {
         this.fullName = fullName;
         this.email = email;
         this.campus = campus;
-        this.isUtmVerified = email.endsWith("@graduate.utm.my") || email.endsWith("@utm.my");
+        this.isUtmVerified = email.endsWith("@finwise-app.xyz") || email.endsWith("@finwise-app.xyz");
     }
 
     public String getMatricId() {

@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html class="h-full bg-surface-container-low" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+  <title>FinWise - Transactions Manager</title>
+  <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#00236f",
+            "primary-container": "#1e3a8a",
+            "on-primary": "#ffffff",
+            "secondary": "#006c49",
+            "secondary-container": "#6cf8bb",
+            "secondary-fixed": "#6ffbbe",
+            "growth-mint-subtle": "#D1FAE5",
+            "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f3fa",
+            "surface-container": "#eeedf4",
+            "surface-container-high": "#e9e7ef",
+            "surface-container-highest": "#e3e1e9",
+            "text-primary": "#0F172A",
+            "text-muted": "#64748B",
+            "outline": "#757682",
+            "outline-variant": "#c5c5d3",
+            "border-neutral": "#E2E8F0",
+            "alert-coral": "#EF4444",
+            "alert-coral-subtle": "#FEE2E2"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
+  </style>
+</head>
+<body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
+
+  <!-- Desktop Mobile Frame Wrapper -->
+  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+
+    <!-- Top Status Banner -->
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
+        FinWise Transactions
+      </span>
+      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
+      <div class="h-16 px-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <button aria-label="Back to Dashboard" onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
+            <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+          </button>
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5">
+          <div>
+            <h1 class="font-bold text-base text-text-primary tracking-tight">Transactions</h1>
+            <p id="tx-user-subtitle" class="text-[11px] text-text-muted">Personal Records</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="openTransactionModal()" class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-container shadow-sm flex items-center gap-1 transition-all active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+            <span>Record</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-3">
+
+      <!-- SEARCH & FILTER TOOLBAR -->
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-border-neutral space-y-2.5">
+        <!-- Search Input -->
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span>
+          <input id="tx-search-input" type="text" placeholder="Search by merchant, description..." oninput="filterAndRenderTransactions()" class="w-full pl-9 pr-8 py-2 rounded-xl bg-surface-container-low border border-slate-200 text-xs font-semibold text-text-primary outline-none focus:border-primary focus:bg-white transition-all">
+          <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 text-slate-400 hover:text-slate-600">
+            <span class="material-symbols-outlined text-[16px]">cancel</span>
+          </button>
+        </div>
+
+        <!-- Filter Chips: All, Expenses, Income -->
+        <div class="flex items-center justify-between gap-1 pt-0.5">
+          <div class="flex items-center gap-1">
+            <button id="filter-chip-all" onclick="setTypeFilter('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white shadow-xs transition-all">
+              All
+            </button>
+            <button id="filter-chip-expense" onclick="setTypeFilter('expense')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all">
+              Expenses
+            </button>
+            <button id="filter-chip-income" onclick="setTypeFilter('income')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all">
+              Income
+            </button>
+          </div>
+
+          <!-- Sort Selector -->
+          <div class="relative flex items-center">
+            <select id="tx-sort-select" onchange="filterAndRenderTransactions()" class="text-xs font-semibold text-text-muted bg-transparent outline-none pr-5 py-1 appearance-none cursor-pointer">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="highest">Highest</option>
+              <option value="lowest">Lowest</option>
+            </select>
+            <span class="material-symbols-outlined text-[14px] text-text-muted absolute right-0 pointer-events-none">unfold_more</span>
+          </div>
+        </div>
+
+        <!-- Secondary Filters Row: Category & Month -->
+        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-2 text-text-muted text-[16px]">category</span>
+            <select id="tx-category-filter" onchange="filterAndRenderTransactions()" class="w-full pl-7 pr-6 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200 appearance-none">
+              <option value="all">All Categories</option>
+              <option value="Food & Dining">Food & Dining</option>
+              <option value="Transportation">Transportation</option>
+              <option value="Groceries">Groceries</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Bills & Utilities">Bills & Utilities</option>
+              <option value="Health & Wellness">Health & Wellness</option>
+              <option value="Education & Self-Care">Education</option>
+              <option value="Salary">Salary</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investments">Investments</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="material-symbols-outlined text-[14px] text-text-muted absolute right-2 pointer-events-none">expand_more</span>
+          </div>
+
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-2 text-text-muted text-[16px]">calendar_month</span>
+            <input id="tx-month-filter" type="month" onchange="filterAndRenderTransactions()" class="w-full pl-7 pr-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTERED SUMMARY STATS BAR -->
+      <div class="flex items-center justify-between px-1 text-xs">
+        <span id="filtered-count" class="font-bold text-text-muted">Loading records...</span>
+        <div class="flex items-center gap-2">
+          <span id="filtered-income" class="font-bold text-secondary text-[11px]">+RM 0.00</span>
+          <span class="text-slate-300">|</span>
+          <span id="filtered-expense" class="font-bold text-alert-coral text-[11px]">-RM 0.00</span>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS LIST CONTAINER -->
+      <div id="tx-list-container" class="space-y-2 pb-6">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="empty-state" class="hidden flex-col items-center justify-center p-8 text-center bg-white rounded-2xl border border-border-neutral">
+        <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-text-muted mb-3">
+          <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+        </div>
+        <h3 class="text-sm font-bold text-text-primary mb-1">No Transactions Found</h3>
+        <p class="text-xs text-text-muted max-w-[220px] mb-4">No records match your selected filters or search keyword.</p>
+        <button onclick="openTransactionModal()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-sm hover:bg-primary-container transition-all">
+          + Add New Transaction
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+      <div class="h-16 px-3 flex items-center justify-between relative">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
+          <span class="material-symbols-outlined text-[22px]">home</span>
+          <span class="text-[10px]">Home</span>
+        </button>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
+          <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+          <span class="text-[10px]">Transactions</span>
+        </button>
+        <div class="flex-1 flex items-center justify-center">
+          <button onclick="openTransactionModal()" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+            <span class="material-symbols-outlined text-[26px]">add</span>
+          </button>
+        </div>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
+          <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+          <span class="text-[10px]">Summary</span>
+        </button>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
+          <span class="material-symbols-outlined text-[22px]">person</span>
+          <span class="text-[10px]">Profile</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- Live Camera Scanner Modal (Works on Laptop Webcams, USB Webcams, Phones & Tablets) -->
+  <div id="liveCameraModal" class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm" onclick="if(event.target===this)closeLiveCameraModal()">
+    <div class="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700 text-white">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+          <span class="font-bold text-sm">AI Receipt Camera Scanner</span>
+        </div>
+        <button type="button" onclick="closeLiveCameraModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 text-lg transition-colors leading-none">✕</button>
+      </div>
+
+      <!-- Viewfinder View -->
+      <div class="relative w-full bg-black flex items-center justify-center overflow-hidden" style="min-height: 280px; max-height: 380px;">
+        <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        
+        <!-- Viewfinder Reticle Overlay -->
+        <div class="absolute inset-5 pointer-events-none border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
+          <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
+          <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg"></div>
+          <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg"></div>
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg"></div>
+          
+          <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse"></div>
+
+          <span class="absolute bottom-2 text-[11px] font-medium text-white/90 bg-black/70 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+            Hold receipt in front of camera
+          </span>
+        </div>
+
+        <!-- Loading state -->
+        <div id="liveCameraLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-2 p-4 text-center">
+          <span class="inline-block w-8 h-8 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
+          <p class="text-xs text-slate-300 font-medium">Opening device camera...</p>
+        </div>
+      </div>
+
+      <!-- Hidden Canvas -->
+      <canvas id="liveCameraCanvas" class="hidden"></canvas>
+
+      <!-- Controls Footer -->
+      <div class="p-3.5 bg-slate-800 border-t border-slate-700 flex items-center justify-between gap-2.5">
+        <button type="button" id="switchCameraBtn" onclick="toggleCameraFacing()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Flip</span>
+        </button>
+
+        <!-- Snap & Scan Button -->
+        <button type="button" onclick="captureLiveCameraFrame()" class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Snap &amp; AI Scan</span>
+        </button>
+
+        <button type="button" onclick="closeLiveCameraModal(); triggerReceiptUploadFlow()" class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span>Upload</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT TRANSACTION MODAL -->
+  <div id="txModal" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 transition-opacity">
+    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[20px]" id="modal-icon">edit_note</span>
+          <h3 id="txModalTitle" class="text-sm font-bold text-text-primary">Add Transaction</h3>
+        </div>
+        <button onclick="closeTransactionModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-slate-100">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <form id="txModalForm" onsubmit="handleSaveTransaction(event)" class="space-y-3.5">
+        <!-- Hidden Camera Input (Scan button - camera only) -->
+        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptFileSelected(event)" />
+        <!-- Hidden File Upload Input (Upload button - images + PDFs) -->
+        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden" onchange="handleReceiptFileSelected(event)" />
+
+        <!-- Smart Receipt AI Scanner Banner -->
+        <div id="smartReceiptBanner" class="flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+            <div id="receiptIconWrapper" class="w-10 h-10 sm:w-11 sm:h-11 bg-blue-900 rounded-full flex items-center justify-center shrink-0 transition-all">
+              <svg id="receiptDefaultIcon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3"/>
+                <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none"/>
+                <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5"/>
+              </svg>
+            </div>
+            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+              <div class="flex items-center gap-1.5 whitespace-nowrap">
+                <span id="receiptBadgeTitle" class="text-[10px] sm:text-[11px] font-bold text-blue-900 tracking-wider uppercase whitespace-nowrap">Smart Receipt AI</span>
+                <span id="receiptBadgePill" class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap">Gemini AI</span>
+              </div>
+              <span id="receiptBannerTitle" class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug mt-0.5 whitespace-nowrap truncate">Scan Receipt with AI</span>
+              <span id="receiptBannerSubtitle" class="text-[11px] text-gray-500 leading-snug whitespace-nowrap truncate">Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a></span>
+            </div>
+          </div>
+          <div class="flex gap-1.5 sm:gap-2 shrink-0">
+            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()" class="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] shadow-sm whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Scan</span>
+            </button>
+            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()" class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium flex items-center gap-1 shrink-0 transition-colors active:scale-[0.97] whitespace-nowrap">
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              <span>Upload</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Receipt Scan Toast Notification -->
+        <div id="receiptScanToast" class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">✨</span>
+            <span id="receiptScanToastText">Receipt parsed successfully!</span>
+          </div>
+          <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-600 hover:text-emerald-900 font-bold ml-2">×</button>
+        </div>
+
+        <!-- Type Selection -->
+        <div>
+          <label class="block text-xs font-semibold text-text-muted mb-1">Transaction Type</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="type-btn-expense" onclick="setModalType('expense')" class="py-2 rounded-xl text-xs font-bold border-2 border-alert-coral bg-alert-coral-subtle/50 text-alert-coral flex items-center justify-center gap-1.5 transition-all">
+              <span class="material-symbols-outlined text-[16px]">call_received</span>
+              <span>Expense</span>
+            </button>
+            <button type="button" id="type-btn-income" onclick="setModalType('income')" class="py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-500 hover:border-secondary flex items-center justify-center gap-1.5 transition-all">
+              <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+              <span>Income</span>
+            </button>
+          </div>
+          <input type="hidden" id="modal-type" value="expense">
+        </div>
+
+        <!-- Amount -->
+        <div>
+          <label class="block text-xs font-semibold text-text-muted mb-1" for="modal-amount">Amount (<span id="modal-curr-label">RM</span>)</label>
+          <div class="relative flex items-center">
+            <span id="modal-curr-prefix" class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
+            <input id="modal-amount" type="number" step="0.01" min="0.01" required placeholder="0.00" class="w-full pl-11 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-text-primary outline-none focus:border-primary">
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-xs font-semibold text-text-muted mb-1" for="modal-category">Category</label>
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">category</span>
+            <select id="modal-category" required class="w-full pl-10 pr-8 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-text-primary outline-none focus:border-primary appearance-none bg-white">
+              <!-- Options populated dynamically -->
+            </select>
+            <span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-semibold text-text-muted mb-1" for="modal-desc">Description / Merchant</label>
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">description</span>
+            <input id="modal-desc" type="text" required placeholder="e.g. Starbucks Coffee, Monthly Salary" class="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-text-primary outline-none focus:border-primary">
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label class="block text-xs font-semibold text-text-muted mb-1" for="modal-date">Date</label>
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">calendar_today</span>
+            <input id="modal-date" type="date" required class="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-text-primary outline-none focus:border-primary">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" id="modal-save-btn" class="w-full py-3 rounded-xl bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-container transition-all active:scale-[0.98]">
+            Save Transaction
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vcxxsffdsznmqtpghrss.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeHhzZmZkc3pubXF0cGdocnNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMjgwOTMsImV4cCI6MjEwOTgwNDA5M30.bxxoU1PgcSeOMkss5kx71dI3P67eTL9bk9TzaJC_1VM";
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const categoryIcons = {
+      "Food & Dining": { icon: "restaurant", color: "text-amber-600", bg: "bg-amber-50" },
+      "Transportation": { icon: "directions_car", color: "text-blue-600", bg: "bg-blue-50" },
+      "Groceries": { icon: "shopping_cart", color: "text-emerald-600", bg: "bg-emerald-50" },
+      "Shopping": { icon: "shopping_bag", color: "text-purple-600", bg: "bg-purple-50" },
+      "Entertainment": { icon: "movie", color: "text-rose-600", bg: "bg-rose-50" },
+      "Bills & Utilities": { icon: "receipt", color: "text-orange-600", bg: "bg-orange-50" },
+      "Health & Wellness": { icon: "fitness_center", color: "text-teal-600", bg: "bg-teal-50" },
+      "Education & Self-Care": { icon: "school", color: "text-indigo-600", bg: "bg-indigo-50" },
+      "Salary": { icon: "payments", color: "text-emerald-700", bg: "bg-emerald-50" },
+      "Freelance": { icon: "laptop_mac", color: "text-cyan-700", bg: "bg-cyan-50" },
+      "Investments": { icon: "trending_up", color: "text-indigo-700", bg: "bg-indigo-50" },
+      "Other Income": { icon: "savings", color: "text-emerald-600", bg: "bg-emerald-50" },
+      "Other Expenses": { icon: "category", color: "text-slate-600", bg: "bg-slate-50" }
+    };
+
+    const categoriesByType = {
+      expense: [
+        "Food & Dining",
+        "Transportation",
+        "Groceries",
+        "Shopping",
+        "Entertainment",
+        "Bills & Utilities",
+        "Health & Wellness",
+        "Education & Self-Care",
+        "Other Expenses"
+      ],
+      income: [
+        "Salary",
+        "Freelance",
+        "Investments",
+        "Other Income"
+      ]
+    };
+
+    const categoryIdMap = {
+      "Food & Dining": "food_dining",
+      "Transportation": "transportation",
+      "Groceries": "groceries",
+      "Shopping": "shopping",
+      "Entertainment": "entertainment",
+      "Bills & Utilities": "bills_utilities",
+      "Health & Wellness": "health_wellness",
+      "Education & Self-Care": "education",
+      "Salary": "salary",
+      "Freelance": "freelance",
+      "Investments": "investments",
+      "Other Income": "other",
+      "Other Expenses": "other"
+    };
+
+    const idToCategoryMap = {
+      "food_dining": "Food & Dining",
+      "transportation": "Transportation",
+      "groceries": "Groceries",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment",
+      "bills_utilities": "Bills & Utilities",
+      "health_wellness": "Health & Wellness",
+      "education": "Education & Self-Care",
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investments": "Investments",
+      "other": "Other Expenses"
+    };
+
+    let allTransactions = [];
+    let currentTypeFilter = "all";
+    let editingTxId = null;
+
+    function getActiveEmail() {
+      return (localStorage.getItem("finwise_user_email") || "").toLowerCase();
+    }
+
+    function getStorageKey() {
+      const email = getActiveEmail() || "default_user";
+      return "finwise_transactions_" + email.replace(/[^a-z0-9]/g, "_");
+    }
+
+    function getCurrency() {
+      return localStorage.getItem('finwise_currency') || 'RM';
+    }
+
+    function money(v) {
+      return Number(v).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
+    }
+
+    function withTimeout(promise, ms = 10000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Network request timed out")), ms))
+      ]);
+    }
+
+    function loadLocalTransactions() {
+      const raw = localStorage.getItem(getStorageKey());
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveLocalTransactions(records) {
+      localStorage.setItem(getStorageKey(), JSON.stringify(records));
+    }
+
+    function generateUUID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function isValidUUID(id) {
+      return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    }
+
+    async function getAuthenticatedUserId() {
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user && session.user.id) {
+            localStorage.setItem("finwise_user_id", session.user.id);
+            return session.user.id;
+          }
+        } catch (_) {}
+      }
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = getActiveEmail().trim();
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
+      return "00000000-0000-4000-8000-000000000001";
+    }
+
+    function getActiveUserId() {
+      const stored = localStorage.getItem('finwise_user_id');
+      if (isValidUUID(stored)) return stored;
+      const email = getActiveEmail().trim();
+      if (email === 'demo@finwise-app.xyz') return '00000000-0000-4000-8000-000000000001';
+      return '00000000-0000-4000-8000-000000000001';
+    }
+
+    // Real-Time Multi-Device Synchronization Engine (Supabase Cloud Sync)
+    let realtimeChannel = null;
+
+    function initRealtimeSync() {
+      if (!supabaseClient) return;
+
+      // 1. Supabase Realtime channel subscription
+      try {
+        if (realtimeChannel) {
+          supabaseClient.removeChannel(realtimeChannel);
+        }
+        realtimeChannel = supabaseClient
+          .channel('public:transactions:realtime:tx_page')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+            loadTransactions();
+          })
+          .subscribe();
+      } catch (_) {}
+
+      // 2. Cloud synchronization poll every 4 seconds
+      setInterval(() => {
+        if (!document.hidden && !editingTxId) {
+          loadTransactions();
+        }
+      }, 4000);
+
+      // 3. Refresh immediately when user focuses or unlocks device
+      window.addEventListener('focus', () => loadTransactions());
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadTransactions();
+      });
+    }
+
+    async function loadTransactions() {
+      const userId = await getAuthenticatedUserId();
+
+      // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
+      if (supabaseClient && isValidUUID(userId)) {
+        try {
+          let { data, error } = await withTimeout(
+            supabaseClient
+              .from('transactions')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .eq('user_id', userId)
+              .order('transaction_date', { ascending: false }),
+            10000
+          );
+
+          if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackRes = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('transaction_date', { ascending: false }),
+              10000
+            );
+            data = fallbackRes.data;
+            error = fallbackRes.error;
+          }
+
+          if (!error && Array.isArray(data)) {
+            allTransactions = data.map(row => ({
+              id: row.id,
+              type: row.type,
+              amount: Number(row.amount),
+              category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
+              description: row.title || row.description || "",
+              date: row.transaction_date ? row.transaction_date.slice(0, 10) : (row.date ? row.date.slice(0, 10) : new Date().toISOString().slice(0, 10)),
+              user_id: row.user_id
+            }));
+            saveLocalTransactions(allTransactions);
+            filterAndRenderTransactions();
+            return;
+          }
+        } catch (e) {
+          console.warn("Supabase load error:", e);
+        }
+      }
+
+      // 2. Fallback to local cache only if offline
+      if (!allTransactions || allTransactions.length === 0) {
+        allTransactions = loadLocalTransactions();
+      }
+      filterAndRenderTransactions();
+    }
+
+    // Set Type Filter (All, Expenses, Income)
+    function setTypeFilter(type) {
+      currentTypeFilter = type;
+      ['all', 'expense', 'income'].forEach(t => {
+        const btn = document.getElementById(`filter-chip-${t}`);
+        if (t === type) {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white shadow-xs transition-all';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all';
+        }
+      });
+      filterAndRenderTransactions();
+    }
+
+    function clearSearch() {
+      document.getElementById('tx-search-input').value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      filterAndRenderTransactions();
+    }
+
+    // Filter, Sort, and Render
+    function filterAndRenderTransactions() {
+      const query = document.getElementById('tx-search-input').value.trim().toLowerCase();
+      const catFilter = document.getElementById('tx-category-filter').value;
+      const monthFilter = document.getElementById('tx-month-filter').value;
+      const sortType = document.getElementById('tx-sort-select').value;
+      const curr = getCurrency();
+
+      document.getElementById('clearSearchBtn').classList.toggle('hidden', query.length === 0);
+
+      let filtered = allTransactions.filter(item => {
+        // Type filter
+        if (currentTypeFilter !== 'all' && item.type !== currentTypeFilter) return false;
+
+        // Category filter
+        if (catFilter !== 'all' && item.category !== catFilter) return false;
+
+        // Month filter
+        if (monthFilter && (!item.date || !item.date.startsWith(monthFilter))) return false;
+
+        // Search query
+        if (query) {
+          const descMatch = (item.description || '').toLowerCase().includes(query);
+          const catMatch = (item.category || '').toLowerCase().includes(query);
+          if (!descMatch && !catMatch) return false;
+        }
+
+        return true;
+      });
+
+      // Sorting
+      if (sortType === 'newest') {
+        filtered.sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+      } else if (sortType === 'oldest') {
+        filtered.sort((a, b) => (a.date + a.id).localeCompare(b.date + b.id));
+      } else if (sortType === 'highest') {
+        filtered.sort((a, b) => Number(b.amount) - Number(a.amount));
+      } else if (sortType === 'lowest') {
+        filtered.sort((a, b) => Number(a.amount) - Number(b.amount));
+      }
+
+      // Compute filtered metrics
+      const fIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const fExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+
+      document.getElementById('filtered-count').textContent = `${filtered.length} record${filtered.length === 1 ? '' : 's'}`;
+      document.getElementById('filtered-income').textContent = `+${curr} ${money(fIncome)}`;
+      document.getElementById('filtered-expense').textContent = `-${curr} ${money(fExpense)}`;
+
+      const listContainer = document.getElementById('tx-list-container');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+
+      listContainer.innerHTML = filtered.map(item => {
+        const catConfig = categoryIcons[item.category] || { icon: "receipt", color: "text-slate-600", bg: "bg-slate-50" };
+        const isIncome = item.type === 'income';
+
+        return `
+          <div class="bg-white rounded-xl p-3 shadow-sm border border-border-neutral flex items-center justify-between gap-3 hover:shadow-md transition-all">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs">
+                <span class="material-symbols-outlined text-[20px]">${catConfig.icon}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-xs text-text-primary truncate">${escapeHtml(item.description)}</p>
+                <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-0.5">
+                  <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded">${escapeHtml(item.category)}</span>
+                  <span>·</span>
+                  <span>${escapeHtml(item.date)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-end gap-1 shrink-0">
+              <span class="font-extrabold text-xs ${isIncome ? 'text-secondary' : 'text-alert-coral'}">
+                ${isIncome ? '+' : '−'}${curr} ${money(item.amount)}
+              </span>
+              <div class="flex items-center gap-1">
+                <button aria-label="Edit" onclick="openTransactionModal('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-primary hover:bg-slate-100 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+                </button>
+                <button aria-label="Delete" onclick="deleteTransaction('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-alert-coral hover:bg-red-50 transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Modal Operations
+    function openTransactionModal(id = null) {
+      editingTxId = id;
+      resetReceiptBannerState();
+      const curr = getCurrency();
+      document.getElementById('modal-curr-label').textContent = curr;
+      document.getElementById('modal-curr-prefix').textContent = curr;
+
+      const record = id ? allTransactions.find(t => t.id === id) : null;
+      document.getElementById('txModalTitle').textContent = record ? 'Edit Transaction' : 'Record Transaction';
+      document.getElementById('modal-icon').textContent = record ? 'edit_note' : 'add_circle';
+
+      const type = record ? record.type : 'expense';
+      setModalType(type);
+
+      document.getElementById('modal-amount').value = record ? record.amount : '';
+      document.getElementById('modal-desc').value = record ? record.description : '';
+      document.getElementById('modal-date').value = record ? record.date : new Date().toISOString().slice(0, 10);
+
+      if (record) {
+        document.getElementById('modal-category').value = record.category;
+      }
+
+      const modal = document.getElementById('txModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('modal-amount').focus();
+    }
+
+    // --- SMART RECEIPT AI SCANNER ---
+    let activeCameraStream = null;
+    let currentFacingMode = "environment";
+
+    function updateGeminiBadgeStatus() {
+      const badgePill = document.getElementById('receiptBadgePill');
+      const bannerSub = document.getElementById('receiptBannerSubtitle');
+      if (!badgePill || !bannerSub) return;
+
+      badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0 whitespace-nowrap";
+      badgePill.textContent = "Gemini AI";
+      bannerSub.innerHTML = 'Extract merchant, total & items · <span class="text-emerald-700 font-semibold" title="Google Gemini Vision AI active on server">Gemini Active 🟢</span> · <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)" class="text-blue-900 font-semibold underline hover:text-blue-700">Demo</a>';
+    }
+
+    async function triggerReceiptCameraFlow() {
+      // 1. Try Live Camera Viewfinder (Laptop Webcams, USB Webcams, Phones & Tablets)
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        openLiveCameraModal();
+      } else {
+        // Fallback for older browsers
+        const cameraInput = document.getElementById('receiptCameraInput');
+        if (cameraInput) cameraInput.click();
+      }
+    }
+
+    async function openLiveCameraModal() {
+      const modal = document.getElementById('liveCameraModal');
+      const loader = document.getElementById('liveCameraLoading');
+      if (!modal) return;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      if (loader) loader.classList.remove('hidden');
+
+      await startCameraStream(currentFacingMode);
+    }
+
+    async function startCameraStream(facing) {
+      const video = document.getElementById('liveCameraVideo');
+      const loader = document.getElementById('liveCameraLoading');
+
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+      }
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: facing ? { ideal: facing } : undefined,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        activeCameraStream = stream;
+        if (video) {
+          video.srcObject = stream;
+          await video.play();
+        }
+        if (loader) loader.classList.add('hidden');
+      } catch (err) {
+        console.warn("Camera ideal access failed, trying default video:", err);
+        try {
+          // Fallback for laptop webcams without 'environment' facing mode
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          activeCameraStream = fallbackStream;
+          if (video) {
+            video.srcObject = fallbackStream;
+            await video.play();
+          }
+          if (loader) loader.classList.add('hidden');
+        } catch (fatalErr) {
+          console.warn("Direct camera access unavailable, using native file picker:", fatalErr);
+          closeLiveCameraModal();
+          const cameraInput = document.getElementById('receiptCameraInput');
+          if (cameraInput) cameraInput.click();
+        }
+      }
+    }
+
+    async function toggleCameraFacing() {
+      currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+      await startCameraStream(currentFacingMode);
+    }
+
+    function closeLiveCameraModal() {
+      const modal = document.getElementById('liveCameraModal');
+      const video = document.getElementById('liveCameraVideo');
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+      }
+      if (video) video.srcObject = null;
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function captureLiveCameraFrame() {
+      const video = document.getElementById('liveCameraVideo');
+      const canvas = document.getElementById('liveCameraCanvas');
+      if (!video || !canvas) return;
+
+      let width = video.videoWidth || 1280;
+      let height = video.videoHeight || 720;
+
+      // Resize to max 1600px on longest side to reduce payload & speed up API
+      const maxDim = 1600;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+      closeLiveCameraModal();
+
+      await executeReceiptScan({
+        imageBase64: dataUrl,
+        mimeType: 'image/jpeg',
+        name: 'camera_capture_' + Date.now() + '.jpg'
+      });
+    }
+
+    function triggerReceiptUploadFlow() {
+      const uploadInput = document.getElementById('receiptUploadInput');
+      if (uploadInput) uploadInput.click();
+    }
+
+    async function handleReceiptFileSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      await executeReceiptScan(file);
+      event.target.value = '';
+    }
+
+    async function runReceiptDemoScan(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      await executeReceiptScan(null);
+    }
+
+    function resetReceiptBannerState() {
+      const banner = document.getElementById('smartReceiptBanner');
+      const bannerTitle = document.getElementById('receiptBannerTitle');
+      const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
+      const toast = document.getElementById('receiptScanToast');
+
+      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-indigo-50/60 rounded-xl mb-4 border border-indigo-100/70 transition-all";
+      if (bannerTitle) bannerTitle.textContent = "Scan Receipt with AI";
+      if (scanBtn) {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+        uploadBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+      }
+      if (toast) toast.classList.add('hidden');
+      updateGeminiBadgeStatus();
+    }
+
+    async function executeReceiptScan(file) {
+      const banner = document.getElementById('smartReceiptBanner');
+      const badgePill = document.getElementById('receiptBadgePill');
+      const bannerTitle = document.getElementById('receiptBannerTitle');
+      const bannerSub = document.getElementById('receiptBannerSubtitle');
+      const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
+      const toast = document.getElementById('receiptScanToast');
+      const toastText = document.getElementById('receiptScanToastText');
+      const curr = getCurrency();
+
+      // 1. Enter Scanning State — shimmer animation
+      if (banner) banner.className = "flex justify-between items-center p-4 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all";
+      if (badgePill) {
+        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse";
+        badgePill.textContent = "Gemini AI...";
+      }
+      if (bannerTitle) bannerTitle.textContent = "Reading receipt with Gemini Vision AI...";
+      if (bannerSub) bannerSub.innerHTML = file
+        ? `<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Processing ${escapeHtml(file.name || 'image')}...`
+        : '<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Reading merchant, total & items...';
+      if (scanBtn) {
+        scanBtn.disabled = true;
+        scanBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Scanning...</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.classList.add('opacity-50', 'pointer-events-none');
+      }
+
+      // 2. Prepare payload
+      let payload = { 
+        filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg"
+      };
+
+      if (file) {
+        if (file.imageBase64) {
+          payload.imageBase64 = file.imageBase64;
+          payload.mimeType = file.mimeType || "image/jpeg";
+          payload.filename = file.name || "camera_capture.jpg";
+        } else {
+          try {
+            payload.imageBase64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(file);
+            });
+            payload.mimeType = file.type || "image/jpeg";
+          } catch (_) {}
+        }
+      }
+
+      // 3. Request AI parsing from serverless endpoint
+      let parsed = null;
+      const startTime = Date.now();
+      try {
+        const res = await fetch('/api/scan-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          parsed = await res.json();
+        }
+      } catch (_) {}
+
+      // Ensure minimum 1.2s scan feedback so user feels the AI at work
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 1200) {
+        await new Promise(r => setTimeout(r, 1200 - elapsed));
+      }
+      const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+      // Handle API-level errors gracefully
+      if (parsed && parsed.invalidApiKey) {
+        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-red-50/80 rounded-xl mb-4 border border-red-200 transition-all";
+        if (bannerTitle) bannerTitle.textContent = "⚠️ Invalid API Key";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please check your Gemini API key configuration.";
+        resetScanButtons(scanBtn, uploadBtn);
+        return;
+      }
+      if (parsed && (parsed.rateLimited || parsed.allModelsFailed)) {
+        if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-amber-50/80 rounded-xl mb-4 border border-amber-200 transition-all";
+        if (badgePill) { badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"; badgePill.textContent = "Retry"; }
+        if (bannerTitle) bannerTitle.textContent = parsed.rateLimited ? "⏳ Rate Limited" : "⚠️ AI Unavailable";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please try again in a moment.";
+        resetScanButtons(scanBtn, uploadBtn);
+        if (toast && toastText) {
+          toastText.textContent = parsed.message;
+          toast.className = "mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-medium flex items-center justify-between";
+          toast.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // Fallback presets
+      if (!parsed || !parsed.merchant) {
+        const presets = [
+          { merchant: "Village Grocer", amount: 68.40, category: "Groceries", items: ["Organic Bananas", "Milk", "Bread"] },
+          { merchant: "Starbucks Coffee", amount: 26.50, category: "Food & Dining", items: ["Caramel Macchiato", "Croissant"] },
+          { merchant: "Shell Station", amount: 80.00, category: "Transportation", items: ["RON95 Fuel"] },
+          { merchant: "Watsons Pharmacy", amount: 43.80, category: "Health & Wellness", items: ["Personal Care", "Vitamins"] }
+        ];
+        parsed = presets[Math.floor(Math.random() * presets.length)];
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const extractedDate = (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr;
+      const extractedAmount = Number(parsed.amount || 25.00).toFixed(2);
+      
+      const incomeList = (typeof categoriesByType !== 'undefined' && categoriesByType.income) ? categoriesByType.income : [];
+      const expenseList = (typeof categoriesByType !== 'undefined' && categoriesByType.expense) ? categoriesByType.expense : [];
+      let isIncome = incomeList.includes(parsed.category);
+      let finalCategory = parsed.category || "Food & Dining";
+
+      if (!isIncome && !expenseList.includes(finalCategory)) {
+        finalCategory = "Other Expenses";
+      }
+
+      const itemNote = (parsed.items && parsed.items.length) ? ` (${parsed.items.slice(0, 2).join(", ")})` : "";
+      const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
+
+      // 4. Auto-Fill Form Fields
+      setModalType(isIncome ? 'income' : 'expense');
+
+      const amtInput = document.getElementById('modal-amount');
+      if (amtInput) amtInput.value = extractedAmount;
+
+      const descInput = document.getElementById('modal-desc');
+      if (descInput) descInput.value = extractedDesc;
+
+      const dateInput = document.getElementById('modal-date');
+      if (dateInput) dateInput.value = extractedDate;
+
+      const catSelect = document.getElementById('modal-category');
+      if (catSelect) {
+        const availableOptions = Array.from(catSelect.options).map(o => o.value);
+        if (availableOptions.includes(finalCategory)) {
+          catSelect.value = finalCategory;
+        } else {
+          catSelect.value = isIncome ? "Other Income" : "Other Expenses";
+        }
+      }
+
+      // 5. Visual Flash Effect on inputs to highlight auto-fill
+      [amtInput, descInput, dateInput, catSelect].forEach(el => {
+        if (!el) return;
+        el.classList.add("ring-2", "ring-emerald-500", "border-emerald-500", "bg-emerald-50/40");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-emerald-500", "border-emerald-500", "bg-emerald-50/40");
+        }, 2200);
+      });
+
+      // 6. Reset Banner to Success State with real scan time
+      const isGeminiEngine = parsed.engine && parsed.engine.includes('gemini');
+      const scanTime = parsed.scanDuration || totalElapsed;
+      if (banner) banner.className = "flex justify-between items-center p-3.5 sm:p-4 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all";
+      if (badgePill) {
+        badgePill.className = isGeminiEngine 
+          ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap"
+          : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0 whitespace-nowrap";
+        badgePill.textContent = isGeminiEngine ? `${scanTime}s` : "Extracted";
+      }
+      if (bannerTitle) bannerTitle.textContent = `${isGeminiEngine ? '✨ ' : ''}Extracted: ${parsed.merchant}`;
+      if (bannerSub) bannerSub.textContent = `Total: ${curr} ${extractedAmount} · ${finalCategory}${isGeminiEngine ? ' · Gemini AI' : ''}`;
+      resetScanButtons(scanBtn, uploadBtn);
+
+      // 7. Show Toast
+      if (toast && toastText) {
+        toast.className = "mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between";
+        toastText.textContent = isGeminiEngine
+          ? `✨ Gemini AI extracted ${curr} ${extractedAmount} from ${parsed.merchant} in ${scanTime}s!`
+          : `✨ AI extracted ${curr} ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
+        toast.classList.remove('hidden');
+      }
+    }
+
+    function resetScanButtons(scanBtn, uploadBtn) {
+      if (scanBtn) {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+      }
+    }
+
+    function closeTransactionModal() {
+      closeLiveCameraModal();
+      document.getElementById('txModal').classList.add('hidden');
+      document.getElementById('txModal').classList.remove('flex');
+    }
+
+    function setModalType(type) {
+      document.getElementById('modal-type').value = type;
+      const expBtn = document.getElementById('type-btn-expense');
+      const incBtn = document.getElementById('type-btn-income');
+
+      if (type === 'expense') {
+        expBtn.className = 'py-2 rounded-xl text-xs font-bold border-2 border-alert-coral bg-alert-coral-subtle/50 text-alert-coral flex items-center justify-center gap-1.5 transition-all';
+        incBtn.className = 'py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-500 hover:border-secondary flex items-center justify-center gap-1.5 transition-all';
+      } else {
+        incBtn.className = 'py-2 rounded-xl text-xs font-bold border-2 border-secondary bg-growth-mint-subtle/50 text-secondary flex items-center justify-center gap-1.5 transition-all';
+        expBtn.className = 'py-2 rounded-xl text-xs font-bold border border-slate-200 text-slate-500 hover:border-alert-coral flex items-center justify-center gap-1.5 transition-all';
+      }
+
+      // Populate Category dropdown
+      const catSelect = document.getElementById('modal-category');
+      const currentSelected = catSelect.value;
+      const cats = categoriesByType[type] || categoriesByType.expense;
+      catSelect.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+      if (cats.includes(currentSelected)) {
+        catSelect.value = currentSelected;
+      }
+    }
+
+    async function handleSaveTransaction(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const amount = parseFloat(document.getElementById('modal-amount').value);
+      const desc = (document.getElementById('modal-desc').value || '').replace(/[<>]/g, '').trim().slice(0, 150);
+      const date = document.getElementById('modal-date').value || new Date().toISOString().slice(0, 10);
+      const category = (document.getElementById('modal-category').value || 'Other Expenses').replace(/[<>]/g, '').trim();
+      const rawType = (document.getElementById('modal-type').value || '').toLowerCase().trim();
+      const type = (rawType === 'income' || rawType === 'expense') ? rawType : 'expense';
+
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000000) {
+        alert("Please enter a valid positive numeric amount (greater than 0).");
+        return;
+      }
+      if (!desc || !date) {
+        alert("Please enter a valid description and date.");
+        return;
+      }
+
+      const oldId = editingTxId;
+      const isUpdate = Boolean(oldId && isValidUUID(oldId));
+      const userId = await getAuthenticatedUserId();
+      const categoryId = categoryIdMap[category] || "other";
+      const isoDate = date.includes("T") ? date : (date + "T12:00:00Z");
+
+      closeTransactionModal();
+
+      // Cloud sync directly to Supabase (Primary Database for all accounts including Demo Accounts)
+      if (supabaseClient) {
+        try {
+          const payload = {
+            user_id: userId,
+            title: desc,
+            amount: Math.round(amount * 100) / 100,
+            type: type,
+            category_id: categoryId,
+            category: category,
+            transaction_date: isoDate,
+            date: isoDate
+          };
+
+          let data = null;
+          let error = null;
+
+          if (isUpdate) {
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .update(payload)
+                .eq('id', oldId)
+                .eq('user_id', userId)
+                .select(),
+              10000
+            );
+            data = res.data;
+            error = res.error;
+          } else {
+            // INSERT: Strip out any frontend ID creation. Let Supabase generate UUID automatically on INSERT!
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .insert(payload)
+                .select(),
+              10000
+            );
+            data = res.data;
+            error = res.error;
+          }
+
+          // If schema cache doesn't have 'category' or 'date' columns yet:
+          if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackPayload = {
+              user_id: userId,
+              title: desc,
+              amount: Math.round(amount * 100) / 100,
+              type: type,
+              category_id: categoryId,
+              transaction_date: isoDate
+            };
+            if (isUpdate) {
+              await supabaseClient
+                .from('transactions')
+                .update(fallbackPayload)
+                .eq('id', oldId)
+                .eq('user_id', userId);
+            } else {
+              await supabaseClient
+                .from('transactions')
+                .insert(fallbackPayload);
+            }
+          }
+        } catch (e) {
+          console.warn("Supabase transaction save error:", e);
+        }
+      }
+
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm("Are you sure you want to delete this transaction record?")) return;
+
+      const userId = await getAuthenticatedUserId();
+
+      if (supabaseClient && isValidUUID(id)) {
+        try {
+          await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
+        } catch (e) {
+          console.warn("Supabase delete notice:", e);
+        }
+      }
+
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
+    }
+
+    // Initialize on Load
+    (async function init() {
+      const activeEmail = localStorage.getItem('finwise_user_email');
+      const activeSession = localStorage.getItem('finwise_session');
+      if (!activeEmail && !activeSession) {
+        window.location.replace('login.html');
+        return;
+      }
+
+      document.getElementById('tx-user-subtitle').textContent = activeEmail + ' · Live Real-Time Synced';
+
+      // Load local partition first
+      allTransactions = loadLocalTransactions();
+
+      // Check URL parameters (e.g. ?add=true)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('add') === 'true') {
+        openTransactionModal();
+      }
+
+      // Initial render
+      filterAndRenderTransactions();
+
+      // Start multi-device real-time sync & fetch shared cloud data
+      initRealtimeSync();
+      await loadTransactions();
+    })();
+  </script>
+</body>
+</html>
+

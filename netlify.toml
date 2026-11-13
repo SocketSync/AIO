@@ -1,0 +1,38 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/register"
+  to = "/register.html"
+  status = 200
+
+[[redirects]]
+  from = "/transactions"
+  to = "/transactions.html"
+  status = 200
+
+[[redirects]]
+  from = "/summary"
+  to = "/summary.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+

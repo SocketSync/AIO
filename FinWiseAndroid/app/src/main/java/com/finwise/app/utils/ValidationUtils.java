@@ -27,7 +27,7 @@ public final class ValidationUtils {
     public static boolean isUtmEmail(String email) {
         if (!isValidEmail(email)) return false;
         String lower = email.trim().toLowerCase();
-        return lower.endsWith("@graduate.utm.my") || lower.endsWith("@utm.my");
+        return lower.endsWith("@finwise-app.xyz") || lower.endsWith("@finwise-app.xyz");
     }
 
     public static boolean isValidPassword(String password) {

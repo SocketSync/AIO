@@ -7,7 +7,7 @@ public class AuthService {
     public static boolean isUtmEmail(String email) {
         if (email == null) return false;
         String lower = email.trim().toLowerCase();
-        return lower.endsWith("@graduate.utm.my") || lower.endsWith("@utm.my");
+        return lower.endsWith("@finwise-app.xyz") || lower.endsWith("@finwise-app.xyz");
     }
 
     public static boolean validatePassword(String password) {
@@ -23,30 +23,25 @@ public class AuthService {
             return null;
         }
 
-        // Return student model
-        return new User("A22EC0123", "Yeoh Kean Shen", studentId, "Universiti Teknologi Malaysia (UTM)");
+        // Return user model
+        return new User("00000000-0000-4000-8000-000000000001", "Demo Finwise", studentId, "FinWise");
     }
 
     public static User register(String fullName, String email, String password) {
-        if (!isUtmEmail(email)) {
-            System.out.println("[Error] Email must belong to UTM domain.");
-            return null;
-        }
-
         if (!validatePassword(password)) {
             System.out.println("[Error] Password does not meet security criteria.");
             return null;
         }
 
-        System.out.println("[Success] Student profile registered.");
-        return new User("A22EC0123", fullName, email, "Universiti Teknologi Malaysia (UTM)");
+        System.out.println("[Success] User profile registered.");
+        return new User("00000000-0000-4000-8000-000000000001", fullName, email, "FinWise");
     }
 
     public static void main(String[] args) {
         System.out.println("=== FinWise Java Authentication Test ===");
-        User student = login("yeoh.k@graduate.utm.my", "SecretStudentPass99");
-        if (student != null) {
-            System.out.println(student);
+        User user = login("demo@finwise-app.xyz", "FinWise2026!");
+        if (user != null) {
+            System.out.println(user);
         }
     }
 }

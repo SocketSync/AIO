@@ -4,7 +4,7 @@ import android.graphics.Color;
 
 /**
  * FinWise Brand Design System Colors
- * Universiti Teknologi Malaysia (UTM) - Course: Application Development
+ * FinWise Financial Platform - Course: Application Development
  */
 public final class ThemeColors {
     private ThemeColors() {}
