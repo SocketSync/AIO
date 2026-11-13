@@ -195,12 +195,6 @@
             </div>
             <span class="px-2 py-1 rounded-lg bg-growth-mint-subtle text-secondary text-[10px] font-bold shrink-0 group-hover:bg-secondary group-hover:text-white transition-colors">Try Demo →</span>
           </button>
-          <div class="text-center pt-1">
-            <button type="button" onclick="clearAllTokensNow()" class="text-[11px] text-text-muted hover:text-alert-coral underline cursor-pointer inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">delete_sweep</span>
-              <span>Clear previous tokens &amp; reset</span>
-            </button>
-          </div>
         </div>
       </form>
 
@@ -706,18 +700,30 @@
       }
     }
 
-    async function clearAllTokensNow() {
+    // Automatically wipe all stale login tokens and active sessions
+    async function autoClearLoginTokens() {
       if (supabaseClient) {
         try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
       }
-      localStorage.clear();
+      localStorage.removeItem('finwise_session');
+      localStorage.removeItem('finwise_user_email');
+      localStorage.removeItem('finwise_user_name');
+      localStorage.removeItem('finwise_user_id');
+      localStorage.removeItem('finwise_user_avatar');
+      localStorage.removeItem('finwise_auth_provider');
+
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth-token') || k.includes('access_token'))) {
+          localStorage.removeItem(k);
+        }
+      }
       try { sessionStorage.clear(); } catch (_) {}
       try {
         document.cookie.split(";").forEach(c => {
           document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
       } catch (_) {}
-      showAuthAlert('success', 'All previous tokens and sessions wiped clean!');
     }
 
     async function saveOAuthUserAndRedirect(user) {
@@ -766,54 +772,20 @@
       window.location.replace('dashboard.html');
     }
 
-    // Initialize Login Page: handle callbacks and check existing session
+    // Initialize Login Page: automatically purge stale tokens on load (unless incoming OAuth callback)
     (async function initLoginPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const isLogout = urlParams.get('logout') === 'true';
+      const isDeleted = urlParams.get('deleted') === 'true';
       const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
 
-      // Check for error in query or hash
-      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
-                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
-      if (errorMsg) {
-        showAuthAlert('error', 'Google Sign-in notice: ' + decodeURIComponent(errorMsg));
-        history.replaceState(null, null, window.location.pathname);
-      }
-
-      // Profile permanently deleted from Supabase
-      if (urlParams.get('deleted') === 'true') {
-        showAuthAlert('success', 'Your profile, transactions, and cloud account have been permanently deleted from Supabase.');
-        history.replaceState(null, null, window.location.pathname);
-        return;
-      }
-
-      // Explicit logout action requested
-      if (isLogout) {
-        if (supabaseClient) {
-          try { await supabaseClient.auth.signOut({ scope: 'local' }); } catch (_) {}
-        }
-        localStorage.removeItem('finwise_session');
-        localStorage.removeItem('finwise_user_email');
-        localStorage.removeItem('finwise_user_name');
-        localStorage.removeItem('finwise_user_id');
-        localStorage.removeItem('finwise_user_avatar');
-        localStorage.removeItem('finwise_auth_provider');
-
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-          const k = localStorage.key(i);
-          if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth-token'))) {
-            localStorage.removeItem(k);
-          }
-        }
-        try { sessionStorage.clear(); } catch (_) {}
-        showAuthAlert('success', 'Logged out successfully. All tokens cleared.');
-        history.replaceState(null, null, window.location.pathname);
-        return;
-      }
-
-      // 1. Fresh OAuth Hash Callback (#access_token=...&refresh_token=...)
+      // Check for incoming OAuth redirect callback (#access_token=... or ?code=...)
       const accessToken = hashParams ? hashParams.get('access_token') : null;
       const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      const code = urlParams.get('code');
+      const isOAuthCallback = Boolean(accessToken || code);
+
+      // 1. Fresh OAuth Hash Callback (#access_token=...&refresh_token=...)
       if (accessToken && supabaseClient) {
         try {
           const { data, error } = await supabaseClient.auth.setSession({
@@ -828,7 +800,6 @@
       }
 
       // 2. Fresh OAuth PKCE Code callback (?code=...)
-      const code = urlParams.get('code');
       if (code && supabaseClient) {
         try {
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
@@ -839,24 +810,24 @@
         } catch (_) {}
       }
 
-      // 3. Supabase client active session check
-      if (supabaseClient) {
-        try {
-          const { data: { session }, error } = await supabaseClient.auth.getSession();
-          if (!error && session && session.user) {
-            saveOAuthUserAndRedirect(session.user);
-            return;
-          }
-        } catch (_) {}
+      // 3. Normal visit to Login Page: Automatically clear previous/stale login tokens & sessions!
+      // No manual clicking needed! All stale sessions and tokens are wiped automatically.
+      if (!isOAuthCallback) {
+        await autoClearLoginTokens();
       }
 
-      // 4. Existing active login session check
-      const activeSession = localStorage.getItem('finwise_session');
-      const activeEmail = localStorage.getItem('finwise_user_email');
-      if (activeSession && activeEmail) {
-        // Active session exists, redirect to dashboard
-        window.location.replace('dashboard.html');
-        return;
+      // 4. Check for alerts or messages
+      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
+                       (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+      if (errorMsg) {
+        showAuthAlert('error', 'Google Sign-in notice: ' + decodeURIComponent(errorMsg));
+        history.replaceState(null, null, window.location.pathname);
+      } else if (isDeleted) {
+        showAuthAlert('success', 'Your profile, transactions, and cloud account have been permanently deleted from Supabase.');
+        history.replaceState(null, null, window.location.pathname);
+      } else if (isLogout) {
+        showAuthAlert('success', 'Logged out successfully. All login tokens automatically cleared.');
+        history.replaceState(null, null, window.location.pathname);
       }
     })();
   </script>
