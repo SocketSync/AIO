@@ -234,6 +234,13 @@ class AuthService extends ChangeNotifier {
     final cleanName = name.trim();
     final userId = generateUserUuid(cleanEmail);
 
+    // Check if account already exists in local registry
+    if (_registeredAccounts.containsKey(cleanEmail)) {
+      _isLoading = false;
+      notifyListeners();
+      throw Exception('An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
+    }
+
     // 1. Attempt Supabase Auth SignUp
     if (SupabaseService.isConfigured) {
       final client = SupabaseService().client;
@@ -247,6 +254,12 @@ class AuthService extends ChangeNotifier {
               )
               .timeout(const Duration(seconds: 10));
           if (response.user != null) {
+            final identities = response.user!.identities;
+            if (identities != null && identities.isEmpty) {
+              _isLoading = false;
+              notifyListeners();
+              throw Exception('An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
+            }
             final sbUserId = response.user!.id;
             await client.from('profiles').upsert({
               'id': sbUserId,
@@ -258,6 +271,11 @@ class AuthService extends ChangeNotifier {
           }
         } catch (e) {
           debugPrint('[AuthService] Supabase signUp notice: $e');
+          if (e.toString().contains('already registered') || e.toString().contains('already exists')) {
+            _isLoading = false;
+            notifyListeners();
+            rethrow;
+          }
         }
       }
     }

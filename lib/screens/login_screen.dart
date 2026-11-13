@@ -50,8 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showPasswordLoginDialog() {
-    final emailCtrl = TextEditingController(text: 'demo@finwise-app.xyz');
-    final passCtrl = TextEditingController(text: 'FinWise2026!');
+    final emailCtrl = TextEditingController();
+    final passCtrl = TextEditingController();
     bool obscure = true;
 
     showDialog(
