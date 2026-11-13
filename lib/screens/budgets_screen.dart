@@ -18,7 +18,7 @@ class BudgetsScreen extends StatefulWidget {
 
 class _BudgetsScreenState extends State<BudgetsScreen> {
   late int _selectedTab;
-  bool _goalsLoaded = false;
+  String? _loadedGoalsForUser;
 
   @override
   void initState() {
@@ -108,19 +108,25 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceContainerLowest,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.borderNeutral),
+                                border:
+                                    Border.all(color: AppColors.borderNeutral),
                               ),
                               child: const Row(
                                 children: [
-                                  Icon(Icons.calendar_month, color: AppColors.primary, size: 16),
+                                  Icon(Icons.calendar_month,
+                                      color: AppColors.primary, size: 16),
                                   SizedBox(width: 6),
                                   Text(
                                     'November 2024',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.onSurface),
                                   ),
                                 ],
                               ),
@@ -128,18 +134,23 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.alertCoralSubtle,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.warning, color: AppColors.alertCoral, size: 13),
+                              Icon(Icons.warning,
+                                  color: AppColors.alertCoral, size: 13),
                               SizedBox(width: 4),
                               Text(
                                 '1 Category Tight',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.alertCoral),
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.alertCoral),
                               ),
                             ],
                           ),
@@ -238,7 +249,10 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.primaryContainer],
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primaryContainer
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -259,17 +273,31 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                               const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('OVERVIEW', style: TextStyle(fontSize: 10, letterSpacing: 1, color: AppColors.primaryFixedDim, fontWeight: FontWeight.bold)),
-                                  Text('Monthly Spending', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  Text('OVERVIEW',
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          letterSpacing: 1,
+                                          color: AppColors.primaryFixedDim,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Monthly Spending',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
                                 ],
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Text('74% Used', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                                child: const Text('74% Used',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white)),
                               ),
                             ],
                           ),
@@ -288,15 +316,26 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                                     child: CircularProgressIndicator(
                                       value: 0.74,
                                       strokeWidth: 8,
-                                      backgroundColor: Colors.white.withValues(alpha: 0.15),
-                                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.secondaryContainer),
+                                      backgroundColor:
+                                          Colors.white.withValues(alpha: 0.15),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                              AppColors.secondaryContainer),
                                     ),
                                   ),
                                   const Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('74%', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                                      Text('spent', style: TextStyle(fontSize: 9, color: AppColors.primaryFixedDim)),
+                                      Text('74%',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white)),
+                                      Text('spent',
+                                          style: TextStyle(
+                                              fontSize: 9,
+                                              color:
+                                                  AppColors.primaryFixedDim)),
                                     ],
                                   ),
                                 ],
@@ -308,36 +347,53 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Total Spent / Target', style: TextStyle(fontSize: 11, color: AppColors.primaryFixedDim)),
+                                    const Text('Total Spent / Target',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.primaryFixedDim)),
                                     const SizedBox(height: 2),
                                     const Wrap(
-                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
                                       children: [
                                         Text(
                                           'RM 1,485',
-                                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white),
                                         ),
                                         Text(
                                           ' / RM 2,000',
-                                          style: TextStyle(fontSize: 13, color: AppColors.primaryFixedDim),
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.primaryFixedDim),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.growthMintSubtle.withValues(alpha: 0.2),
+                                        color: AppColors.growthMintSubtle
+                                            .withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.savings, size: 12, color: AppColors.secondaryFixed),
+                                          Icon(Icons.savings,
+                                              size: 12,
+                                              color: AppColors.secondaryFixed),
                                           SizedBox(width: 4),
                                           Text(
                                             'RM 515 remaining',
-                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.secondaryFixed),
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    AppColors.secondaryFixed),
                                           ),
                                         ],
                                       ),
@@ -361,18 +417,32 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.verified_user, size: 16, color: AppColors.secondaryFixed),
+                                    Icon(Icons.verified_user,
+                                        size: 16,
+                                        color: AppColors.secondaryFixed),
                                     SizedBox(width: 8),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('DAILY SAFE LIMIT', style: TextStyle(fontSize: 9, color: AppColors.primaryFixedDim, letterSpacing: 0.5)),
-                                        Text('RM 32.18 / day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                                        Text('DAILY SAFE LIMIT',
+                                            style: TextStyle(
+                                                fontSize: 9,
+                                                color:
+                                                    AppColors.primaryFixedDim,
+                                                letterSpacing: 0.5)),
+                                        Text('RM 32.18 / day',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
                                       ],
                                     ),
                                   ],
                                 ),
-                                Text('16 days left', style: TextStyle(fontSize: 11, color: Colors.white70)),
+                                Text('16 days left',
+                                    style: TextStyle(
+                                        fontSize: 11, color: Colors.white70)),
                               ],
                             ),
                           ),

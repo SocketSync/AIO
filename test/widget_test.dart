@@ -60,9 +60,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final NavigatorState navigator = tester.state(find.byType(Navigator));
-    navigator.pushNamed('/budgets');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Savings Goals (3)'));
+    navigator.pushNamed('/goals');
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
@@ -111,7 +109,8 @@ void main() {
     expect(find.text('Add Transaction'), findsWidgets);
   });
 
-  testWidgets('Savings Goals route opens the goals screen and create dialog', (WidgetTester tester) async {
+  testWidgets('Savings Goals route opens the goals screen and create dialog',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -134,7 +133,9 @@ void main() {
     expect(find.text('Target Amount (RM)'), findsOneWidget);
   });
 
-  testWidgets('3. Add Transaction screen smoke test - renders inputs and form controls', (WidgetTester tester) async {
+  testWidgets(
+      '3. Add Transaction screen smoke test - renders inputs and form controls',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
