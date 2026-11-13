@@ -476,7 +476,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // 2. Quick Action Buttons Grid (Budgeting, AI Insights, Forecast, Simulator)
+                      // 2. Balance shortcuts: keep the main actions together below the balance.
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildBalanceShortcut(
+                              title: 'Add Transaction',
+                              icon: Icons.add_circle_outline,
+                              onTap: () => Navigator.of(context).pushNamed('/add-transaction'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildBalanceShortcut(
+                              title: 'Savings Goals',
+                              icon: Icons.savings_rounded,
+                              onTap: () => Navigator.of(context).pushNamed('/goals'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildBalanceShortcut(
+                              title: 'AI Insights',
+                              icon: Icons.auto_awesome,
+                              onTap: () => _showModuleInfo(
+                                'AI Spending Insights',
+                                'Powered by Google Gemini / OpenAI API to analyze historical transactions and generate personalized, actionable financial advice.',
+                                Icons.auto_awesome,
+                                AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 3. Additional quick services
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -485,7 +520,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                           ),
                           Text(
-                            '5 Core Modules',
+                            '3 Core Modules',
                             style: TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -511,27 +546,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               'Track category spending limits and receive instant push notifications as you approach or cross category thresholds.',
                               Icons.tune,
                               AppColors.secondary,
-                            ),
-                          ),
-                          _buildQuickActionButton(
-                            title: 'Savings Goals',
-                            subtitle: 'Track your targets',
-                            icon: Icons.savings_rounded,
-                            iconColor: AppColors.primary,
-                            backgroundColor: AppColors.primaryFixedDim.withValues(alpha: 0.3),
-                            onTap: () => Navigator.of(context).pushNamed('/goals'),
-                          ),
-                          _buildQuickActionButton(
-                            title: 'AI Insights',
-                            subtitle: 'Smart advice',
-                            icon: Icons.auto_awesome,
-                            iconColor: AppColors.primary,
-                            backgroundColor: AppColors.primaryFixedDim.withValues(alpha: 0.3),
-                            onTap: () => _showModuleInfo(
-                              'AI Spending Insights',
-                              'Powered by Google Gemini / OpenAI API to analyze historical transactions and generate personalized, actionable financial advice.',
-                              Icons.auto_awesome,
-                              AppColors.primary,
                             ),
                           ),
                           _buildQuickActionButton(
@@ -751,6 +765,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildBalanceShortcut({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 72,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderNeutral),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: AppColors.primary),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
