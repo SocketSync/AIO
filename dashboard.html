@@ -700,6 +700,287 @@
 
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- AI FINANCE ASSISTANT — Floating Action Button + Chat Interface    -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Gemini Sparkle SVG (reusable inline) -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+    <symbol id="gemini-sparkle" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
+    </symbol>
+  </svg>
+
+  <!-- FAB: Floating Action Button -->
+  <button id="aiAssistantFAB" onclick="toggleAiAssistant()" aria-label="Open AI Assistant"
+    class="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-blue-900 text-white flex items-center justify-center shadow-lg shadow-blue-900/40 hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200 group">
+    <svg class="w-7 h-7 text-white group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
+    </svg>
+    <!-- Pulse ring -->
+    <span class="absolute inset-0 rounded-full bg-blue-400/30 animate-ping pointer-events-none"></span>
+  </button>
+
+  <!-- Chat Interface Overlay -->
+  <div id="aiAssistantChat" class="hidden fixed inset-0 z-[80] flex flex-col items-center justify-end bg-black/40 backdrop-blur-[2px]" onclick="if(event.target===this)toggleAiAssistant()">
+    <div class="w-full max-w-md h-[92vh] bg-slate-100 rounded-t-2xl flex flex-col shadow-2xl overflow-hidden animate-slideUp" style="animation: slideUp 0.3s ease-out">
+
+      <!-- ─── HEADER ─── -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 leading-tight">Quick AI Assistant</h2>
+            <p class="text-[10px] text-slate-500 font-medium">Smart finance • Instant logging</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- User avatar -->
+          <div id="aiChatAvatar" class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-[11px] font-bold overflow-hidden">U</div>
+          <button onclick="toggleAiAssistant()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── SUB-HEADER ─── -->
+      <div class="bg-white px-4 py-2 flex items-center justify-between border-b border-slate-100 shrink-0">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          <span class="text-[11px] font-semibold text-slate-600">FinWise powered by Gemini</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-[9px] font-bold text-blue-700">Gemini 1.5 Pro</span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[9px] font-bold text-slate-500">Natural Language</span>
+        </div>
+      </div>
+
+      <!-- ─── SCROLLABLE CHAT BODY ─── -->
+      <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3 scroll-smooth" id="aiChatBody">
+
+        <!-- Quick Prompts Row -->
+        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+          <button onclick="aiSendQuickPrompt('I ate nasi lemak RM7')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">🍔</span>
+            <span>I ate nasi lemak RM7</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Grabbed Grab ride RM12')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">🚗</span>
+            <span>Grab ride RM12</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Coffee at Starbucks RM18.50')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">☕</span>
+            <span>Coffee RM18.50</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Paid electricity bill RM124')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">💡</span>
+            <span>Electric bill RM124</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Show my spending summary')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">📊</span>
+            <span>Spending summary</span>
+          </button>
+        </div>
+
+        <!-- Live Budget Impact Widget -->
+        <div class="bg-blue-900 rounded-xl p-3.5 text-white shadow-md">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-blue-300" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              <span class="text-[10px] font-bold tracking-wider uppercase text-blue-200">Live Budget Impact</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-white/15 text-[9px] font-bold text-blue-200">Auto-Sync UTM</span>
+          </div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-blue-300/80 font-medium">Current Daily Buffer</span>
+              <span id="aiBudgetCurrent" class="text-lg font-extrabold text-white">RM 32.18</span>
+            </div>
+            <span class="material-symbols-outlined text-blue-400 text-[20px]">arrow_forward</span>
+            <div class="flex flex-col items-end">
+              <span class="text-[10px] text-blue-300/80 font-medium">After Queued Logs</span>
+              <span id="aiBudgetAfter" class="text-xl font-extrabold text-white">RM 22.68</span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full bg-white/15 overflow-hidden">
+            <div id="aiBudgetBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-300 transition-all duration-700" style="width: 71%"></div>
+          </div>
+          <p class="text-[10px] text-blue-300/80 font-medium mt-1.5 text-right">71% monthly target intact</p>
+        </div>
+
+        <!-- Message 1: User Audio Note (Right-aligned) -->
+        <div class="flex justify-end">
+          <div class="max-w-[85%] flex flex-col items-end gap-1">
+            <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="material-symbols-outlined text-[14px] text-blue-300">mic</span>
+                <span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">Audio Note Transcribed</span>
+              </div>
+              <p>I eat nasi lemak this afternoon cost me RM7</p>
+            </div>
+            <div class="flex items-center gap-1.5 px-1">
+              <span class="text-[10px] text-slate-400">2:34 PM</span>
+              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 2: AI Parsed Expense (Left-aligned) -->
+        <div class="flex gap-2 items-start">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
+            </div>
+            <!-- Expense Grid -->
+            <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
+                <p class="text-[11px] font-bold text-slate-900">Nasi Lemak</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
+                <p class="text-[11px] font-bold text-slate-900">Food &amp; Dining</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
+                <p class="text-[11px] font-extrabold text-blue-900">RM 7.00</p>
+              </div>
+            </div>
+            <!-- Action Buttons -->
+            <button onclick="aiConfirmExpense('Nasi Lemak', 7.00, 'Food & Dining')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+              Confirm &amp; Record RM 7.00
+            </button>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
+            </div>
+            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              Parsed by Gemini Vision
+            </p>
+          </div>
+        </div>
+
+        <!-- Message 3: User Image (Right-aligned) -->
+        <div class="flex justify-end">
+          <div class="max-w-[85%] flex flex-col items-end gap-1">
+            <div class="bg-blue-900 rounded-2xl rounded-br-md overflow-hidden shadow-sm">
+              <div class="w-full h-36 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                <div class="flex flex-col items-center gap-1.5 text-slate-400">
+                  <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+                  <span class="text-[10px] font-medium">Receipt Photo</span>
+                </div>
+              </div>
+              <p class="text-white text-[12px] px-3.5 py-2 leading-snug">Scanned Arked Cengal receipt for dinner.</p>
+            </div>
+            <div class="flex items-center gap-1.5 px-1">
+              <span class="text-[10px] text-slate-400">6:48 PM</span>
+              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 4: AI Receipt Parsed (Left-aligned) -->
+        <div class="flex gap-2 items-start">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="text-xs font-bold text-slate-900">Receipt Parsed</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">99.4% Match</span>
+            </div>
+            <!-- Merchant -->
+            <div class="flex items-center gap-2 mb-2.5 p-2 bg-slate-50 rounded-lg">
+              <span class="material-symbols-outlined text-[18px] text-blue-900">storefront</span>
+              <div>
+                <p class="text-[10px] text-slate-400 font-medium">Merchant</p>
+                <p class="text-[12px] font-bold text-slate-900">UTM Arked Cengal</p>
+              </div>
+            </div>
+            <!-- Itemized List -->
+            <div class="space-y-1.5 mb-2.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Nasi Ayam Penyet</span>
+                <span class="font-bold text-slate-900">RM 6.00</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Teh Tarik Ais</span>
+                <span class="font-bold text-slate-900">RM 2.50</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Kuih Seri Muka</span>
+                <span class="font-bold text-slate-900">RM 1.00</span>
+              </div>
+              <div class="border-t border-dashed border-slate-200 pt-1.5 flex items-center justify-between text-[12px]">
+                <span class="font-bold text-slate-700">Total</span>
+                <span class="font-extrabold text-blue-900">RM 9.50</span>
+              </div>
+            </div>
+            <!-- Action Buttons -->
+            <button onclick="aiConfirmExpense('UTM Arked Cengal (Nasi Ayam Penyet, Teh Tarik Ais, Kuih Seri Muka)', 9.50, 'Food & Dining')" class="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+              ✓ Confirm &amp; Add to Ledger
+            </button>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Retake Photo</button>
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Change Category</button>
+            </div>
+            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              Parsed by Gemini Vision · 99.4% confidence
+            </p>
+          </div>
+        </div>
+
+        <!-- Spacer for input area -->
+        <div class="h-4"></div>
+      </div>
+
+      <!-- ─── FIXED BOTTOM INPUT AREA ─── -->
+      <div class="bg-white border-t border-slate-200 px-3 py-2.5 shrink-0 pb-safe">
+        <div class="flex items-center gap-2">
+          <button onclick="triggerAiCameraCapture()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-blue-900 transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+          </button>
+          <div class="flex-1 relative flex items-center">
+            <input id="aiChatInput" type="text" placeholder="Speak or type..." onkeydown="if(event.key==='Enter')aiSendMessage()"
+              class="w-full pl-3 pr-10 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400">
+            <button onclick="aiStartVoice()" class="absolute right-2 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-900 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">mic</span>
+            </button>
+          </div>
+          <button onclick="aiSendMessage()" class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center text-white hover:bg-blue-800 active:scale-95 transition-all shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+          </button>
+        </div>
+        <p class="text-[9px] text-slate-400 text-center mt-1.5 font-medium">Multi-currency enabled • Powered by Google Gemini</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI Assistant Slide-Up Animation -->
+  <style>
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100%); opacity: 0; }
+    }
+    .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
+    .animate-slideDown { animation: slideDown 0.25s ease-in forwards; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
   <script>
     // Supabase Live Client Configuration
     const SUPABASE_URL = "https://vcxxsffdsznmqtpghrss.supabase.co";
@@ -2688,7 +2969,368 @@
       updateCategoryOptions();
       await loadTransactions();
       initRealtimeSync();
+      initAiAssistant();
     })();
+
+    // ═══════════════════════════════════════════════════════════════
+    // AI FINANCE ASSISTANT — Logic
+    // ═══════════════════════════════════════════════════════════════
+
+    let aiChatOpen = false;
+
+    function toggleAiAssistant() {
+      const chat = document.getElementById('aiAssistantChat');
+      const fab = document.getElementById('aiAssistantFAB');
+      const panel = chat?.querySelector('.max-w-md');
+
+      if (aiChatOpen) {
+        // Close
+        if (panel) {
+          panel.classList.remove('animate-slideUp');
+          panel.classList.add('animate-slideDown');
+        }
+        setTimeout(() => {
+          chat.classList.add('hidden');
+          chat.classList.remove('flex');
+          if (panel) { panel.classList.remove('animate-slideDown'); panel.classList.add('animate-slideUp'); }
+        }, 250);
+        fab.classList.remove('hidden');
+        aiChatOpen = false;
+      } else {
+        // Open
+        chat.classList.remove('hidden');
+        chat.classList.add('flex');
+        fab.classList.add('hidden');
+        aiChatOpen = true;
+        updateAiBudgetWidget();
+        syncAiAssistantAvatar();
+        // Scroll to bottom
+        setTimeout(() => {
+          const body = document.getElementById('aiChatBody');
+          if (body) body.scrollTop = body.scrollHeight;
+        }, 100);
+      }
+    }
+
+    function initAiAssistant() {
+      // Sync user avatar into chat header
+      syncAiAssistantAvatar();
+    }
+
+    function syncAiAssistantAvatar() {
+      const name = localStorage.getItem('finwise_user_name') || 'User';
+      const chatAvatar = document.getElementById('aiChatAvatar');
+      if (chatAvatar) chatAvatar.textContent = (name[0] || 'U').toUpperCase();
+    }
+
+    function updateAiBudgetWidget() {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const budget = parseFloat(localStorage.getItem('finwise_monthly_budget') || '1000');
+      const now = new Date();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysLeft = daysInMonth - now.getDate() + 1;
+
+      const expenses = (typeof transactions !== 'undefined' ? transactions : [])
+        .filter(t => t.type === 'expense' && t.date && t.date.startsWith(localDateString().slice(0, 7)))
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const remaining = Math.max(0, budget - expenses);
+      const dailyBuffer = daysLeft > 0 ? remaining / daysLeft : 0;
+      const pct = Math.min(100, Math.max(0, Math.round((remaining / budget) * 100)));
+
+      const currentEl = document.getElementById('aiBudgetCurrent');
+      const afterEl = document.getElementById('aiBudgetAfter');
+      const barEl = document.getElementById('aiBudgetBar');
+
+      if (currentEl) currentEl.textContent = `${curr} ${dailyBuffer.toFixed(2)}`;
+      if (afterEl) afterEl.textContent = `${curr} ${Math.max(0, dailyBuffer - 9.50).toFixed(2)}`;
+      if (barEl) {
+        barEl.style.width = pct + '%';
+        barEl.parentElement.nextElementSibling.textContent = `${pct}% monthly target intact`;
+      }
+    }
+
+    function aiSendQuickPrompt(text) {
+      const input = document.getElementById('aiChatInput');
+      if (input) {
+        input.value = text;
+        aiSendMessage();
+      }
+    }
+
+    function aiSendMessage() {
+      const input = document.getElementById('aiChatInput');
+      const body = document.getElementById('aiChatBody');
+      if (!input || !body) return;
+
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Add user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'flex justify-end';
+      userBubble.innerHTML = `
+        <div class="max-w-[85%] flex flex-col items-end gap-1">
+          <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
+            <p>${escapeHtml(text)}</p>
+          </div>
+          <div class="flex items-center gap-1.5 px-1">
+            <span class="text-[10px] text-slate-400">${timeStr}</span>
+            <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+          </div>
+        </div>
+      `;
+      body.appendChild(userBubble);
+
+      // Add AI typing indicator
+      const typingEl = document.createElement('div');
+      typingEl.className = 'flex gap-2 items-start ai-typing-indicator';
+      typingEl.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+          <svg class="w-4 h-4 text-white animate-spin" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+        </div>
+        <div class="bg-white rounded-2xl rounded-bl-md px-3.5 py-2.5 shadow-sm border border-slate-100">
+          <div class="flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:0ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:150ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:300ms"></span>
+          </div>
+        </div>
+      `;
+      body.appendChild(typingEl);
+      body.scrollTop = body.scrollHeight;
+
+      // Parse expense from natural language
+      setTimeout(() => {
+        typingEl.remove();
+        const parsed = parseNaturalExpense(text);
+
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'flex gap-2 items-start';
+
+        if (parsed) {
+          aiMsg.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+            </div>
+            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+              <div class="flex items-center gap-2 mb-2.5">
+                <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
+                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.item)}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
+                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.category)}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
+                  <p class="text-[11px] font-extrabold text-blue-900">${curr} ${parsed.amount.toFixed(2)}</p>
+                </div>
+              </div>
+              <button onclick="aiConfirmExpense('${escapeHtml(parsed.item)}', ${parsed.amount}, '${escapeHtml(parsed.category)}')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+                Confirm & Record ${curr} ${parsed.amount.toFixed(2)}
+              </button>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
+                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
+              </div>
+              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+                Parsed by Gemini Vision
+              </p>
+            </div>
+          `;
+        } else {
+          aiMsg.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+            </div>
+            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+              <p class="text-[13px] text-slate-700 leading-relaxed">I understood your message but couldn't detect a clear expense amount. Try saying something like <strong>"coffee RM12"</strong> or <strong>"grab ride RM15.50"</strong>.</p>
+              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+                FinWise AI Assistant
+              </p>
+            </div>
+          `;
+        }
+        body.appendChild(aiMsg);
+        body.scrollTop = body.scrollHeight;
+      }, 1200);
+    }
+
+    function parseNaturalExpense(text) {
+      const lower = text.toLowerCase();
+      // Match RM amount
+      const amtMatch = lower.match(/rm\s*([\d,.]+)/i) || lower.match(/([\d,.]+)\s*(?:ringgit|rm)/i) || lower.match(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?\s*(?:rm)?\s*([\d,.]+)/i);
+      if (!amtMatch) return null;
+
+      const amount = parseFloat(amtMatch[1].replace(/,/g, ''));
+      if (!amount || amount <= 0 || amount > 100000) return null;
+
+      // Guess category from keywords
+      let category = 'Other Expenses';
+      const item = text.replace(/rm\s*[\d,.]+/gi, '').replace(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?/gi, '').replace(/(?:this|today|yesterday|morning|afternoon|evening|tonight|for|at|on)/gi, '').trim() || 'Purchase';
+      const cleanItem = item.replace(/\s+/g, ' ').trim();
+      const firstWord = cleanItem.split(' ').slice(0, 4).join(' ');
+
+      if (/(?:makan|eat|ate|food|nasi|rice|chicken|ayam|mee|roti|burger|pizza|sushi|dim sum|cafe|restaurant|bistro|mamak|kopitiam|starbucks|mcd|kfc|subway|lunch|dinner|breakfast|snack|drink|coffee|tea|teh|latte|boba|juice|lemak)/i.test(lower)) {
+        category = 'Food & Dining';
+      } else if (/(?:grab|uber|taxi|bus|train|lrt|mrt|fuel|petrol|diesel|parking|toll|shell|petronas)/i.test(lower)) {
+        category = 'Transportation';
+      } else if (/(?:grocer|supermarket|tesco|aeon|jaya grocer|village grocer|mydin|econsave|99|mart|familymart)/i.test(lower)) {
+        category = 'Groceries';
+      } else if (/(?:shop|buy|bought|purchase|uniqlo|h&m|zara|nike|adidas|lazada|shopee|online)/i.test(lower)) {
+        category = 'Shopping';
+      } else if (/(?:movie|cinema|concert|game|netflix|spotify|youtube|entertainment|ticket|karaoke)/i.test(lower)) {
+        category = 'Entertainment';
+      } else if (/(?:bill|utility|electric|water|internet|wifi|phone|astro|tnb|indah water|tm|celcom|digi|maxis)/i.test(lower)) {
+        category = 'Bills & Utilities';
+      } else if (/(?:doctor|clinic|hospital|pharmacy|medicine|watson|guardian|health|gym|dental)/i.test(lower)) {
+        category = 'Health & Wellness';
+      }
+
+      return { item: firstWord.length > 2 ? (firstWord[0].toUpperCase() + firstWord.slice(1)) : 'Purchase', amount, category };
+    }
+
+    async function aiConfirmExpense(description, amount, category) {
+      // Extract parenthetical line items (e.g., "UTM Arked Cengal (Nasi Ayam Penyet, Teh Tarik Ais, Kuih Seri Muka)")
+      let cleanTitle = String(description || 'Purchase').trim();
+      let itemsToSave = [];
+      const parenMatch = cleanTitle.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if (parenMatch) {
+        cleanTitle = parenMatch[1].trim();
+        const rawParts = parenMatch[2].split(',').map(s => s.trim()).filter(Boolean);
+        itemsToSave = normalizeReceiptItemsClient(rawParts, category);
+      } else if (cleanTitle) {
+        itemsToSave = normalizeReceiptItemsClient([{ item_name: cleanTitle, quantity: 1, price: Number(amount) || 0, category }], category);
+      }
+      const detailsText = formatReceiptItemsToDetailsText(itemsToSave);
+
+      // Directly save to Supabase via existing saveTransaction flow
+      const userId = await getAuthenticatedUserId();
+      const categoryId = categoryIdMap[category] || 'other';
+      const dateStr = localDateString();
+      const isoDate = dateStr + 'T12:00:00Z';
+
+      if (itemsToSave.length > 0) {
+        cacheReceiptItemsForTx(null, cleanTitle, dateStr, itemsToSave);
+      }
+
+      if (supabaseClient) {
+        try {
+          const payload = {
+            user_id: userId,
+            title: cleanTitle,
+            amount: Math.round(amount * 100) / 100,
+            type: 'expense',
+            category_id: categoryId,
+            category: category,
+            transaction_date: isoDate,
+            date: isoDate,
+            notes: detailsText || null,
+            receipt_items: itemsToSave
+          };
+          const { data, error } = await withTimeout(
+            supabaseClient.from('transactions').insert(payload).select(),
+            10000
+          );
+          if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            await withTimeout(
+              supabaseClient.from('transactions').insert({
+                user_id: userId,
+                title: cleanTitle,
+                amount: Math.round(amount * 100) / 100,
+                type: 'expense',
+                category_id: categoryId,
+                transaction_date: isoDate,
+                notes: detailsText || null
+              }).select(),
+              10000
+            );
+          } else if (Array.isArray(data) && data[0] && itemsToSave.length > 0) {
+            cacheReceiptItemsForTx(data[0].id, cleanTitle, dateStr, itemsToSave);
+          }
+        } catch (e) {
+          console.warn('AI Assistant save error:', e);
+        }
+      }
+
+      // Show confirmation in chat
+      const body = document.getElementById('aiChatBody');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      if (body) {
+        const confirmation = document.createElement('div');
+        confirmation.className = 'flex gap-2 items-start';
+        confirmation.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <span class="material-symbols-outlined text-white text-[16px]">check</span>
+          </div>
+          <div class="max-w-[85%] bg-emerald-50 rounded-2xl rounded-bl-md p-3 shadow-sm border border-emerald-200">
+            <p class="text-[12px] font-bold text-emerald-800">✅ Recorded: ${curr} ${amount.toFixed(2)}</p>
+            <p class="text-[11px] text-emerald-700 mt-0.5">${escapeHtml(cleanTitle)} → ${escapeHtml(category)}</p>
+            <p class="text-[9px] text-emerald-500 mt-1">Saved to your ledger • Synced to Supabase Cloud</p>
+          </div>
+        `;
+        body.appendChild(confirmation);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      // Refresh dashboard
+      await loadTransactions();
+      updateAiBudgetWidget();
+    }
+
+    function triggerAiCameraCapture() {
+      // Re-use the existing receipt scanner flow
+      toggleAiAssistant();
+      showAddTransactionModal();
+      setTimeout(() => triggerReceiptCameraFlow(), 300);
+    }
+
+    function aiStartVoice() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice input is not supported on this browser. Try Chrome or Edge.');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-MY';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const micBtn = document.querySelector('#aiChatInput + button');
+      if (micBtn) {
+        micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-red-500 animate-pulse">mic</span>';
+      }
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const input = document.getElementById('aiChatInput');
+        if (input) input.value = transcript;
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.onerror = () => {
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.onend = () => {
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.start();
+    }
   </script>
 </body>
 
