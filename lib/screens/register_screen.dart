@@ -137,28 +137,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 8),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                Material(
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade300, style: BorderStyle.solid),
                   ),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey.shade100,
-                    child: const Icon(Icons.person_add_alt_1, color: AppColors.textPrimary, size: 20),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.shade100,
+                      child: const Icon(Icons.person_add_alt_1, color: AppColors.textPrimary, size: 20),
+                    ),
+                    title: const Text(
+                      'Use another Google account',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text(
+                      'Register with your personal Gmail',
+                      style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                    ),
+                    onTap: () {
+                      Navigator.of(bottomSheetContext).pop();
+                      _promptCustomGmailDialog();
+                    },
                   ),
-                  title: const Text(
-                    'Use another Google account',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text(
-                    'Register with your personal Gmail',
-                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-                  ),
-                  onTap: () {
-                    Navigator.of(bottomSheetContext).pop();
-                    _promptCustomGmailDialog();
-                  },
                 ),
                 const SizedBox(height: 16),
                 const Center(
@@ -183,11 +187,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String initial,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200),
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
       ),
+      clipBehavior: Clip.antiAlias,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         leading: CircleAvatar(

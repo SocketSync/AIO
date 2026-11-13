@@ -77,11 +77,11 @@ FinWise/
 ## 🚀 Quick Start Guide
 
 ### 1. Environment Configuration
-1. Copy `.env.example` to `.env`:
+The Flutter app runs without Supabase credentials using its local/demo data. To enable Supabase for Flutter, pass the project URL and **public anon key** as Dart defines:
    ```bash
-   cp .env.example .env
+   flutter run -d chrome --dart-define=SUPABASE_URL=https://your-project.supabase.co --dart-define=SUPABASE_ANON_KEY=your-public-anon-key
    ```
-2. Configure `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env` (only the public `anon` key should be used in client configurations; never expose `service_role` keys).
+Never pass a Supabase `service_role` key to a client app.
 
 ### 2. Supabase Database Setup
 1. Open the **Supabase SQL Editor** for your project.

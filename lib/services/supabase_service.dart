@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -7,25 +6,16 @@ class SupabaseService {
   factory SupabaseService() => _instance;
   SupabaseService._internal();
 
+  static const _configuredUrl = String.fromEnvironment('SUPABASE_URL');
+  static const _configuredAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+
   bool _isInitialized = false;
 
-  static String? get supabaseUrl {
-    try {
-      if (dotenv.isInitialized) {
-        return dotenv.env['SUPABASE_URL'];
-      }
-    } catch (_) {}
-    return null;
-  }
+  static String? get supabaseUrl =>
+      _configuredUrl.isEmpty ? null : _configuredUrl;
 
-  static String? get supabaseAnonKey {
-    try {
-      if (dotenv.isInitialized) {
-        return dotenv.env['SUPABASE_ANON_KEY'];
-      }
-    } catch (_) {}
-    return null;
-  }
+  static String? get supabaseAnonKey =>
+      _configuredAnonKey.isEmpty ? null : _configuredAnonKey;
 
   static bool get isConfigured {
     final url = supabaseUrl;
@@ -90,7 +80,7 @@ class SupabaseService {
       if (supaClient == null) {
         await initialize();
       }
-      
+
       final activeClient = client;
       if (activeClient == null) {
         return {

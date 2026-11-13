@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
@@ -16,15 +15,8 @@ import 'screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Load environment variables if available
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint("Notice: .env file not loaded or not found ($e)");
-  }
 
-  // Initialize Supabase if backend credentials are configured in .env
+  // Initialize Supabase only when public client credentials are provided.
   if (SupabaseService.isConfigured) {
     try {
       await SupabaseService().initialize();

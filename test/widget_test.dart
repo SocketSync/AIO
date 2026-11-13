@@ -4,9 +4,12 @@ import 'package:finwise_app/main.dart';
 import 'package:finwise_app/models/transaction_record.dart';
 import 'package:finwise_app/services/database_service.dart';
 import 'package:finwise_app/services/auth_service.dart';
+import 'package:finwise_app/providers/savings_goal_provider.dart';
 
 void main() {
-  testWidgets('1. Login screen smoke test - strictly renders FinWise branding & Google Sign-In only', (WidgetTester tester) async {
+  testWidgets(
+      '1. Login screen smoke test - strictly renders FinWise branding & Google Sign-In only',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -15,7 +18,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('FinWise'), findsWidgets);
-    expect(find.text('AI-Powered Personal Financial Intelligence'), findsOneWidget);
+    expect(find.text('AI-Powered Personal Financial Intelligence'),
+        findsOneWidget);
     expect(find.text('Sign in with Google'), findsOneWidget);
 
     // Verify zero school or UTM ID options exist
@@ -23,7 +27,62 @@ void main() {
     expect(find.textContaining('Matric'), findsNothing);
   });
 
-  testWidgets('2. Dashboard screen smoke test - renders balance, quick services, recent transactions & FAB', (WidgetTester tester) async {
+  testWidgets('Google account picker renders without a ListTile paint error',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/register');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign Up with Google (Gmail)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Google Accounts'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Goals route loads without notifying providers during build',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+    await tester.pumpAndSettle();
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/budgets');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Savings Goals (3)'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  test('Goal creation explains when Supabase is not configured', () async {
+    final provider = SavingsGoalProvider();
+
+    final error = await provider.addGoal(
+      goalName: 'Emergency fund',
+      targetAmount: 1000,
+      targetDate: DateTime.now().add(const Duration(days: 30)),
+    );
+
+    expect(error, 'Savings goals require a configured Supabase backend.');
+  });
+
+  testWidgets(
+      '2. Dashboard screen smoke test - renders balance, quick services, recent transactions & FAB',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -51,7 +110,9 @@ void main() {
     expect(find.text('Add Transaction'), findsWidgets);
   });
 
-  testWidgets('3. Add Transaction screen smoke test - renders inputs and form controls', (WidgetTester tester) async {
+  testWidgets(
+      '3. Add Transaction screen smoke test - renders inputs and form controls',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -72,7 +133,8 @@ void main() {
     expect(find.text('Save Transaction'), findsOneWidget);
   });
 
-  test('4. Database Service CRUD test - Create, Read, Update, Delete', () async {
+  test('4. Database Service CRUD test - Create, Read, Update, Delete',
+      () async {
     final db = DatabaseService();
     const testUserId = 'test_user_sprint1';
 
@@ -117,7 +179,9 @@ void main() {
     expect(finalList.any((t) => t.id == 'mock_tx_001'), false);
   });
 
-  testWidgets('5. Register screen smoke test - Google Sign-Up and zero school/matric references', (WidgetTester tester) async {
+  testWidgets(
+      '5. Register screen smoke test - Google Sign-Up and zero school/matric references',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -140,7 +204,9 @@ void main() {
     expect(find.textContaining('Matric'), findsNothing);
   });
 
-  testWidgets('6. Forgot Password screen test - renders email input, send button, and zero school references', (WidgetTester tester) async {
+  testWidgets(
+      '6. Forgot Password screen test - renders email input, send button, and zero school references',
+      (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -162,18 +228,22 @@ void main() {
     expect(find.textContaining('Matric'), findsNothing);
   });
 
-  test('7. Password Verification with Database - Rejects incorrect password and accepts matching password', () async {
+  test(
+      '7. Password Verification with Database - Rejects incorrect password and accepts matching password',
+      () async {
     final auth = AuthService();
 
     // Test 1: Incorrect password fails with exception
     expect(
-      () => auth.signInWithPassword(email: 'demo@finwise-app.xyz', password: 'WrongPassword123!'),
+      () => auth.signInWithPassword(
+          email: 'demo@finwise-app.xyz', password: 'WrongPassword123!'),
       throwsA(isA<Exception>()),
     );
 
     // Test 2: Unregistered email fails with exception
     expect(
-      () => auth.signInWithPassword(email: 'unregistered.user@gmail.com', password: 'AnyPassword!'),
+      () => auth.signInWithPassword(
+          email: 'unregistered.user@gmail.com', password: 'AnyPassword!'),
       throwsA(isA<Exception>()),
     );
 
@@ -186,7 +256,9 @@ void main() {
     expect(user!.email, 'demo@finwise-app.xyz');
   });
 
-  test('8. User Database Separation - Isolated transaction partitions for separate user accounts', () async {
+  test(
+      '8. User Database Separation - Isolated transaction partitions for separate user accounts',
+      () async {
     final db = DatabaseService();
     const userA = '00000000-0000-4000-8000-000000000001';
     const userB = '00000000-0000-4000-8000-000000000002';
