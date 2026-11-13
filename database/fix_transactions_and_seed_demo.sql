@@ -38,9 +38,10 @@ INSERT INTO public.categories (id, name, icon_name, color_hex, type) VALUES
     ('other', 'General / Other', 'category', '#607D8B', 'expense')
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Enhance public.transactions columns (support category and date aliases)
+-- 3. Enhance public.transactions columns (support category, date aliases, and itemized receipt_items)
 ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS category VARCHAR(100);
 ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS date TIMESTAMPTZ;
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS receipt_items JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.transactions ALTER COLUMN category_id DROP NOT NULL;
 ALTER TABLE public.transactions ALTER COLUMN transaction_date DROP NOT NULL;
 
@@ -100,11 +101,11 @@ ON public.transactions FOR ALL TO anon
 USING (user_id = '00000000-0000-4000-8000-000000000001'::uuid)
 WITH CHECK (user_id = '00000000-0000-4000-8000-000000000001'::uuid);
 
--- 5. Seed Demo Account Data (5 realistic transactions assigned to 00000000-0000-4000-8000-000000000001 using gen_random_uuid())
+-- 5. Seed Demo Account Data (realistic transactions assigned to 00000000-0000-4000-8000-000000000001 using gen_random_uuid())
 DELETE FROM public.transactions WHERE user_id = '00000000-0000-4000-8000-000000000001';
 
 INSERT INTO public.transactions (
-  id, user_id, title, amount, type, category_id, category, transaction_date, date, notes
+  id, user_id, title, amount, type, category_id, category, transaction_date, date, notes, receipt_items
 ) VALUES
 (
   gen_random_uuid(),
@@ -114,9 +115,26 @@ INSERT INTO public.transactions (
   'income',
   'salary',
   'Salary',
+  NOW() - INTERVAL '7 days',
+  NOW() - INTERVAL '7 days',
+  'Monthly direct deposit paycheck',
+  '[]'::jsonb
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'AEON Mall Supermarket & Footwear',
+  224.00,
+  'expense',
+  'shopping',
+  'Shopping',
   NOW() - INTERVAL '5 days',
   NOW() - INTERVAL '5 days',
-  'Monthly direct deposit paycheck'
+  'Nike Sneakers and household groceries at AEON',
+  '[
+    {"item_name": "Nike Sneakers", "price": 199.00, "quantity": 1, "category": "Clothing"},
+    {"item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries"}
+  ]'::jsonb
 ),
 (
   gen_random_uuid(),
@@ -128,7 +146,30 @@ INSERT INTO public.transactions (
   'Groceries',
   NOW() - INTERVAL '3 days',
   NOW() - INTERVAL '3 days',
-  'Fresh vegetables, dairy, and organic staples'
+  'Fresh vegetables, dairy, and organic staples',
+  '[
+    {"item_name": "Organic Bananas", "price": 14.50, "quantity": 1, "category": "Groceries"},
+    {"item_name": "Farm Fresh Milk 2L", "price": 18.90, "quantity": 2, "category": "Groceries"},
+    {"item_name": "Fresh Salmon Fillet", "price": 54.20, "quantity": 1, "category": "Groceries"},
+    {"item_name": "Artisan Sourdough Loaf", "price": 16.00, "quantity": 1, "category": "Groceries"},
+    {"item_name": "Free-Range Eggs (10s)", "price": 20.00, "quantity": 1, "category": "Groceries"}
+  ]'::jsonb
+),
+(
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000001',
+  'JD Sports Mid Valley',
+  189.00,
+  'expense',
+  'shopping',
+  'Shopping',
+  NOW() - INTERVAL '2 days',
+  NOW() - INTERVAL '2 days',
+  'Casual running shoes and socks',
+  '[
+    {"item_name": "Casual Running Shoes", "price": 169.00, "quantity": 1, "category": "Clothing"},
+    {"item_name": "Athletic Crew Socks", "price": 20.00, "quantity": 1, "category": "Clothing"}
+  ]'::jsonb
 ),
 (
   gen_random_uuid(),
@@ -140,7 +181,8 @@ INSERT INTO public.transactions (
   'Bills & Utilities',
   NOW() - INTERVAL '2 days',
   NOW() - INTERVAL '2 days',
-  'Monthly residential utility payment'
+  'Monthly residential utility payment',
+  '[]'::jsonb
 ),
 (
   gen_random_uuid(),
@@ -152,7 +194,11 @@ INSERT INTO public.transactions (
   'Food & Dining',
   NOW() - INTERVAL '1 day',
   NOW() - INTERVAL '1 day',
-  'Artisanal coffee and sourdough toast'
+  'Artisanal coffee and sourdough toast',
+  '[
+    {"item_name": "Flat White Coffee", "price": 13.00, "quantity": 1, "category": "Food & Dining"},
+    {"item_name": "Sourdough Avocado Toast", "price": 15.00, "quantity": 1, "category": "Food & Dining"}
+  ]'::jsonb
 ),
 (
   gen_random_uuid(),
@@ -164,6 +210,7 @@ INSERT INTO public.transactions (
   'Transportation',
   NOW(),
   NOW(),
-  'MRT transit weekly commute reload'
+  'MRT transit weekly commute reload',
+  '[]'::jsonb
 );
 

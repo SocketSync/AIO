@@ -394,6 +394,25 @@
       });
     }
 
+    function getReceiptCacheStorageKey() {
+      const email = (getActiveEmail() || "default_user").replace(/[^a-z0-9]/g, "_");
+      return "finwise_receipt_items_cache_" + email;
+    }
+
+    function resolveReceiptItemsSummary(row) {
+      if (Array.isArray(row.receipt_items) && row.receipt_items.length > 0) {
+        return row.receipt_items;
+      }
+      try {
+        const cache = JSON.parse(localStorage.getItem(getReceiptCacheStorageKey()) || "{}");
+        if (row.id && Array.isArray(cache["id_" + row.id])) return cache["id_" + row.id];
+        const tk = (row.title || row.description || "").trim().toLowerCase();
+        const dk = String(row.transaction_date || row.date || "").slice(0, 10);
+        if (tk && dk && Array.isArray(cache["sig_" + tk + "_" + dk])) return cache["sig_" + tk + "_" + dk];
+      } catch (_) {}
+      return [];
+    }
+
     async function loadTransactions() {
       const userId = await getAuthenticatedUserId();
 
@@ -403,7 +422,7 @@
           let { data, error } = await withTimeout(
             supabaseClient
               .from('transactions')
-              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, receipt_items')
               .eq('user_id', userId)
               .order('transaction_date', { ascending: false }),
             10000
@@ -429,7 +448,8 @@
               amount: Number(row.amount),
               category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
-              date: (row.transaction_date || row.date || new Date().toISOString()).slice(0, 10)
+              date: (row.transaction_date || row.date || new Date().toISOString()).slice(0, 10),
+              receipt_items: resolveReceiptItemsSummary(row)
             }));
             localStorage.setItem(getStorageKey(), JSON.stringify(allTransactions));
             renderSummaryPage();
@@ -587,9 +607,99 @@
       generateAiInsights(monthName, totalIncome, totalExpenses, netCashflow, expEntries, curr);
     }
 
+    function getOrdinalDaySummary(dateStr) {
+      if (!dateStr) return 'recently';
+      const parts = String(dateStr).slice(0, 10).split('-');
+      if (parts.length !== 3) return dateStr;
+      const day = parseInt(parts[2], 10);
+      if (!Number.isFinite(day)) return dateStr;
+      if (day > 3 && day < 21) return day + 'th';
+      switch (day % 10) {
+        case 1: return day + 'st';
+        case 2: return day + 'nd';
+        case 3: return day + 'rd';
+        default: return day + 'th';
+      }
+    }
+
+    function detect14DayItemInsight(curr) {
+      const topicGroups = [
+        { key: 'shoes', label: 'shoes', budgetCategory: 'Clothing', keywords: ['shoe', 'shoes', 'sneaker', 'sneakers', 'footwear', 'boots', 'sandal', 'trainers', 'running'] },
+        { key: 'clothing', label: 'clothing items', budgetCategory: 'Clothing', keywords: ['shirt', 't-shirt', 'pants', 'jeans', 'jacket', 'hoodie', 'dress', 'socks', 'uniqlo', 'apparel'] },
+        { key: 'coffee', label: 'coffee/drinks', budgetCategory: 'Food & Dining', keywords: ['coffee', 'latte', 'americano', 'espresso', 'cappuccino', 'macchiato', 'boba', 'matcha', 'tea', 'starbucks', 'zus'] },
+        { key: 'snacks', label: 'snacks & treats', budgetCategory: 'Food & Dining', keywords: ['croissant', 'cake', 'pastry', 'donut', 'ice cream', 'chocolate', 'snack'] },
+        { key: 'groceries', label: 'grocery essentials', budgetCategory: 'Groceries', keywords: ['milk', 'bread', 'eggs', 'banana', 'toothpaste', 'sourdough'] }
+      ];
+      const detectTopic = (name, cat) => {
+        const lower = (String(name || '') + ' ' + String(cat || '')).toLowerCase();
+        return topicGroups.find(g => g.keywords.some(kw => lower.includes(kw))) || null;
+      };
+
+      const cutoffMs = Date.now() - 14 * 86400000;
+      const recent = allTransactions.filter(tx => {
+        if (!tx || tx.type === 'income') return false;
+        const ts = new Date(String(tx.date || '').slice(0, 10) + 'T12:00:00Z').getTime();
+        return Number.isFinite(ts) && ts >= cutoffMs;
+      });
+
+      const buckets = {};
+      for (const tx of recent) {
+        const dStr = String(tx.date || '').slice(0, 10);
+        const items = Array.isArray(tx.receipt_items) ? tx.receipt_items : [];
+        if (items.length > 0) {
+          for (const it of items) {
+            const topic = detectTopic(it.item_name, it.category || tx.category);
+            if (!topic) continue;
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              price: Number(it.price || 0) * (parseInt(it.quantity, 10) || 1)
+            });
+          }
+        } else {
+          const topic = detectTopic(tx.description, tx.category);
+          if (topic) {
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({ date: dStr, price: Number(tx.amount || 0) });
+          }
+        }
+      }
+
+      const dup = Object.values(buckets)
+        .filter(b => b.entries.length >= 2)
+        .sort((a, b) => {
+          const scoreA = (a.group.key === 'shoes' ? 500 : 0) + a.entries.reduce((s, e) => s + e.price, 0);
+          const scoreB = (b.group.key === 'shoes' ? 500 : 0) + b.entries.reduce((s, e) => s + e.price, 0);
+          return scoreB - scoreA;
+        })[0];
+
+      if (!dup) return null;
+      const sorted = [...dup.entries].sort((a, b) => a.date.localeCompare(b.date));
+      const uniqueDates = [...new Set(sorted.map(e => e.date))];
+      const total = sorted.reduce((s, e) => s + (Number(e.price) || 0), 0);
+      const ordList = uniqueDates.slice(-3).map(d => 'the ' + getOrdinalDaySummary(d));
+      const dateText = ordList.length >= 2
+        ? (ordList.length === 2 ? `${ordList[0]} and ${ordList[1]}` : `${ordList.slice(0, -1).join(', ')}, and ${ordList[ordList.length - 1]}`)
+        : `${ordList[0]} (${sorted.length}x)`;
+      return {
+        title: `✨ Purchase Frequency Alert (${dup.group.budgetCategory})`,
+        desc: `✨ FinWise noticed: You bought ${dup.group.label} on ${dateText} of this month! Treating yourself is great, but keep an eye on your '${dup.group.budgetCategory}' budget (${curr} ${money(total)} spent) to avoid overspending this month~`
+      };
+    }
+
     function generateAiInsights(monthName, income, expenses, net, topExpenses, curr) {
       const container = document.getElementById('ai-insights-list');
       const insights = [];
+
+      const itemizedTip = detect14DayItemInsight(curr);
+      if (itemizedTip) {
+        insights.push({
+          icon: "receipt_long",
+          color: "text-purple-700 bg-purple-50",
+          title: itemizedTip.title,
+          desc: itemizedTip.desc
+        });
+      }
 
       if (expenses === 0 && income === 0) {
         insights.push({

@@ -215,6 +215,27 @@
         </button>
       </div>
 
+      <!-- AI Purchase Insights Card (14-Day Receipt Agent) -->
+      <div id="aiPurchaseInsightCard" class="rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm">
+        <div class="flex items-start gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+            <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-primary flex items-center gap-1">
+                <span>✨ FinWise Purchase Insights</span>
+                <span id="aiInsightBadge" class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">14-Day Scan</span>
+              </span>
+              <button type="button" onclick="showAiModal()" class="text-[10px] font-bold text-primary hover:underline shrink-0">Details →</button>
+            </div>
+            <p id="aiPurchaseInsightText" class="text-xs text-slate-700 mt-1 leading-relaxed font-medium">
+              Analyzing your last 14 days of itemized receipts for smart savings tips...
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Recent Transactions Section -->
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
@@ -315,7 +336,7 @@
 
     <!-- Add / Edit Transaction Modal Dialog -->
     <div id="transactionDialog" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/50 p-3" onclick="if(event.target===this)closeTransactionDialog()">
-      <form id="transactionForm" class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200" onsubmit="saveTransaction(event)">
+      <form id="transactionForm" class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl border border-slate-200" onsubmit="saveTransaction(event)">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
           <h2 id="transactionDialogTitle" class="text-base font-bold text-text-primary">Add Transaction</h2>
           <button type="button" aria-label="Close" onclick="closeTransactionDialog()" class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
@@ -390,7 +411,22 @@
 
         <!-- Date -->
         <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date</label>
-        <input id="transactionDate" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-5 outline-none focus:border-primary" type="date" required>
+        <input id="transactionDate" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary" type="date" required>
+
+        <!-- Extracted Itemized Receipt Items Preview -->
+        <div id="modalReceiptItemsPreview" class="hidden mb-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold text-primary flex items-center gap-1">
+              <span>🧾</span>
+              <span>Itemized Receipt Breakdown (<span id="modalReceiptItemsCount">0</span>)</span>
+            </span>
+            <button type="button" onclick="clearPendingReceiptItems()" class="text-[10px] font-semibold text-text-muted hover:text-alert-coral">Clear items</button>
+          </div>
+          <div id="modalReceiptItemsList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Immediate AI Purchase Frequency Tip (when scanning) -->
+        <div id="modalAiTipBanner" class="hidden mb-4 rounded-xl border border-amber-200 bg-amber-50/90 p-2.5 text-[11px] text-amber-900 font-medium leading-relaxed"></div>
 
         <!-- Submit Button -->
         <button class="w-full rounded-xl bg-primary hover:bg-primary-container py-3 text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2" type="submit" id="saveTransactionBtn">
@@ -398,6 +434,29 @@
           <span>Save Transaction</span>
         </button>
       </form>
+    </div>
+
+    <!-- AI Purchase Insights Interactive Modal -->
+    <div id="aiPurchaseInsightsModal" class="hidden fixed inset-0 z-[75] items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3" onclick="if(event.target===this)closeAiModal()">
+      <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">✨ FinWise AI Purchase Agent</h3>
+              <p class="text-[10px] text-text-muted">14-Day Itemized Receipt Frequency Check</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeAiModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <div id="aiModalBody" class="rounded-xl bg-indigo-50/60 border border-indigo-100 p-3.5 text-xs text-slate-800 leading-relaxed font-medium"></div>
+        <div id="aiModalOccurrences" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+        <button type="button" onclick="closeAiModal()" class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-container transition-all">Got it, thanks FinWise!</button>
+      </div>
     </div>
 
     <!-- First-Time Google Login: Password Setup & Verification Modal -->
@@ -539,6 +598,9 @@
     let balanceIsHidden = false;
     let editingTransactionId = null;
     let transactions = [];
+    let pendingReceiptItems = [];
+    let expandedReceiptRows = {};
+    let latestAiInsightResult = null;
 
     function localDateString(date = new Date()) {
       const offset = date.getTimezoneOffset() * 60000;
@@ -547,6 +609,74 @@
 
     function escapeHtml(value) {
       return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function normalizeReceiptItemsClient(rawItems, fallbackCategory = "General") {
+      if (!Array.isArray(rawItems)) return [];
+      const out = [];
+      for (const entry of rawItems) {
+        if (typeof entry === "string" && entry.trim()) {
+          out.push({
+            item_name: entry.replace(/[<>]/g, "").trim().slice(0, 120),
+            price: 0,
+            quantity: 1,
+            category: fallbackCategory || "General"
+          });
+        } else if (entry && typeof entry === "object") {
+          const itemName = String(entry.item_name || entry.name || "").replace(/[<>]/g, "").trim().slice(0, 120);
+          if (!itemName) continue;
+          const p = Number(entry.price);
+          const q = parseInt(entry.quantity, 10);
+          out.push({
+            item_name: itemName,
+            price: Number.isFinite(p) && p >= 0 ? Math.round(p * 100) / 100 : 0,
+            quantity: Number.isFinite(q) && q >= 1 ? Math.min(q, 999) : 1,
+            category: String(entry.category || fallbackCategory || "General").replace(/[<>]/g, "").trim().slice(0, 60) || "General"
+          });
+        }
+      }
+      return out.slice(0, 40);
+    }
+
+    function getReceiptCacheStorageKey() {
+      const email = (localStorage.getItem("finwise_user_email") || "default_user").toLowerCase().replace(/[^a-z0-9]/g, "_");
+      return "finwise_receipt_items_cache_" + email;
+    }
+
+    function getReceiptItemsCache() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(getReceiptCacheStorageKey()) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function cacheReceiptItemsForTx(id, desc, dateStr, items) {
+      const cleanItems = normalizeReceiptItemsClient(items);
+      if (!cleanItems.length) return;
+      const cache = getReceiptItemsCache();
+      if (id) cache["id_" + id] = cleanItems;
+      if (desc && dateStr) {
+        cache["sig_" + String(desc).trim().toLowerCase() + "_" + String(dateStr).slice(0, 10)] = cleanItems;
+      }
+      try { localStorage.setItem(getReceiptCacheStorageKey(), JSON.stringify(cache)); } catch (_) {}
+    }
+
+    function resolveReceiptItemsForRow(row) {
+      if (Array.isArray(row.receipt_items) && row.receipt_items.length > 0) {
+        return normalizeReceiptItemsClient(row.receipt_items, row.category);
+      }
+      const cache = getReceiptItemsCache();
+      if (row.id && Array.isArray(cache["id_" + row.id])) {
+        return cache["id_" + row.id];
+      }
+      const titleKey = (row.title || row.description || "").trim().toLowerCase();
+      const dateKey = String(row.transaction_date || row.date || "").slice(0, 10);
+      if (titleKey && dateKey && Array.isArray(cache["sig_" + titleKey + "_" + dateKey])) {
+        return cache["sig_" + titleKey + "_" + dateKey];
+      }
+      return [];
     }
 
     function withTimeout(promise, ms = 10000) {
@@ -581,11 +711,54 @@
 
     const DEMO_DEFAULT_TRANSACTIONS = {
       "demo@finwise-app.xyz": [
-        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Salary", dateOffset: -5 },
-        { type: "expense", amount: 68.40, category: "Groceries", description: "Village Grocer Weekly Essentials", dateOffset: -3 },
-        { type: "expense", amount: 24.50, category: "Food & Dining", description: "Artisan Coffee & Pastry", dateOffset: -2 },
-        { type: "expense", amount: 85.00, category: "Transportation", description: "RON95 Fuel Refill", dateOffset: -1 },
-        { type: "income", amount: 650.00, category: "Freelance", description: "UI/UX Architecture Advisory", dateOffset: 0 }
+        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Salary", dateOffset: -7, receipt_items: [] },
+        {
+          type: "expense",
+          amount: 224.00,
+          category: "Shopping",
+          description: "AEON Mall Supermarket & Footwear",
+          dateOffset: -5,
+          receipt_items: [
+            { item_name: "Nike Sneakers", price: 199.00, quantity: 1, category: "Clothing" },
+            { item_name: "Colgate Toothpaste", price: 12.50, quantity: 2, category: "Groceries" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 68.40,
+          category: "Groceries",
+          description: "Village Grocer Weekly Essentials",
+          dateOffset: -3,
+          receipt_items: [
+            { item_name: "Organic Bananas", price: 14.50, quantity: 1, category: "Groceries" },
+            { item_name: "Farm Fresh Milk 2L", price: 18.90, quantity: 2, category: "Groceries" },
+            { item_name: "Artisan Sourdough Loaf", price: 16.10, quantity: 1, category: "Groceries" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 189.00,
+          category: "Shopping",
+          description: "JD Sports Mid Valley",
+          dateOffset: -2,
+          receipt_items: [
+            { item_name: "Casual Running Shoes", price: 169.00, quantity: 1, category: "Clothing" },
+            { item_name: "Athletic Crew Socks", price: 20.00, quantity: 1, category: "Clothing" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 24.50,
+          category: "Food & Dining",
+          description: "Artisan Coffee & Pastry",
+          dateOffset: -1,
+          receipt_items: [
+            { item_name: "Flat White Coffee", price: 13.00, quantity: 1, category: "Food & Dining" },
+            { item_name: "Almond Croissant", price: 11.50, quantity: 1, category: "Food & Dining" }
+          ]
+        },
+        { type: "expense", amount: 85.00, category: "Transportation", description: "RON95 Fuel Refill", dateOffset: -1, receipt_items: [] },
+        { type: "income", amount: 650.00, category: "Freelance", description: "UI/UX Architecture Advisory", dateOffset: 0, receipt_items: [] }
       ]
     };
 
@@ -1048,6 +1221,10 @@
       const rowsToInsert = defaults.map(item => {
         const d = new Date(now.getTime() + (item.dateOffset || 0) * 86400000);
         const dateStr = localDateString(d);
+        const itemsArr = normalizeReceiptItemsClient(item.receipt_items || [], item.category);
+        if (itemsArr.length > 0) {
+          cacheReceiptItemsForTx(null, item.description, dateStr, itemsArr);
+        }
         return {
           user_id: userId,
           title: item.description,
@@ -1056,7 +1233,8 @@
           category_id: categoryIdMap[item.category] || 'other',
           category: item.category,
           transaction_date: dateStr + 'T12:00:00Z',
-          date: dateStr + 'T12:00:00Z'
+          date: dateStr + 'T12:00:00Z',
+          receipt_items: itemsArr
         };
       });
 
@@ -1107,7 +1285,7 @@
           let { data, error } = await withTimeout(
             supabaseClient
               .from('transactions')
-              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, receipt_items')
               .eq('user_id', userId)
               .order('transaction_date', { ascending: false }),
             10000
@@ -1140,7 +1318,8 @@
               amount: Number(row.amount),
               category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
-              date: (row.transaction_date || row.date || localDateString()).slice(0, 10)
+              date: (row.transaction_date || row.date || localDateString()).slice(0, 10),
+              receipt_items: resolveReceiptItemsForRow(row)
             }));
             persistLocalTransactions();
             renderDashboard();
@@ -1253,8 +1432,235 @@
       alert("FinWise Notifications:\n\n1. Supabase Cloud Sync active.\n2. Gmail Authentication verified.\n3. Smart Spend Alert: 20% savings on food this week.");
     }
 
+    function getOrdinalDayDash(dateStr) {
+      if (!dateStr) return 'recently';
+      const parts = String(dateStr).slice(0, 10).split('-');
+      if (parts.length !== 3) return dateStr;
+      const day = parseInt(parts[2], 10);
+      if (!Number.isFinite(day)) return dateStr;
+      if (day > 3 && day < 21) return day + 'th';
+      switch (day % 10) {
+        case 1: return day + 'st';
+        case 2: return day + 'nd';
+        case 3: return day + 'rd';
+        default: return day + 'th';
+      }
+    }
+
+    function analyzeReceiptInsightsLocal(txList, currentReceipt = null, curr = 'RM') {
+      const topicGroups = [
+        { key: 'shoes', label: 'shoes', budgetCategory: 'Clothing', keywords: ['shoe', 'shoes', 'sneaker', 'sneakers', 'footwear', 'boots', 'sandal', 'trainers', 'running'] },
+        { key: 'clothing', label: 'clothing items', budgetCategory: 'Clothing', keywords: ['shirt', 't-shirt', 'pants', 'jeans', 'jacket', 'hoodie', 'dress', 'socks', 'uniqlo', 'apparel'] },
+        { key: 'coffee', label: 'coffee/drinks', budgetCategory: 'Food & Dining', keywords: ['coffee', 'latte', 'americano', 'espresso', 'cappuccino', 'macchiato', 'boba', 'matcha', 'tea', 'starbucks', 'zus'] },
+        { key: 'snacks', label: 'snacks & treats', budgetCategory: 'Food & Dining', keywords: ['croissant', 'cake', 'pastry', 'donut', 'ice cream', 'chocolate', 'snack'] },
+        { key: 'groceries', label: 'grocery essentials', budgetCategory: 'Groceries', keywords: ['milk', 'bread', 'eggs', 'banana', 'toothpaste', 'sourdough'] }
+      ];
+      const detectTopic = (name, cat) => {
+        const lower = (String(name || '') + ' ' + String(cat || '')).toLowerCase();
+        return topicGroups.find(g => g.keywords.some(kw => lower.includes(kw))) || null;
+      };
+
+      const cutoffMs = Date.now() - 14 * 86400000;
+      const combined = Array.isArray(txList) ? [...txList] : [];
+      if (currentReceipt && Array.isArray(currentReceipt.receipt_items) && currentReceipt.receipt_items.length > 0) {
+        combined.unshift({
+          type: 'expense',
+          date: currentReceipt.date || localDateString(),
+          category: currentReceipt.category || 'Shopping',
+          description: currentReceipt.merchant || 'Current Receipt',
+          receipt_items: currentReceipt.receipt_items
+        });
+      }
+
+      const recentExpenses = combined.filter(tx => {
+        if (!tx || tx.type === 'income') return false;
+        const dStr = String(tx.date || '').slice(0, 10);
+        const ts = new Date(dStr + 'T12:00:00Z').getTime();
+        return Number.isFinite(ts) && ts >= cutoffMs;
+      });
+
+      const buckets = {};
+      for (const tx of recentExpenses) {
+        const dStr = String(tx.date || '').slice(0, 10);
+        const items = Array.isArray(tx.receipt_items) ? tx.receipt_items : [];
+        if (items.length > 0) {
+          for (const it of items) {
+            const topic = detectTopic(it.item_name, it.category || tx.category);
+            if (!topic) continue;
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: it.item_name,
+              price: Number(it.price || 0) * (parseInt(it.quantity, 10) || 1),
+              category: it.category || topic.budgetCategory
+            });
+          }
+        } else {
+          const topic = detectTopic(tx.description, tx.category);
+          if (topic) {
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: tx.description,
+              price: Number(tx.amount || 0),
+              category: topic.budgetCategory
+            });
+          }
+        }
+      }
+
+      const duplicates = Object.values(buckets)
+        .filter(b => b.entries.length >= 2)
+        .sort((a, b) => {
+          const scoreA = (a.group.key === 'shoes' ? 500 : 0) + a.entries.reduce((s, e) => s + e.price, 0);
+          const scoreB = (b.group.key === 'shoes' ? 500 : 0) + b.entries.reduce((s, e) => s + e.price, 0);
+          return scoreB - scoreA;
+        });
+
+      if (duplicates.length > 0) {
+        const top = duplicates[0];
+        const sorted = [...top.entries].sort((a, b) => a.date.localeCompare(b.date));
+        const uniqueDates = [...new Set(sorted.map(e => e.date))];
+        const total = sorted.reduce((s, e) => s + (Number(e.price) || 0), 0);
+        const ordList = uniqueDates.slice(-3).map(d => 'the ' + getOrdinalDayDash(d));
+        const dateText = ordList.length >= 2
+          ? (ordList.length === 2 ? `${ordList[0]} and ${ordList[1]}` : `${ordList.slice(0, -1).join(', ')}, and ${ordList[ordList.length - 1]}`)
+          : `${ordList[0]} (${sorted.length}x)`;
+        return {
+          duplicateDetected: true,
+          repeatedTopic: top.group.label,
+          repeatedCategory: top.group.budgetCategory,
+          occurrences: sorted,
+          insight: `✨ FinWise noticed: You bought ${top.group.label} on ${dateText} of this month! Treating yourself is great, but keep an eye on your '${top.group.budgetCategory}' budget (${curr} ${money(total)} spent) to avoid overspending this month~`
+        };
+      }
+
+      return {
+        duplicateDetected: false,
+        repeatedTopic: null,
+        repeatedCategory: null,
+        occurrences: [],
+        insight: "✨ FinWise noticed: Your itemized receipt purchases over the last 14 days look well-balanced with no repetitive impulse buys!"
+      };
+    }
+
+    async function refreshDashboardAiInsight(currentReceipt = null) {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const localResult = analyzeReceiptInsightsLocal(transactions, currentReceipt, curr);
+      latestAiInsightResult = localResult;
+      updateDashboardAiInsightBanner(localResult);
+
+      try {
+        const res = await fetch('/api/ai-purchase-insights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recentTransactions: transactions.slice(0, 30),
+            currentReceipt: currentReceipt,
+            currency: curr
+          })
+        });
+        if (res.ok) {
+          const apiData = await res.json();
+          if (apiData && apiData.success && apiData.insight) {
+            latestAiInsightResult = apiData;
+            updateDashboardAiInsightBanner(apiData);
+          }
+        }
+      } catch (_) {}
+    }
+
+    function updateDashboardAiInsightBanner(result) {
+      const textEl = document.getElementById('aiPurchaseInsightText');
+      const badgeEl = document.getElementById('aiInsightBadge');
+      const cardEl = document.getElementById('aiPurchaseInsightCard');
+      if (!textEl || !result) return;
+      textEl.textContent = result.insight;
+      if (badgeEl) {
+        if (result.duplicateDetected) {
+          badgeEl.className = "px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold";
+          badgeEl.textContent = "Repeat Alert";
+          if (cardEl) cardEl.className = "rounded-xl bg-gradient-to-r from-amber-50/90 via-indigo-50/60 to-purple-50/60 p-3.5 border border-amber-200/80 shadow-sm";
+        } else {
+          badgeEl.className = "px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold";
+          badgeEl.textContent = "Healthy";
+          if (cardEl) cardEl.className = "rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm";
+        }
+      }
+    }
+
     function showAiModal() {
-      alert("FinWise AI Insights (Sprint 3):\n\n• Predictive Cash Flow Forecasting\n• Anomaly detection for unusual debit spikes\n• Smart savings automated recommendations");
+      const modal = document.getElementById('aiPurchaseInsightsModal');
+      const bodyEl = document.getElementById('aiModalBody');
+      const occEl = document.getElementById('aiModalOccurrences');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const result = latestAiInsightResult || analyzeReceiptInsightsLocal(transactions, null, curr);
+      if (bodyEl) bodyEl.textContent = result.insight;
+      if (occEl) {
+        const occs = Array.isArray(result.occurrences) ? result.occurrences : [];
+        occEl.innerHTML = occs.length > 0
+          ? `<p class="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Matched Purchases (Last 14 Days)</p>` +
+            occs.map(o => `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+                <div class="min-w-0">
+                  <p class="font-semibold text-text-primary truncate">${escapeHtml(o.itemName)}</p>
+                  <p class="text-[10px] text-text-muted">${escapeHtml(o.category || '')} · ${escapeHtml(o.date || '')}</p>
+                </div>
+                <span class="font-bold text-alert-coral shrink-0 ml-2">${curr} ${money(o.price)}</span>
+              </div>
+            `).join('')
+          : '<p class="text-[11px] text-text-muted text-center py-2">Scan more itemized receipts to unlock deeper purchase pattern insights.</p>';
+      }
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeAiModal() {
+      const modal = document.getElementById('aiPurchaseInsightsModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function renderModalReceiptItemsPreview() {
+      const box = document.getElementById('modalReceiptItemsPreview');
+      const list = document.getElementById('modalReceiptItemsList');
+      const countEl = document.getElementById('modalReceiptItemsCount');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      if (!box || !list) return;
+      if (!pendingReceiptItems || pendingReceiptItems.length === 0) {
+        box.classList.add('hidden');
+        list.innerHTML = '';
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
+      box.classList.remove('hidden');
+      if (countEl) countEl.textContent = String(pendingReceiptItems.length);
+      list.innerHTML = pendingReceiptItems.map((it, idx) => `
+        <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-indigo-100/80 text-[11px]">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-text-primary truncate">${escapeHtml(it.item_name)} <span class="text-text-muted font-normal">×${it.quantity || 1}</span></p>
+            <span class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">${escapeHtml(it.category || 'General')}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="font-bold text-text-primary">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
+            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none" title="Remove item">×</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removePendingReceiptItem(index) {
+      pendingReceiptItems.splice(index, 1);
+      renderModalReceiptItemsPreview();
+    }
+
+    function clearPendingReceiptItems() {
+      pendingReceiptItems = [];
+      renderModalReceiptItemsPreview();
     }
 
     function updateCategoryOptions(selected = "") {
@@ -1278,6 +1684,13 @@
       if (currLabel) currLabel.textContent = curr;
       if (currPrefix) currPrefix.textContent = curr;
       const record = id ? transactions.find(t => t.id === id) : null;
+      pendingReceiptItems = record && Array.isArray(record.receipt_items)
+        ? normalizeReceiptItemsClient(record.receipt_items, record.category)
+        : [];
+      renderModalReceiptItemsPreview();
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) { aiTipEl.classList.add('hidden'); aiTipEl.textContent = ''; }
+
       document.getElementById("transactionDialogTitle").textContent = record ? "Edit Transaction" : "Add Transaction";
       document.getElementById("transactionType").value = record ? record.type : "expense";
       updateCategoryOptions(record ? record.category : "");
@@ -1594,8 +2007,30 @@
         finalCategory = "Other Expenses";
       }
 
-      const itemNote = (parsed.items && parsed.items.length) ? ` (${parsed.items.slice(0, 2).join(", ")})` : "";
+      const itemList = normalizeReceiptItemsClient(parsed.receipt_items || parsed.items || [], finalCategory);
+      pendingReceiptItems = itemList;
+      renderModalReceiptItemsPreview();
+
+      const itemNames = itemList.map(i => i.item_name);
+      const itemNote = itemNames.length ? ` (${itemNames.slice(0, 2).join(", ")})` : "";
       const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
+
+      // Show instant 14-day duplicate purchase tip inside modal if detected
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) {
+        const insightRes = analyzeReceiptInsightsLocal(transactions, {
+          merchant: parsed.merchant,
+          category: finalCategory,
+          date: extractedDate,
+          receipt_items: itemList
+        }, curr);
+        if (insightRes.duplicateDetected) {
+          aiTipEl.textContent = insightRes.insight;
+          aiTipEl.classList.remove('hidden');
+        } else {
+          aiTipEl.classList.add('hidden');
+        }
+      }
 
       // 4. Auto-Fill Form Fields
       const typeSelect = document.getElementById("transactionType");
@@ -1693,6 +2128,11 @@
       const userId = await getAuthenticatedUserId();
       const categoryId = categoryIdMap[category] || "other";
       const isoDate = dateStr.includes("T") ? dateStr : (dateStr + "T12:00:00Z");
+      const itemsToSave = normalizeReceiptItemsClient(pendingReceiptItems, category);
+
+      if (itemsToSave.length > 0) {
+        cacheReceiptItemsForTx(oldId, description, dateStr, itemsToSave);
+      }
 
       closeTransactionDialog();
 
@@ -1707,7 +2147,8 @@
             category_id: categoryId,
             category: category,
             transaction_date: isoDate,
-            date: isoDate
+            date: isoDate,
+            receipt_items: itemsToSave
           };
 
           let data = null;
@@ -1738,7 +2179,7 @@
             error = res.error;
           }
 
-          // If schema cache doesn't have 'category' or 'date' columns yet:
+          // If schema cache doesn't have optional columns yet:
           if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
             const fallbackPayload = {
               user_id: userId,
@@ -1759,14 +2200,25 @@
                 .from('transactions')
                 .insert(fallbackPayload);
             }
+          } else if (Array.isArray(data) && data[0] && itemsToSave.length > 0) {
+            cacheReceiptItemsForTx(data[0].id, description, dateStr, itemsToSave);
           }
         } catch (e) {
           console.warn("Supabase transaction save error:", e);
         }
       }
 
+      pendingReceiptItems = [];
       // Force Cloud Refresh immediately to re-render confirmed database state
       await loadTransactions();
+      if (itemsToSave.length > 0) {
+        refreshDashboardAiInsight({
+          merchant: description,
+          category: category,
+          date: dateStr,
+          receipt_items: itemsToSave
+        });
+      }
     }
 
     async function deleteTransaction(id) {
@@ -1830,40 +2282,81 @@
         </div>
       `).join("") : '<p class="text-xs text-text-muted">No expenses recorded for this month.</p>';
 
-      // Recent records (top 4)
+      // Recent records (top 4) with itemized receipt badge & accordion
       const sorted = [...transactions].sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
       const recentHost = document.getElementById("recentRecords");
       const latest = sorted.slice(0, 4);
-      recentHost.innerHTML = latest.length ? latest.map(item => `
-        <div class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors">
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
-            <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+      recentHost.innerHTML = latest.length ? latest.map(item => {
+        const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
+        const hasItems = rItems.length > 0;
+        const rowKey = 'dash_rc_' + String(item.id);
+        const isOpen = Boolean(expandedReceiptRows[rowKey]);
+        return `
+        <div class="transition-colors">
+          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+                ${hasItems ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-50 text-primary text-[10px] font-bold border border-indigo-200/70 shrink-0" title="Tap to view ${rItems.length} receipt items">🧾 ${rItems.length}</span>` : ''}
+              </div>
+              <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}${hasItems ? ' · <span class="text-primary font-semibold">Tap to inspect items</span>' : ''}</p>
+            </div>
+            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+              ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
+            </span>
           </div>
-          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
-            ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
-          </span>
+          ${hasItems ? `
+            <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} bg-slate-50/90 border-t border-slate-100 px-3 py-2.5 space-y-1.5">
+              <div class="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                <span>🧾 Itemized Receipt (${rItems.length} items)</span>
+                <button type="button" onclick="openTransactionDialog('${escapeHtml(item.id)}')" class="text-primary hover:underline font-bold">Edit</button>
+              </div>
+              ${rItems.map(it => `
+                <div class="flex items-center justify-between text-[11px] bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
+                  <div class="min-w-0 flex-1">
+                    <span class="font-semibold text-text-primary">${escapeHtml(it.item_name)}</span>
+                    <span class="text-text-muted ml-1">×${parseInt(it.quantity, 10) || 1}</span>
+                    ${it.category ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-semibold">${escapeHtml(it.category)}</span>` : ''}
+                  </div>
+                  <span class="font-bold text-text-primary shrink-0 ml-2">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
         </div>
-      `).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
+      `}).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
 
-      // Full history list
-      document.getElementById("transactionCount").textContent = `${sorted.length} record${sorted.length === 1 ? "" : "s"}`;
-      document.getElementById("emptyTransactions").classList.toggle("hidden", sorted.length !== 0);
-      document.getElementById("transactionRows").innerHTML = sorted.map(item => `
-        <div class="flex items-center justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
-            <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+      // Full history list (null-safe)
+      const txCountEl = document.getElementById("transactionCount");
+      if (txCountEl) txCountEl.textContent = `${sorted.length} record${sorted.length === 1 ? "" : "s"}`;
+      const emptyTxEl = document.getElementById("emptyTransactions");
+      if (emptyTxEl) emptyTxEl.classList.toggle("hidden", sorted.length !== 0);
+      const txRowsEl = document.getElementById("transactionRows");
+      if (txRowsEl) {
+        txRowsEl.innerHTML = sorted.map(item => `
+          <div class="flex items-center justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-xs font-bold text-text-primary">${escapeHtml(item.description)}</p>
+              <p class="text-[11px] text-text-muted">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+            </div>
+            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+              ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
+            </span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button aria-label="Edit" class="text-xs text-primary font-semibold px-1.5 py-1 hover:bg-primary/5 rounded" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>
+              <button aria-label="Delete" class="text-xs text-alert-coral font-semibold px-1.5 py-1 hover:bg-alert-coral-subtle rounded" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
+            </div>
           </div>
-          <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
-            ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
-          </span>
-          <div class="flex items-center gap-1 shrink-0">
-            <button aria-label="Edit" class="text-xs text-primary font-semibold px-1.5 py-1 hover:bg-primary/5 rounded" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>
-            <button aria-label="Delete" class="text-xs text-alert-coral font-semibold px-1.5 py-1 hover:bg-alert-coral-subtle rounded" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
-          </div>
-        </div>
-      `).join("");
+        `).join("");
+      }
+
+      refreshDashboardAiInsight();
+    }
+
+    function toggleReceiptAccordion(rowKey) {
+      expandedReceiptRows[rowKey] = !expandedReceiptRows[rowKey];
+      const el = document.getElementById('acc-' + rowKey);
+      if (el) el.classList.toggle('hidden', !expandedReceiptRows[rowKey]);
     }
 
     function showHome() {

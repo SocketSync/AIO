@@ -26,14 +26,90 @@ class TransactionProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
 
   List<TransactionRecord> get filteredTransactions {
+    final q = _searchQuery.toLowerCase();
     return _transactions.where((t) {
       final matchesCategory = _selectedCategory == null || t.categoryId == _selectedCategory;
       final matchesType = _selectedType == null || t.type == _selectedType;
-      final matchesQuery = _searchQuery.isEmpty ||
-          t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (t.notes != null && t.notes!.toLowerCase().contains(_searchQuery.toLowerCase()));
+      final matchesReceiptItem = q.isNotEmpty &&
+          t.receiptItems.any((item) =>
+              (item['item_name'] ?? '').toString().toLowerCase().contains(q) ||
+              (item['category'] ?? '').toString().toLowerCase().contains(q));
+      final matchesQuery = q.isEmpty ||
+          t.title.toLowerCase().contains(q) ||
+          (t.notes != null && t.notes!.toLowerCase().contains(q)) ||
+          matchesReceiptItem;
       return matchesCategory && matchesType && matchesQuery;
     }).toList();
+  }
+
+  String _ordinalDay(int day) {
+    if (day > 3 && day < 21) return '${day}th';
+    switch (day % 10) {
+      case 1:
+        return '${day}st';
+      case 2:
+        return '${day}nd';
+      case 3:
+        return '${day}rd';
+      default:
+        return '${day}th';
+    }
+  }
+
+  /// Analyzes the last 14 days of itemized receipt purchases for duplicate/frequent buys.
+  String get aiPurchaseInsight {
+    final cutoff = DateTime.now().subtract(const Duration(days: 14));
+    final recentExpenses = _transactions
+        .where((t) => t.isExpense && !t.date.isBefore(cutoff))
+        .toList();
+
+    final shoeDates = <DateTime>[];
+    final coffeeDates = <DateTime>[];
+    double shoeSpend = 0.0;
+    double coffeeSpend = 0.0;
+
+    for (final tx in recentExpenses) {
+      if (tx.receiptItems.isNotEmpty) {
+        for (final item in tx.receiptItems) {
+          final name = (item['item_name'] ?? '').toString().toLowerCase();
+          final cat = (item['category'] ?? '').toString().toLowerCase();
+          final linePrice = ((item['price'] as num?)?.toDouble() ?? 0.0) *
+              ((item['quantity'] as num?)?.toInt() ?? 1);
+          if (name.contains('shoe') || name.contains('sneaker') || name.contains('footwear')) {
+            shoeDates.add(tx.date);
+            shoeSpend += linePrice;
+          } else if (name.contains('coffee') ||
+              name.contains('latte') ||
+              name.contains('americano') ||
+              cat.contains('coffee')) {
+            coffeeDates.add(tx.date);
+            coffeeSpend += linePrice;
+          }
+        }
+      } else {
+        final lower = tx.title.toLowerCase();
+        if (lower.contains('shoe') || lower.contains('sneaker')) {
+          shoeDates.add(tx.date);
+          shoeSpend += tx.amount;
+        } else if (lower.contains('coffee') || lower.contains('cafe')) {
+          coffeeDates.add(tx.date);
+          coffeeSpend += tx.amount;
+        }
+      }
+    }
+
+    if (shoeDates.length >= 2) {
+      shoeDates.sort();
+      final d1 = _ordinalDay(shoeDates.first.day);
+      final d2 = _ordinalDay(shoeDates.last.day);
+      return "✨ FinWise noticed: You bought shoes on the $d1 and the $d2 of this month! Treating yourself is great, but keep an eye on your 'Clothing' budget (RM ${shoeSpend.toStringAsFixed(2)} spent) to avoid overspending this month~";
+    }
+
+    if (coffeeDates.length >= 2) {
+      return "✨ FinWise noticed: You bought coffee ${coffeeDates.length} times over the last 14 days (RM ${coffeeSpend.toStringAsFixed(2)} total). Brewing at home twice a week could grow your savings!";
+    }
+
+    return "✨ FinWise noticed: Your itemized receipt purchases over the last 14 days look well-balanced with no repetitive impulse buys!";
   }
 
   List<TransactionRecord> get recentTransactions {
@@ -89,6 +165,7 @@ class TransactionProvider extends ChangeNotifier {
     required String categoryId,
     required DateTime date,
     String? notes,
+    List<Map<String, dynamic>> receiptItems = const [],
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -103,6 +180,7 @@ class TransactionProvider extends ChangeNotifier {
         categoryId: categoryId,
         date: date,
         notes: notes,
+        receiptItems: receiptItems,
       );
 
       final created = await _databaseService.createTransaction(newRecord);

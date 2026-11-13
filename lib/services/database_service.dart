@@ -96,12 +96,45 @@ class DatabaseService {
         TransactionRecord(
           id: _uuid.v4(),
           userId: userId,
+          title: 'AEON Mall Supermarket & Footwear',
+          amount: 224.00,
+          type: TransactionType.expense,
+          categoryId: 'shopping',
+          date: now.subtract(const Duration(days: 5)),
+          notes: 'Nike Sneakers and Colgate Toothpaste',
+          receiptItems: const [
+            {'item_name': 'Nike Sneakers', 'price': 199.00, 'quantity': 1, 'category': 'Clothing'},
+            {'item_name': 'Colgate Toothpaste', 'price': 12.50, 'quantity': 2, 'category': 'Groceries'},
+          ],
+        ),
+        TransactionRecord(
+          id: _uuid.v4(),
+          userId: userId,
           title: 'Village Grocer Weekly',
           amount: 142.50,
           type: TransactionType.expense,
           categoryId: 'groceries',
           date: now.subtract(const Duration(days: 1)),
           notes: 'Fresh vegetables, milk, eggs, pantry staples',
+          receiptItems: const [
+            {'item_name': 'Organic Bananas', 'price': 14.50, 'quantity': 1, 'category': 'Groceries'},
+            {'item_name': 'Farm Fresh Milk 2L', 'price': 18.90, 'quantity': 2, 'category': 'Groceries'},
+            {'item_name': 'Artisan Sourdough Loaf', 'price': 16.00, 'quantity': 1, 'category': 'Groceries'},
+          ],
+        ),
+        TransactionRecord(
+          id: _uuid.v4(),
+          userId: userId,
+          title: 'JD Sports Mid Valley',
+          amount: 189.00,
+          type: TransactionType.expense,
+          categoryId: 'shopping',
+          date: now.subtract(const Duration(days: 2)),
+          notes: 'Casual running shoes & socks',
+          receiptItems: const [
+            {'item_name': 'Casual Running Shoes', 'price': 169.00, 'quantity': 1, 'category': 'Clothing'},
+            {'item_name': 'Athletic Crew Socks', 'price': 20.00, 'quantity': 1, 'category': 'Clothing'},
+          ],
         ),
         TransactionRecord(
           id: _uuid.v4(),
@@ -112,6 +145,10 @@ class DatabaseService {
           categoryId: 'food_dining',
           date: now.subtract(const Duration(hours: 4)),
           notes: 'Americano & sourdough toast',
+          receiptItems: const [
+            {'item_name': 'Americano Coffee', 'price': 12.00, 'quantity': 1, 'category': 'Food & Dining'},
+            {'item_name': 'Sourdough Toast', 'price': 16.00, 'quantity': 1, 'category': 'Food & Dining'},
+          ],
         ),
         TransactionRecord(
           id: _uuid.v4(),
@@ -364,12 +401,27 @@ class DatabaseService {
         final payload = transaction.toSupabaseMap();
         // Remove local ID so Supabase generates UUID automatically on INSERT!
         payload.remove('id');
-        final inserted = await client
-            .from('transactions')
-            .insert(payload)
-            .select()
-            .single()
-            .timeout(const Duration(seconds: 10));
+        Map<String, dynamic> inserted;
+        try {
+          inserted = await client
+              .from('transactions')
+              .insert(payload)
+              .select()
+              .single()
+              .timeout(const Duration(seconds: 10));
+        } catch (colErr) {
+          if (colErr.toString().contains('receipt_items') || colErr.toString().contains('PGRST204')) {
+            payload.remove('receipt_items');
+            inserted = await client
+                .from('transactions')
+                .insert(payload)
+                .select()
+                .single()
+                .timeout(const Duration(seconds: 10));
+          } else {
+            rethrow;
+          }
+        }
 
         final created = TransactionRecord.fromJson(inserted);
         // Force Cloud Refresh immediately to confirm database state
@@ -405,12 +457,26 @@ class DatabaseService {
       try {
         final payload = updatedRecord.toSupabaseMap();
         payload.remove('id');
-        await client
-            .from('transactions')
-            .update(payload)
-            .eq('id', updatedRecord.id)
-            .eq('user_id', userId)
-            .timeout(const Duration(seconds: 10));
+        try {
+          await client
+              .from('transactions')
+              .update(payload)
+              .eq('id', updatedRecord.id)
+              .eq('user_id', userId)
+              .timeout(const Duration(seconds: 10));
+        } catch (colErr) {
+          if (colErr.toString().contains('receipt_items') || colErr.toString().contains('PGRST204')) {
+            payload.remove('receipt_items');
+            await client
+                .from('transactions')
+                .update(payload)
+                .eq('id', updatedRecord.id)
+                .eq('user_id', userId)
+                .timeout(const Duration(seconds: 10));
+          } else {
+            rethrow;
+          }
+        }
         debugPrint('[DatabaseService:Supabase] Updated transaction: ${updatedRecord.title}');
         // Force Cloud Refresh immediately
         await getTransactions(userId);

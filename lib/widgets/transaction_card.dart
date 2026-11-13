@@ -4,7 +4,7 @@ import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../theme/app_theme.dart';
 
-class TransactionCard extends StatelessWidget {
+class TransactionCard extends StatefulWidget {
   final TransactionRecord transaction;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -17,15 +17,23 @@ class TransactionCard extends StatelessWidget {
   });
 
   @override
+  State<TransactionCard> createState() => _TransactionCardState();
+}
+
+class _TransactionCardState extends State<TransactionCard> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final transaction = widget.transaction;
     final category = CategoryItem.getById(transaction.categoryId);
     final isIncome = transaction.isIncome;
     final currencyFormat = NumberFormat.currency(symbol: 'RM ', decimalDigits: 2);
     final dateFormat = DateFormat('MMM d, yyyy');
+    final hasReceiptItems = transaction.receiptItems.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(14),
@@ -38,152 +46,278 @@ class TransactionCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Category Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: category.color.withValues(alpha: 0.14),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              category.icon,
-              color: category.color,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Title & Date & Category
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+          InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: hasReceiptItems
+                ? () => setState(() => _isExpanded = !_isExpanded)
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  // Category Icon
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: category.color.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      category.icon,
+                      color: category.color,
+                      size: 22,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      category.name,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textMuted,
+                  const SizedBox(width: 12),
+
+                  // Title, Receipt Badge & Date/Category
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                transaction.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.onSurface,
+                                ),
+                              ),
+                            ),
+                            if (hasReceiptItems) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                                ),
+                                child: Text(
+                                  '🧾 ${transaction.receiptItems.length}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              category.name,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            const Text(' • ', style: TextStyle(fontSize: 11, color: AppColors.outlineVariant)),
+                            Text(
+                              dateFormat.format(transaction.date),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            if (hasReceiptItems) ...[
+                              const Text(' • ', style: TextStyle(fontSize: 11, color: AppColors.outlineVariant)),
+                              Text(
+                                _isExpanded ? 'Hide items' : 'View items',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (transaction.notes != null && transaction.notes!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            transaction.notes!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontStyle: FontStyle.italic,
+                              color: AppColors.outline,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // Amount
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${isIncome ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isIncome ? AppColors.secondary : AppColors.onSurface,
+                        ),
                       ),
-                    ),
-                    const Text(' • ', style: TextStyle(fontSize: 11, color: AppColors.outlineVariant)),
-                    Text(
-                      dateFormat.format(transaction.date),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textMuted,
+                      const SizedBox(height: 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isIncome
+                              ? AppColors.growthMintSubtle
+                              : AppColors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isIncome ? 'INCOME' : 'EXPENSE',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: isIncome ? AppColors.secondary : AppColors.onSurfaceVariant,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                if (transaction.notes != null && transaction.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    transaction.notes!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontStyle: FontStyle.italic,
-                      color: AppColors.outline,
-                    ),
+                    ],
+                  ),
+
+                  // Context Menu (Edit & Delete)
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, size: 20, color: AppColors.outline),
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    onSelected: (val) {
+                      if (val == 'edit') {
+                        widget.onEdit();
+                      } else if (val == 'delete') {
+                        widget.onDelete();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                            SizedBox(width: 8),
+                            Text('Edit', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(width: 8),
-
-          // Amount
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isIncome ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isIncome ? AppColors.secondary : AppColors.onSurface,
-                ),
+          // Expandable Itemized Receipt Accordion
+          if (hasReceiptItems && _isExpanded)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceContainerLow,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(14)),
+                border: Border(top: BorderSide(color: AppColors.borderNeutral)),
               ),
-              const SizedBox(height: 2),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isIncome
-                      ? AppColors.growthMintSubtle
-                      : AppColors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  isIncome ? 'INCOME' : 'EXPENSE',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: isIncome ? AppColors.secondary : AppColors.onSurfaceVariant,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🧾 Itemized Receipt (${transaction.receiptItems.length} items)',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: AppColors.textMuted,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  ...transaction.receiptItems.map((item) {
+                    final itemName = (item['item_name'] ?? 'Item').toString();
+                    final qty = (item['quantity'] as num?)?.toInt() ?? 1;
+                    final price = (item['price'] as num?)?.toDouble() ?? 0.0;
+                    final subCat = (item['category'] ?? '').toString();
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.borderNeutral.withValues(alpha: 0.7)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$itemName ×$qty',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.onSurface,
+                                  ),
+                                ),
+                                if (subCat.isNotEmpty)
+                                  Text(
+                                    subCat,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            currencyFormat.format(price * qty),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
               ),
-            ],
-          ),
-
-          // Context Menu (Edit & Delete)
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, size: 20, color: AppColors.outline),
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            onSelected: (val) {
-              if (val == 'edit') {
-                onEdit();
-              } else if (val == 'delete') {
-                onDelete();
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text('Edit', style: TextStyle(fontSize: 13)),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                    SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(fontSize: 13, color: AppColors.error)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
         ],
       ),
     );
   }
 }
-

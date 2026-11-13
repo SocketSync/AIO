@@ -167,6 +167,14 @@
         </div>
       </div>
 
+      <!-- AI PURCHASE INSIGHT BANNER -->
+      <div id="txAiInsightBanner" class="hidden rounded-xl bg-gradient-to-r from-amber-50/90 via-indigo-50/60 to-purple-50/60 p-3 border border-amber-200/80 shadow-xs">
+        <div class="flex items-start gap-2">
+          <span class="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">auto_awesome</span>
+          <p id="txAiInsightText" class="text-[11px] text-slate-700 font-medium leading-relaxed"></p>
+        </div>
+      </div>
+
       <!-- TRANSACTIONS LIST CONTAINER -->
       <div id="tx-list-container" class="space-y-2 pb-6">
         <!-- Rendered dynamically -->
@@ -278,7 +286,7 @@
 
   <!-- ADD / EDIT TRANSACTION MODAL -->
   <div id="txModal" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 transition-opacity">
-    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200">
+    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl border border-slate-200">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-[20px]" id="modal-icon">edit_note</span>
@@ -390,6 +398,21 @@
           </div>
         </div>
 
+        <!-- Extracted Itemized Receipt Items Preview -->
+        <div id="modalReceiptItemsPreview" class="hidden rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold text-primary flex items-center gap-1">
+              <span>🧾</span>
+              <span>Itemized Receipt Breakdown (<span id="modalReceiptItemsCount">0</span>)</span>
+            </span>
+            <button type="button" onclick="clearPendingReceiptItems()" class="text-[10px] font-semibold text-text-muted hover:text-alert-coral">Clear items</button>
+          </div>
+          <div id="modalReceiptItemsList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Immediate AI Purchase Frequency Tip (when scanning) -->
+        <div id="modalAiTipBanner" class="hidden rounded-xl border border-amber-200 bg-amber-50/90 p-2.5 text-[11px] text-amber-900 font-medium leading-relaxed"></div>
+
         <!-- Submit Button -->
         <div class="pt-2">
           <button type="submit" id="modal-save-btn" class="w-full py-3 rounded-xl bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-container transition-all active:scale-[0.98]">
@@ -475,6 +498,192 @@
     let allTransactions = [];
     let currentTypeFilter = "all";
     let editingTxId = null;
+    let pendingReceiptItems = [];
+    let expandedReceiptRows = {};
+
+    function normalizeReceiptItemsClient(rawItems, fallbackCategory = "General") {
+      if (!Array.isArray(rawItems)) return [];
+      const out = [];
+      for (const entry of rawItems) {
+        if (typeof entry === "string" && entry.trim()) {
+          out.push({
+            item_name: entry.replace(/[<>]/g, "").trim().slice(0, 120),
+            price: 0,
+            quantity: 1,
+            category: fallbackCategory || "General"
+          });
+        } else if (entry && typeof entry === "object") {
+          const itemName = String(entry.item_name || entry.name || "").replace(/[<>]/g, "").trim().slice(0, 120);
+          if (!itemName) continue;
+          const p = Number(entry.price);
+          const q = parseInt(entry.quantity, 10);
+          out.push({
+            item_name: itemName,
+            price: Number.isFinite(p) && p >= 0 ? Math.round(p * 100) / 100 : 0,
+            quantity: Number.isFinite(q) && q >= 1 ? Math.min(q, 999) : 1,
+            category: String(entry.category || fallbackCategory || "General").replace(/[<>]/g, "").trim().slice(0, 60) || "General"
+          });
+        }
+      }
+      return out.slice(0, 40);
+    }
+
+    function getReceiptCacheStorageKey() {
+      const email = (getActiveEmail() || "default_user").replace(/[^a-z0-9]/g, "_");
+      return "finwise_receipt_items_cache_" + email;
+    }
+
+    function getReceiptItemsCache() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(getReceiptCacheStorageKey()) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function cacheReceiptItemsForTx(id, desc, dateStr, items) {
+      const cleanItems = normalizeReceiptItemsClient(items);
+      if (!cleanItems.length) return;
+      const cache = getReceiptItemsCache();
+      if (id) cache["id_" + id] = cleanItems;
+      if (desc && dateStr) {
+        cache["sig_" + String(desc).trim().toLowerCase() + "_" + String(dateStr).slice(0, 10)] = cleanItems;
+      }
+      try { localStorage.setItem(getReceiptCacheStorageKey(), JSON.stringify(cache)); } catch (_) {}
+    }
+
+    function resolveReceiptItemsForRow(row) {
+      if (Array.isArray(row.receipt_items) && row.receipt_items.length > 0) {
+        return normalizeReceiptItemsClient(row.receipt_items, row.category);
+      }
+      const cache = getReceiptItemsCache();
+      if (row.id && Array.isArray(cache["id_" + row.id])) {
+        return cache["id_" + row.id];
+      }
+      const titleKey = (row.title || row.description || "").trim().toLowerCase();
+      const dateKey = String(row.transaction_date || row.date || "").slice(0, 10);
+      if (titleKey && dateKey && Array.isArray(cache["sig_" + titleKey + "_" + dateKey])) {
+        return cache["sig_" + titleKey + "_" + dateKey];
+      }
+      return [];
+    }
+
+    function getOrdinalDayTx(dateStr) {
+      if (!dateStr) return 'recently';
+      const parts = String(dateStr).slice(0, 10).split('-');
+      if (parts.length !== 3) return dateStr;
+      const day = parseInt(parts[2], 10);
+      if (!Number.isFinite(day)) return dateStr;
+      if (day > 3 && day < 21) return day + 'th';
+      switch (day % 10) {
+        case 1: return day + 'st';
+        case 2: return day + 'nd';
+        case 3: return day + 'rd';
+        default: return day + 'th';
+      }
+    }
+
+    function analyzeReceiptInsightsTx(txList, currentReceipt = null, curr = 'RM') {
+      const topicGroups = [
+        { key: 'shoes', label: 'shoes', budgetCategory: 'Clothing', keywords: ['shoe', 'shoes', 'sneaker', 'sneakers', 'footwear', 'boots', 'sandal', 'trainers', 'running'] },
+        { key: 'clothing', label: 'clothing items', budgetCategory: 'Clothing', keywords: ['shirt', 't-shirt', 'pants', 'jeans', 'jacket', 'hoodie', 'dress', 'socks', 'uniqlo', 'apparel'] },
+        { key: 'coffee', label: 'coffee/drinks', budgetCategory: 'Food & Dining', keywords: ['coffee', 'latte', 'americano', 'espresso', 'cappuccino', 'macchiato', 'boba', 'matcha', 'tea', 'starbucks', 'zus'] },
+        { key: 'snacks', label: 'snacks & treats', budgetCategory: 'Food & Dining', keywords: ['croissant', 'cake', 'pastry', 'donut', 'ice cream', 'chocolate', 'snack'] },
+        { key: 'groceries', label: 'grocery essentials', budgetCategory: 'Groceries', keywords: ['milk', 'bread', 'eggs', 'banana', 'toothpaste', 'sourdough'] }
+      ];
+      const detectTopic = (name, cat) => {
+        const lower = (String(name || '') + ' ' + String(cat || '')).toLowerCase();
+        return topicGroups.find(g => g.keywords.some(kw => lower.includes(kw))) || null;
+      };
+
+      const cutoffMs = Date.now() - 14 * 86400000;
+      const combined = Array.isArray(txList) ? [...txList] : [];
+      if (currentReceipt && Array.isArray(currentReceipt.receipt_items) && currentReceipt.receipt_items.length > 0) {
+        combined.unshift({
+          type: 'expense',
+          date: currentReceipt.date || new Date().toISOString().slice(0, 10),
+          category: currentReceipt.category || 'Shopping',
+          description: currentReceipt.merchant || 'Current Receipt',
+          receipt_items: currentReceipt.receipt_items
+        });
+      }
+
+      const recentExpenses = combined.filter(tx => {
+        if (!tx || tx.type === 'income') return false;
+        const dStr = String(tx.date || '').slice(0, 10);
+        const ts = new Date(dStr + 'T12:00:00Z').getTime();
+        return Number.isFinite(ts) && ts >= cutoffMs;
+      });
+
+      const buckets = {};
+      for (const tx of recentExpenses) {
+        const dStr = String(tx.date || '').slice(0, 10);
+        const items = Array.isArray(tx.receipt_items) ? tx.receipt_items : [];
+        if (items.length > 0) {
+          for (const it of items) {
+            const topic = detectTopic(it.item_name, it.category || tx.category);
+            if (!topic) continue;
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: it.item_name,
+              price: Number(it.price || 0) * (parseInt(it.quantity, 10) || 1),
+              category: it.category || topic.budgetCategory
+            });
+          }
+        } else {
+          const topic = detectTopic(tx.description, tx.category);
+          if (topic) {
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: tx.description,
+              price: Number(tx.amount || 0),
+              category: topic.budgetCategory
+            });
+          }
+        }
+      }
+
+      const duplicates = Object.values(buckets)
+        .filter(b => b.entries.length >= 2)
+        .sort((a, b) => {
+          const scoreA = (a.group.key === 'shoes' ? 500 : 0) + a.entries.reduce((s, e) => s + e.price, 0);
+          const scoreB = (b.group.key === 'shoes' ? 500 : 0) + b.entries.reduce((s, e) => s + e.price, 0);
+          return scoreB - scoreA;
+        });
+
+      if (duplicates.length > 0) {
+        const top = duplicates[0];
+        const sorted = [...top.entries].sort((a, b) => a.date.localeCompare(b.date));
+        const uniqueDates = [...new Set(sorted.map(e => e.date))];
+        const total = sorted.reduce((s, e) => s + (Number(e.price) || 0), 0);
+        const ordList = uniqueDates.slice(-3).map(d => 'the ' + getOrdinalDayTx(d));
+        const dateText = ordList.length >= 2
+          ? (ordList.length === 2 ? `${ordList[0]} and ${ordList[1]}` : `${ordList.slice(0, -1).join(', ')}, and ${ordList[ordList.length - 1]}`)
+          : `${ordList[0]} (${sorted.length}x)`;
+        return {
+          duplicateDetected: true,
+          insight: `✨ FinWise noticed: You bought ${top.group.label} on ${dateText} of this month! Treating yourself is great, but keep an eye on your '${top.group.budgetCategory}' budget (${curr} ${money(total)} spent) to avoid overspending this month~`
+        };
+      }
+
+      return { duplicateDetected: false, insight: "" };
+    }
+
+    function refreshTxPageAiInsight(currentReceipt = null) {
+      const banner = document.getElementById('txAiInsightBanner');
+      const textEl = document.getElementById('txAiInsightText');
+      if (!banner || !textEl) return;
+      const res = analyzeReceiptInsightsTx(allTransactions, currentReceipt, getCurrency());
+      if (res.duplicateDetected && res.insight) {
+        textEl.textContent = res.insight;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
 
     function getActiveEmail() {
       return (localStorage.getItem("finwise_user_email") || "").toLowerCase();
@@ -607,7 +816,7 @@
           let { data, error } = await withTimeout(
             supabaseClient
               .from('transactions')
-              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, receipt_items')
               .eq('user_id', userId)
               .order('transaction_date', { ascending: false }),
             10000
@@ -634,7 +843,8 @@
               category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
               description: row.title || row.description || "",
               date: row.transaction_date ? row.transaction_date.slice(0, 10) : (row.date ? row.date.slice(0, 10) : new Date().toISOString().slice(0, 10)),
-              user_id: row.user_id
+              user_id: row.user_id,
+              receipt_items: resolveReceiptItemsForRow(row)
             }));
             saveLocalTransactions(allTransactions);
             filterAndRenderTransactions();
@@ -692,11 +902,15 @@
         // Month filter
         if (monthFilter && (!item.date || !item.date.startsWith(monthFilter))) return false;
 
-        // Search query
+        // Search query (also matches individual receipt line items!)
         if (query) {
           const descMatch = (item.description || '').toLowerCase().includes(query);
           const catMatch = (item.category || '').toLowerCase().includes(query);
-          if (!descMatch && !catMatch) return false;
+          const itemMatch = Array.isArray(item.receipt_items) && item.receipt_items.some(ri =>
+            String(ri.item_name || '').toLowerCase().includes(query) ||
+            String(ri.category || '').toLowerCase().includes(query)
+          );
+          if (!descMatch && !catMatch && !itemMatch) return false;
         }
 
         return true;
@@ -737,39 +951,113 @@
       listContainer.innerHTML = filtered.map(item => {
         const catConfig = categoryIcons[item.category] || { icon: "receipt", color: "text-slate-600", bg: "bg-slate-50" };
         const isIncome = item.type === 'income';
+        const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
+        const hasItems = rItems.length > 0;
+        const rowKey = 'txp_' + String(item.id);
+        const isOpen = Boolean(expandedReceiptRows[rowKey]);
 
         return `
-          <div class="bg-white rounded-xl p-3 shadow-sm border border-border-neutral flex items-center justify-between gap-3 hover:shadow-md transition-all">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs">
-                <span class="material-symbols-outlined text-[20px]">${catConfig.icon}</span>
+          <div class="bg-white rounded-xl shadow-sm border border-border-neutral overflow-hidden hover:shadow-md transition-all">
+            <div ${hasItems ? `onclick="toggleTxReceiptAccordion('${escapeHtml(rowKey)}')"` : ''} class="p-3 flex items-center justify-between gap-3 ${hasItems ? 'cursor-pointer' : ''}">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs">
+                  <span class="material-symbols-outlined text-[20px]">${catConfig.icon}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <p class="font-bold text-xs text-text-primary truncate">${escapeHtml(item.description)}</p>
+                    ${hasItems ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-50 text-primary text-[10px] font-bold border border-indigo-200/70 shrink-0" title="Tap to view ${rItems.length} receipt items">🧾 ${rItems.length}</span>` : ''}
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-0.5 flex-wrap">
+                    <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded">${escapeHtml(item.category)}</span>
+                    <span>·</span>
+                    <span>${escapeHtml(item.date)}</span>
+                    ${hasItems ? `<span class="text-primary font-semibold">· Tap for items</span>` : ''}
+                  </div>
+                </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="font-bold text-xs text-text-primary truncate">${escapeHtml(item.description)}</p>
-                <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-0.5">
-                  <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded">${escapeHtml(item.category)}</span>
-                  <span>·</span>
-                  <span>${escapeHtml(item.date)}</span>
+
+              <div class="flex flex-col items-end gap-1 shrink-0">
+                <span class="font-extrabold text-xs ${isIncome ? 'text-secondary' : 'text-alert-coral'}">
+                  ${isIncome ? '+' : '−'}${curr} ${money(item.amount)}
+                </span>
+                <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                  <button aria-label="Edit" onclick="openTransactionModal('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-primary hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                  </button>
+                  <button aria-label="Delete" onclick="deleteTransaction('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-alert-coral hover:bg-red-50 transition-colors">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div class="flex flex-col items-end gap-1 shrink-0">
-              <span class="font-extrabold text-xs ${isIncome ? 'text-secondary' : 'text-alert-coral'}">
-                ${isIncome ? '+' : '−'}${curr} ${money(item.amount)}
-              </span>
-              <div class="flex items-center gap-1">
-                <button aria-label="Edit" onclick="openTransactionModal('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-primary hover:bg-slate-100 transition-colors">
-                  <span class="material-symbols-outlined text-[16px]">edit</span>
-                </button>
-                <button aria-label="Delete" onclick="deleteTransaction('${escapeHtml(item.id)}')" class="p-1 rounded text-text-muted hover:text-alert-coral hover:bg-red-50 transition-colors">
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
-                </button>
+            ${hasItems ? `
+              <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} bg-slate-50/90 border-t border-slate-100 px-3 py-2.5 space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                  <span>🧾 Itemized Receipt (${rItems.length} items)</span>
+                  <span class="text-primary">Extracted by AI</span>
+                </div>
+                ${rItems.map(it => `
+                  <div class="flex items-center justify-between text-[11px] bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
+                    <div class="min-w-0 flex-1">
+                      <span class="font-semibold text-text-primary">${escapeHtml(it.item_name)}</span>
+                      <span class="text-text-muted ml-1">×${parseInt(it.quantity, 10) || 1}</span>
+                      ${it.category ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-semibold">${escapeHtml(it.category)}</span>` : ''}
+                    </div>
+                    <span class="font-bold text-text-primary shrink-0 ml-2">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
+                  </div>
+                `).join('')}
               </div>
-            </div>
+            ` : ''}
           </div>
         `;
       }).join('');
+
+      refreshTxPageAiInsight();
+    }
+
+    function toggleTxReceiptAccordion(rowKey) {
+      expandedReceiptRows[rowKey] = !expandedReceiptRows[rowKey];
+      const el = document.getElementById('acc-' + rowKey);
+      if (el) el.classList.toggle('hidden', !expandedReceiptRows[rowKey]);
+    }
+
+    function renderModalReceiptItemsPreview() {
+      const box = document.getElementById('modalReceiptItemsPreview');
+      const list = document.getElementById('modalReceiptItemsList');
+      const countEl = document.getElementById('modalReceiptItemsCount');
+      const curr = getCurrency();
+      if (!box || !list) return;
+      if (!pendingReceiptItems || pendingReceiptItems.length === 0) {
+        box.classList.add('hidden');
+        list.innerHTML = '';
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
+      box.classList.remove('hidden');
+      if (countEl) countEl.textContent = String(pendingReceiptItems.length);
+      list.innerHTML = pendingReceiptItems.map((it, idx) => `
+        <div class="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-1.5 border border-indigo-100/80 text-[11px]">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-text-primary truncate">${escapeHtml(it.item_name)} <span class="text-text-muted font-normal">×${it.quantity || 1}</span></p>
+            <span class="text-[9px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">${escapeHtml(it.category || 'General')}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="font-bold text-text-primary">${curr} ${money(Number(it.price || 0) * (parseInt(it.quantity, 10) || 1))}</span>
+            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none" title="Remove item">×</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removePendingReceiptItem(index) {
+      pendingReceiptItems.splice(index, 1);
+      renderModalReceiptItemsPreview();
+    }
+
+    function clearPendingReceiptItems() {
+      pendingReceiptItems = [];
+      renderModalReceiptItemsPreview();
     }
 
     // Modal Operations
@@ -781,6 +1069,13 @@
       document.getElementById('modal-curr-prefix').textContent = curr;
 
       const record = id ? allTransactions.find(t => t.id === id) : null;
+      pendingReceiptItems = record && Array.isArray(record.receipt_items)
+        ? normalizeReceiptItemsClient(record.receipt_items, record.category)
+        : [];
+      renderModalReceiptItemsPreview();
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) { aiTipEl.classList.add('hidden'); aiTipEl.textContent = ''; }
+
       document.getElementById('txModalTitle').textContent = record ? 'Edit Transaction' : 'Record Transaction';
       document.getElementById('modal-icon').textContent = record ? 'edit_note' : 'add_circle';
 
@@ -1098,8 +1393,30 @@
         finalCategory = "Other Expenses";
       }
 
-      const itemNote = (parsed.items && parsed.items.length) ? ` (${parsed.items.slice(0, 2).join(", ")})` : "";
+      const itemList = normalizeReceiptItemsClient(parsed.receipt_items || parsed.items || [], finalCategory);
+      pendingReceiptItems = itemList;
+      renderModalReceiptItemsPreview();
+
+      const itemNames = itemList.map(i => i.item_name);
+      const itemNote = itemNames.length ? ` (${itemNames.slice(0, 2).join(", ")})` : "";
       const extractedDesc = (parsed.merchant || "Store Purchase") + itemNote;
+
+      // Immediate 14-day duplicate purchase check inside modal
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) {
+        const insightRes = analyzeReceiptInsightsTx(allTransactions, {
+          merchant: parsed.merchant,
+          category: finalCategory,
+          date: extractedDate,
+          receipt_items: itemList
+        }, curr);
+        if (insightRes.duplicateDetected && insightRes.insight) {
+          aiTipEl.textContent = insightRes.insight;
+          aiTipEl.classList.remove('hidden');
+        } else {
+          aiTipEl.classList.add('hidden');
+        }
+      }
 
       // 4. Auto-Fill Form Fields
       setModalType(isIncome ? 'income' : 'expense');
@@ -1220,6 +1537,11 @@
       const userId = await getAuthenticatedUserId();
       const categoryId = categoryIdMap[category] || "other";
       const isoDate = date.includes("T") ? date : (date + "T12:00:00Z");
+      const itemsToSave = normalizeReceiptItemsClient(pendingReceiptItems, category);
+
+      if (itemsToSave.length > 0) {
+        cacheReceiptItemsForTx(oldId, desc, date, itemsToSave);
+      }
 
       closeTransactionModal();
 
@@ -1234,7 +1556,8 @@
             category_id: categoryId,
             category: category,
             transaction_date: isoDate,
-            date: isoDate
+            date: isoDate,
+            receipt_items: itemsToSave
           };
 
           let data = null;
@@ -1265,7 +1588,7 @@
             error = res.error;
           }
 
-          // If schema cache doesn't have 'category' or 'date' columns yet:
+          // If schema cache doesn't have optional columns yet:
           if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
             const fallbackPayload = {
               user_id: userId,
@@ -1286,12 +1609,15 @@
                 .from('transactions')
                 .insert(fallbackPayload);
             }
+          } else if (Array.isArray(data) && data[0] && itemsToSave.length > 0) {
+            cacheReceiptItemsForTx(data[0].id, desc, date, itemsToSave);
           }
         } catch (e) {
           console.warn("Supabase transaction save error:", e);
         }
       }
 
+      pendingReceiptItems = [];
       // Force Cloud Refresh immediately to re-render confirmed database state
       await loadTransactions();
     }

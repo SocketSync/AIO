@@ -27,6 +27,10 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
       categoryId: 'food_dining',
       date: DateTime.now(),
       notes: 'AI Receipt Scanner OCR Auto-Extraction',
+      receiptItems: const [
+        {'item_name': 'Nasi Campur + Ayam Berempah', 'price': 7.50, 'quantity': 1, 'category': 'Food & Dining'},
+        {'item_name': 'Teh O Ais Limau', 'price': 2.00, 'quantity': 1, 'category': 'Food & Dining'},
+      ],
     );
 
     setState(() => _isConfirming = false);
@@ -269,32 +273,34 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Budget Health Warning
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.alertCoralSubtle,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(Icons.warning, size: 16, color: AppColors.alertCoral),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Food & Dining Threshold (96% of cap)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.alertCoral)),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'This expense will consume RM 9.50 of your remaining RM 20 daily campus food buffer.',
-                                      style: TextStyle(fontSize: 11, color: AppColors.alertCoral, height: 1.3),
-                                    ),
-                                  ],
+                        // Budget Health Warning & AI Purchase Insight
+                        Consumer<TransactionProvider>(
+                          builder: (context, txProv, _) => Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.alertCoralSubtle,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('🧾 Itemized Scan & AI Purchase Check', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        txProv.aiPurchaseInsight,
+                                        style: const TextStyle(fontSize: 11, color: AppColors.onSurface, height: 1.3),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],

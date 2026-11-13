@@ -69,7 +69,13 @@ def get_seed_transactions():
             "category": "Groceries",
             "category_id": "groceries",
             "date": today,
-            "created_at": today + "T10:30:00Z"
+            "created_at": today + "T10:30:00Z",
+            "receipt_items": [
+                {"item_name": "Organic Bananas", "price": 14.50, "quantity": 1, "category": "Groceries"},
+                {"item_name": "Farm Fresh Milk 2L", "price": 18.90, "quantity": 2, "category": "Groceries"},
+                {"item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries"},
+                {"item_name": "Artisan Sourdough Loaf", "price": 16.00, "quantity": 1, "category": "Groceries"}
+            ]
         },
         {
             "id": "tx_seed_003",
@@ -80,7 +86,26 @@ def get_seed_transactions():
             "category": "Food & Dining",
             "category_id": "food_dining",
             "date": d1,
-            "created_at": d1 + "T12:15:00Z"
+            "created_at": d1 + "T12:15:00Z",
+            "receipt_items": [
+                {"item_name": "Flat White Coffee", "price": 13.00, "quantity": 1, "category": "Food & Dining"},
+                {"item_name": "Sourdough Avocado Toast", "price": 15.00, "quantity": 1, "category": "Food & Dining"}
+            ]
+        },
+        {
+            "id": "tx_seed_003b",
+            "title": "AEON Mall Supermarket & Footwear",
+            "description": "AEON Mall Supermarket & Footwear",
+            "amount": 224.00,
+            "type": "expense",
+            "category": "Shopping",
+            "category_id": "shopping",
+            "date": d2,
+            "created_at": d2 + "T14:20:00Z",
+            "receipt_items": [
+                {"item_name": "Nike Sneakers", "price": 199.00, "quantity": 1, "category": "Clothing"},
+                {"item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries"}
+            ]
         },
         {
             "id": "tx_seed_004",
@@ -201,6 +226,34 @@ def _strip_sensitive_account(acc):
         "avatar": acc.get("avatar", "")
     }
 
+def _sanitize_receipt_items(raw_items, fallback_cat="General"):
+    if not isinstance(raw_items, list):
+        return []
+    cleaned = []
+    for item in raw_items[:40]:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("item_name") or item.get("name") or "").strip()
+        if not name:
+            continue
+        name = name.replace("<", "&lt;").replace(">", "&gt;")[:120]
+        try:
+            price = round(max(0.0, float(item.get("price", 0))), 2)
+        except (ValueError, TypeError):
+            price = 0.0
+        try:
+            qty = max(1, min(999, int(item.get("quantity", 1))))
+        except (ValueError, TypeError):
+            qty = 1
+        cat = str(item.get("category") or fallback_cat or "General").strip().replace("<", "&lt;").replace(">", "&gt;")[:60]
+        cleaned.append({
+            "item_name": name,
+            "price": price,
+            "quantity": qty,
+            "category": cat or "General"
+        })
+    return cleaned
+
 def _validate_and_sanitize_tx(tx):
     """Integrity: Validate numeric amount, constrain type ENUM, and strip HTML tags."""
     if not isinstance(tx, dict):
@@ -224,6 +277,7 @@ def _validate_and_sanitize_tx(tx):
     sanitized["title"] = clean_title
     sanitized["description"] = clean_title
     sanitized["category"] = clean_cat
+    sanitized["receipt_items"] = _sanitize_receipt_items(tx.get("receipt_items"), clean_cat)
     return sanitized
 
 class FinWiseHandler(SimpleHTTPRequestHandler):
@@ -531,6 +585,108 @@ class FinWiseHandler(SimpleHTTPRequestHandler):
                 return
 
             self._send_json(400, {"success": False, "message": "Invalid transaction payload"})
+            return
+
+        if path == "/api/scan-receipt":
+            filename = str(payload.get("filename") or "").lower()
+            presets = [
+                {
+                    "merchant": "AEON Mall Supermarket",
+                    "amount": 224.00,
+                    "category": "Shopping",
+                    "receipt_items": [
+                        {"item_name": "Nike Sneakers", "price": 199.00, "quantity": 1, "category": "Clothing"},
+                        {"item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries"}
+                    ]
+                },
+                {
+                    "merchant": "Village Grocer",
+                    "amount": 68.40,
+                    "category": "Groceries",
+                    "receipt_items": [
+                        {"item_name": "Organic Bananas", "price": 11.90, "quantity": 1, "category": "Groceries"},
+                        {"item_name": "Farm Fresh Milk 2L", "price": 16.50, "quantity": 2, "category": "Groceries"},
+                        {"item_name": "Sourdough Bread", "price": 13.50, "quantity": 1, "category": "Groceries"},
+                        {"item_name": "Free-Range Eggs (10s)", "price": 10.00, "quantity": 1, "category": "Groceries"}
+                    ]
+                },
+                {
+                    "merchant": "MR.DIY Home & Hardware",
+                    "amount": 54.70,
+                    "category": "Shopping",
+                    "receipt_items": [
+                        {"item_name": "LED Desk Lamp", "price": 32.90, "quantity": 1, "category": "Home & Living"},
+                        {"item_name": "AA Alkaline Batteries (8s)", "price": 11.90, "quantity": 1, "category": "Electronics"}
+                    ]
+                },
+                {
+                    "merchant": "Starbucks Coffee",
+                    "amount": 26.50,
+                    "category": "Food & Dining",
+                    "receipt_items": [
+                        {"item_name": "Caramel Macchiato (Venti)", "price": 17.50, "quantity": 1, "category": "Food & Dining"},
+                        {"item_name": "Almond Croissant", "price": 9.00, "quantity": 1, "category": "Food & Dining"}
+                    ]
+                }
+            ]
+            pick = presets[0]
+            if "grocer" in filename:
+                pick = presets[1]
+            elif "diy" in filename:
+                pick = presets[2]
+            elif "starbuck" in filename or "coffee" in filename:
+                pick = presets[3]
+
+            self._send_json(200, {
+                "success": True,
+                "engine": "smart-receipt-ai (local server)",
+                "scanDuration": "0.8",
+                "merchant": pick["merchant"],
+                "amount": pick["amount"],
+                "category": pick["category"],
+                "date": get_current_date_str(),
+                "receipt_items": pick["receipt_items"],
+                "items": [i["item_name"] for i in pick["receipt_items"]]
+            })
+            return
+
+        if path == "/api/ai-purchase-insights":
+            recent = payload.get("recentTransactions") or []
+            curr_receipt = payload.get("currentReceipt")
+            currency = payload.get("currency") or "RM"
+            combined = list(recent) if isinstance(recent, list) else []
+            if isinstance(curr_receipt, dict) and curr_receipt.get("receipt_items"):
+                combined.insert(0, {
+                    "type": "expense",
+                    "date": curr_receipt.get("date") or get_current_date_str(),
+                    "receipt_items": curr_receipt.get("receipt_items")
+                })
+
+            shoe_dates = []
+            coffee_dates = []
+            for tx in combined:
+                if not isinstance(tx, dict) or tx.get("type") == "income":
+                    continue
+                d = str(tx.get("date") or "")[:10]
+                for it in (tx.get("receipt_items") or []):
+                    nm = str(it.get("item_name") or "").lower()
+                    if any(k in nm for k in ("shoe", "sneaker", "footwear")):
+                        shoe_dates.append(d)
+                    elif any(k in nm for k in ("coffee", "latte", "macchiato", "americano")):
+                        coffee_dates.append(d)
+
+            if len(shoe_dates) >= 2:
+                msg = f"✨ FinWise noticed: You bought shoes multiple times recently ({shoe_dates[-1]} & {shoe_dates[0]})! Treating yourself is great, but keep an eye on your 'Clothing' budget to avoid overspending this month~"
+                self._send_json(200, {"success": True, "duplicateDetected": True, "insight": msg})
+            elif len(coffee_dates) >= 2:
+                msg = f"✨ FinWise noticed: You bought coffee drinks {len(coffee_dates)} times in the last 14 days! Brewing at home twice a week could save ~{currency} 30/week~"
+                self._send_json(200, {"success": True, "duplicateDetected": True, "insight": msg})
+            else:
+                self._send_json(200, {
+                    "success": True,
+                    "duplicateDetected": False,
+                    "insight": "✨ FinWise noticed: Your itemized receipt purchases over the last 14 days look well-balanced with no repetitive impulse buys!"
+                })
             return
 
         self._send_json(404, {"success": False, "message": "Endpoint not found"})

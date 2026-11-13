@@ -69,9 +69,13 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     category_id VARCHAR(50) NOT NULL REFERENCES public.categories(id),
     transaction_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     notes TEXT,
+    receipt_items JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration safety: ensure receipt_items JSONB column exists on existing deployments
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS receipt_items JSONB DEFAULT '[]'::jsonb;
 
 -- 5. Indexes for Query Performance
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON public.transactions(user_id, transaction_date DESC);

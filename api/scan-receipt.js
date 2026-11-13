@@ -1,3 +1,53 @@
+function sanitizeText(str, maxLen = 100) {
+  return String(str == null ? '' : str).replace(/[<>]/g, '').trim().slice(0, maxLen);
+}
+
+function normalizeReceiptItems(rawReceiptItems, rawLegacyItems, fallbackCategory = 'Other Expenses', fallbackAmount = 0) {
+  const normalized = [];
+
+  if (Array.isArray(rawReceiptItems) && rawReceiptItems.length > 0) {
+    for (const entry of rawReceiptItems) {
+      if (!entry || typeof entry !== 'object') continue;
+      const itemName = sanitizeText(entry.item_name || entry.name || entry.title || '', 120);
+      if (!itemName) continue;
+      const priceNum = Number(entry.price);
+      const qtyNum = parseInt(entry.quantity, 10);
+      normalized.push({
+        item_name: itemName,
+        price: Number.isFinite(priceNum) && priceNum >= 0 ? Math.round(priceNum * 100) / 100 : 0.00,
+        quantity: Number.isFinite(qtyNum) && qtyNum >= 1 ? Math.min(qtyNum, 999) : 1,
+        category: sanitizeText(entry.category || fallbackCategory || 'General', 60) || 'General'
+      });
+    }
+  } else if (Array.isArray(rawLegacyItems) && rawLegacyItems.length > 0) {
+    const count = rawLegacyItems.length;
+    const estPrice = count > 0 && fallbackAmount > 0 ? Math.round((fallbackAmount / count) * 100) / 100 : 0.00;
+    for (const label of rawLegacyItems) {
+      if (typeof label === 'string' && label.trim()) {
+        normalized.push({
+          item_name: sanitizeText(label, 120),
+          price: estPrice,
+          quantity: 1,
+          category: sanitizeText(fallbackCategory || 'General', 60) || 'General'
+        });
+      } else if (label && typeof label === 'object') {
+        const itemName = sanitizeText(label.item_name || label.name || '', 120);
+        if (!itemName) continue;
+        const priceNum = Number(label.price);
+        const qtyNum = parseInt(label.quantity, 10);
+        normalized.push({
+          item_name: itemName,
+          price: Number.isFinite(priceNum) && priceNum >= 0 ? Math.round(priceNum * 100) / 100 : estPrice,
+          quantity: Number.isFinite(qtyNum) && qtyNum >= 1 ? Math.min(qtyNum, 999) : 1,
+          category: sanitizeText(label.category || fallbackCategory || 'General', 60) || 'General'
+        });
+      }
+    }
+  }
+
+  return normalized.slice(0, 40);
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,27 +78,36 @@ module.exports = async (req, res) => {
     if (hasValidKey && imageBase64) {
       try {
         const cleanBase64 = imageBase64.replace(/^data:[^;]+;base64,/, '');
-        const prompt = `You are an expert AI receipt and invoice scanner for the FinWise personal finance app.
-Analyze this receipt, invoice, or bill image/PDF carefully and extract all financial data.
+        const prompt = `You are a financial receipt parser for the FinWise personal finance app.
+Extract the merchant, total amount, date, and overall category from this receipt, invoice, or bill image/PDF.
+Crucially, extract every individual item purchased on the receipt into a \`receipt_items\` array. Each item must have \`item_name\`, \`price\`, \`quantity\`, and \`category\`. If it is not a receipt with items (e.g., a simple bank transfer screenshot), return an empty array \`[]\` for \`receipt_items\`.
 
 IMPORTANT RULES:
 1. Extract the EXACT merchant/store name as printed on the receipt.
 2. Extract the FINAL TOTAL amount paid (after tax, service charge, discounts, rounding).
    - For Malaysian receipts: look for "TOTAL", "JUMLAH", "GRAND TOTAL", or "AMOUNT DUE" — NOT subtotal.
    - Include SST (Sales & Service Tax), service charge, and rounding adjustments in the total.
-3. Determine the best expense/income category from the list below.
+3. Determine the best overall category from: "Food & Dining", "Groceries", "Shopping", "Transportation", "Entertainment", "Bills & Utilities", "Health & Wellness", "Education & Self-Care", "Salary", "Freelance", "Investments", "Other Expenses".
 4. Extract the transaction date from the receipt. Use YYYY-MM-DD format.
-5. List the key items or line items purchased (brief descriptions, max 6 items).
-6. If the receipt shows a currency symbol (e.g. RM, $, SGD, €, £), note it.
+5. Extract EVERY line item into \`receipt_items\` as objects with keys:
+   - \`item_name\`: string (exact item description)
+   - \`price\`: number (unit or line price as a positive float, e.g. 12.50)
+   - \`quantity\`: integer (default 1 if omitted on receipt)
+   - \`category\`: string (e.g. "Clothing", "Groceries", "Food & Dining", "Electronics", "Home & Living", "Health & Wellness", "Transportation")
+6. Also provide \`items\`: an array of brief item name strings summarizing key items (up to 6).
 
 Return ONLY a valid JSON object with these EXACT keys:
 {
-  "merchant": "Exact merchant/store name (e.g. Village Grocer, Starbucks, Shell, McDonald's, Grab, Uniqlo)",
-  "amount": Total amount paid as a positive number (float, e.g. 58.40) without currency symbol,
-  "currency": "Currency code if visible (e.g. MYR, USD, SGD, EUR), or MYR if Malaysian receipt",
-  "category": One of these exact categories: "Food & Dining", "Groceries", "Shopping", "Transportation", "Entertainment", "Bills & Utilities", "Health & Wellness", "Education & Self-Care", "Salary", "Freelance", "Investments", "Other Expenses",
-  "date": "Transaction date in YYYY-MM-DD format (if unclear or missing, use today's date)",
-  "items": ["Brief list of items purchased, max 6 entries"]
+  "merchant": "Exact merchant/store name",
+  "amount": 224.00,
+  "currency": "MYR",
+  "category": "Shopping",
+  "date": "YYYY-MM-DD",
+  "receipt_items": [
+    { "item_name": "Nike Sneakers", "price": 199.00, "quantity": 1, "category": "Clothing" },
+    { "item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries" }
+  ],
+  "items": ["Nike Sneakers", "Colgate Toothpaste"]
 }
 Strictly return pure JSON only.`;
 
@@ -92,7 +151,6 @@ Strictly return pure JSON only.`;
             if (geminiRes.ok) {
               const geminiData = await geminiRes.json();
               let rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-              // Clean any accidental markdown wrapping (safety net)
               rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
               const jsonMatch = rawText.match(/\{[\s\S]*\}/);
               if (jsonMatch) {
@@ -100,17 +158,28 @@ Strictly return pure JSON only.`;
                 const parsedAmount = Math.abs(parseFloat(parsed.amount)) || 0.00;
                 const todayStr = new Date().toISOString().slice(0, 10);
                 const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
+                const resolvedCategory = parsed.category || "Food & Dining";
+                const normalizedReceiptItems = normalizeReceiptItems(
+                  parsed.receipt_items,
+                  parsed.items,
+                  resolvedCategory,
+                  parsedAmount
+                );
+                const summaryItems = normalizedReceiptItems.length > 0
+                  ? normalizedReceiptItems.slice(0, 6).map(i => i.item_name)
+                  : (Array.isArray(parsed.items) ? parsed.items.slice(0, 6).map(i => sanitizeText(i, 80)) : []);
 
                 return res.status(200).json({
                   success: true,
                   engine: `gemini (${modelName})`,
                   scanDuration: scanDuration,
-                  merchant: (parsed.merchant || "Store Purchase").trim(),
+                  merchant: sanitizeText(parsed.merchant || "Store Purchase", 120),
                   amount: parsedAmount,
-                  currency: parsed.currency || "MYR",
-                  category: parsed.category || "Food & Dining",
+                  currency: sanitizeText(parsed.currency || "MYR", 10),
+                  category: sanitizeText(resolvedCategory, 60),
                   date: (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr,
-                  items: Array.isArray(parsed.items) ? parsed.items.slice(0, 6) : []
+                  receipt_items: normalizedReceiptItems,
+                  items: summaryItems
                 });
               }
             } else {
@@ -119,7 +188,6 @@ Strictly return pure JSON only.`;
               lastError = `${geminiRes.status}: ${errBody}`;
               lastErrorStatus = geminiRes.status;
 
-              // Stop retrying on fatal errors — no point trying other models
               if (geminiRes.status === 400 && errBody.includes('API_KEY_INVALID')) {
                 return res.status(200).json({
                   success: false,
@@ -127,7 +195,6 @@ Strictly return pure JSON only.`;
                   message: "The Gemini API Key provided is invalid. Please verify it in Google AI Studio."
                 });
               }
-              // 403 = quota exceeded, 429 = rate limited — stop looping
               if (geminiRes.status === 403 || geminiRes.status === 429) {
                 const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
                 return res.status(200).json({
@@ -146,7 +213,6 @@ Strictly return pure JSON only.`;
           }
         }
 
-        // All models failed — return meaningful error instead of silently falling back
         if (lastError) {
           const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
           return res.status(200).json({
@@ -161,72 +227,119 @@ Strictly return pure JSON only.`;
       }
     }
 
-    // Smart Fallback Presets if no Gemini API Key is configured yet or no image provided
+    // Smart Fallback Presets with structured itemized receipt_items
     const presets = [
+      {
+        merchant: "AEON Mall Supermarket",
+        amount: 224.00,
+        category: "Shopping",
+        receipt_items: [
+          { item_name: "Nike Sneakers", price: 199.00, quantity: 1, category: "Clothing" },
+          { item_name: "Colgate Toothpaste", price: 12.50, quantity: 2, category: "Groceries" }
+        ]
+      },
       {
         merchant: "Village Grocer",
         amount: 68.40,
         category: "Groceries",
-        items: ["Organic Bananas", "Farm Fresh Milk 2L", "Sourdough Bread", "Free-Range Eggs"]
+        receipt_items: [
+          { item_name: "Organic Bananas", price: 11.90, quantity: 1, category: "Groceries" },
+          { item_name: "Farm Fresh Milk 2L", price: 16.50, quantity: 2, category: "Groceries" },
+          { item_name: "Sourdough Bread", price: 13.50, quantity: 1, category: "Groceries" },
+          { item_name: "Free-Range Eggs (10s)", price: 10.00, quantity: 1, category: "Groceries" }
+        ]
+      },
+      {
+        merchant: "MR.DIY Home & Hardware",
+        amount: 54.70,
+        category: "Shopping",
+        receipt_items: [
+          { item_name: "LED Desk Lamp", price: 32.90, quantity: 1, category: "Home & Living" },
+          { item_name: "AA Alkaline Batteries (8s)", price: 11.90, quantity: 1, category: "Electronics" },
+          { item_name: "Microfiber Cleaning Cloth", price: 4.95, quantity: 2, category: "Home & Living" }
+        ]
       },
       {
         merchant: "Starbucks Coffee",
         amount: 26.50,
         category: "Food & Dining",
-        items: ["Caramel Macchiato (Venti)", "Almond Croissant"]
+        receipt_items: [
+          { item_name: "Caramel Macchiato (Venti)", price: 17.50, quantity: 1, category: "Food & Dining" },
+          { item_name: "Almond Croissant", price: 9.00, quantity: 1, category: "Food & Dining" }
+        ]
       },
       {
         merchant: "Shell Petrol Station",
         amount: 75.00,
         category: "Transportation",
-        items: ["Fuel RON95", "100 Plus Can"]
+        receipt_items: [
+          { item_name: "Fuel RON95", price: 71.50, quantity: 1, category: "Transportation" },
+          { item_name: "100 Plus Isotonic Can", price: 3.50, quantity: 1, category: "Food & Dining" }
+        ]
       },
       {
         merchant: "Watsons Pharmacy",
         amount: 43.80,
         category: "Health & Wellness",
-        items: ["Panadol ActiFast", "Cetaphil Gentle Cleanser"]
+        receipt_items: [
+          { item_name: "Panadol ActiFast (20s)", price: 14.90, quantity: 1, category: "Health & Wellness" },
+          { item_name: "Cetaphil Gentle Cleanser", price: 28.90, quantity: 1, category: "Health & Wellness" }
+        ]
       },
       {
         merchant: "Uniqlo Mid Valley",
         amount: 149.90,
         category: "Shopping",
-        items: ["AIRism Oversized T-Shirt", "No-Show Socks Pack"]
+        receipt_items: [
+          { item_name: "AIRism Oversized T-Shirt", price: 59.90, quantity: 2, category: "Clothing" },
+          { item_name: "No-Show Socks 3-Pack", price: 30.10, quantity: 1, category: "Clothing" }
+        ]
       },
       {
-        merchant: "FamilyMart Sunway",
-        amount: 19.80,
+        merchant: "School Canteen Stall 3",
+        amount: 12.50,
         category: "Food & Dining",
-        items: ["Oden Set C", "Sofuto Green Tea Cone"]
+        receipt_items: [
+          { item_name: "Nasi Lemak Ayam Berempah", price: 8.50, quantity: 1, category: "Food & Dining" },
+          { item_name: "Iced Milo", price: 4.00, quantity: 1, category: "Food & Dining" }
+        ]
       },
       {
-        merchant: "Tenaga Nasional Berhad (TNB)",
-        amount: 124.60,
-        category: "Bills & Utilities",
-        items: ["Electricity Consumption Tariff", "Service Tax"]
+        merchant: "DuitNow Bank Transfer",
+        amount: 150.00,
+        category: "Other Expenses",
+        receipt_items: []
       }
     ];
 
     let pick = presets[0];
     const lowerName = (filename || '').toLowerCase();
-    if (lowerName.includes('starbuck') || lowerName.includes('coffee') || lowerName.includes('cafe')) {
+    if (lowerName.includes('aeon') || lowerName.includes('shoe') || lowerName.includes('sneaker')) {
+      pick = presets[0];
+    } else if (lowerName.includes('grocer') || lowerName.includes('jaya') || lowerName.includes('lotus')) {
       pick = presets[1];
-    } else if (lowerName.includes('shell') || lowerName.includes('petrol') || lowerName.includes('petron')) {
+    } else if (lowerName.includes('diy') || lowerName.includes('hardware')) {
       pick = presets[2];
-    } else if (lowerName.includes('watson') || lowerName.includes('guardian') || lowerName.includes('pharmacy')) {
+    } else if (lowerName.includes('starbuck') || lowerName.includes('coffee') || lowerName.includes('cafe')) {
       pick = presets[3];
-    } else if (lowerName.includes('uniqlo') || lowerName.includes('cloth') || lowerName.includes('shirt')) {
+    } else if (lowerName.includes('shell') || lowerName.includes('petrol') || lowerName.includes('petron')) {
       pick = presets[4];
-    } else if (lowerName.includes('familymart') || lowerName.includes('mart') || lowerName.includes('bistro')) {
+    } else if (lowerName.includes('watson') || lowerName.includes('guardian') || lowerName.includes('pharmacy')) {
       pick = presets[5];
-    } else if (lowerName.includes('.pdf') || lowerName.includes('bill') || lowerName.includes('invoice') || lowerName.includes('tnb') || lowerName.includes('utility')) {
+    } else if (lowerName.includes('uniqlo') || lowerName.includes('cloth') || lowerName.includes('shirt')) {
       pick = presets[6];
+    } else if (lowerName.includes('canteen') || lowerName.includes('lunch') || lowerName.includes('food')) {
+      pick = presets[7];
+    } else if (lowerName.includes('transfer') || lowerName.includes('duitnow')) {
+      pick = presets[8];
     } else {
-      pick = presets[Math.floor(Math.random() * presets.length)];
+      pick = presets[Math.floor(Math.random() * (presets.length - 1))];
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
+    const itemNames = pick.receipt_items.map(i => i.item_name);
+
     return res.status(200).json({
       success: true,
       engine: 'smart-receipt-ai (demo mode)',
@@ -236,7 +349,8 @@ Strictly return pure JSON only.`;
       amount: pick.amount,
       category: pick.category,
       date: todayStr,
-      items: pick.items
+      receipt_items: pick.receipt_items,
+      items: itemNames
     });
   } catch (error) {
     return res.status(500).json({
