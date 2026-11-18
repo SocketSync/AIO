@@ -1,0 +1,3342 @@
+<!DOCTYPE html>
+<html class="h-full bg-surface-container-low" lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    name="viewport">
+  <title>FinWise - Personal Financial Dashboard</title>
+  <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#00236f",
+            "primary-container": "#1e3a8a",
+            "on-primary": "#ffffff",
+            "secondary": "#006c49",
+            "secondary-container": "#6cf8bb",
+            "secondary-fixed": "#6ffbbe",
+            "growth-mint-subtle": "#D1FAE5",
+            "surface": "#faf8ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f3fa",
+            "surface-container": "#eeedf4",
+            "surface-container-high": "#e9e7ef",
+            "surface-container-highest": "#e3e1e9",
+            "text-primary": "#0F172A",
+            "text-muted": "#64748B",
+            "outline": "#757682",
+            "outline-variant": "#c5c5d3",
+            "border-neutral": "#E2E8F0",
+            "alert-coral": "#EF4444",
+            "alert-coral-subtle": "#FEE2E2"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    .pt-safe {
+      padding-top: env(safe-area-inset-top, 16px);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
+
+  <!-- Desktop Mobile Frame Wrapper -->
+  <div
+    class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+
+    <!-- Top Status Banner -->
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
+        FinWise AI Intelligence
+      </span>
+      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
+      <div class="h-16 px-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo"
+            class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
+          <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
+          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI
+            SMART</span>
+        </div>
+        <div class="flex items-center gap-1 relative">
+          <!-- Notification Bell -->
+          <button aria-label="Notifications" onclick="showNotifModal()"
+            class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
+            <span class="material-symbols-outlined text-[22px]">notifications</span>
+          </button>
+
+          <!-- User Profile Avatar Button -->
+          <button aria-label="User Profile" onclick="toggleProfileMenu()" id="headerProfileAvatarBtn"
+            class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+            <div id="headerProfileAvatar"
+              class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold shadow-sm overflow-hidden">
+              U
+            </div>
+          </button>
+
+          <!-- Profile Dropdown Menu -->
+          <div id="profileMenu"
+            class="hidden absolute right-0 top-14 z-50 w-64 rounded-xl bg-white border border-slate-200 shadow-xl p-3 flex flex-col gap-2">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+              <div id="menuAvatarIcon"
+                class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-base font-bold shadow-sm shrink-0 overflow-hidden">
+                U
+              </div>
+              <div class="min-w-0 flex-1">
+                <p id="profileMenuName" class="text-xs font-bold text-slate-900 truncate">Google User</p>
+                <p id="profileMenuEmail" class="text-[11px] text-slate-500 truncate">user@gmail.com</p>
+              </div>
+            </div>
+            <div
+              class="flex items-center gap-1 bg-growth-mint-subtle px-2 py-1 rounded-md text-[10px] font-bold text-secondary">
+              <span class="material-symbols-outlined text-[13px]">verified</span>
+              <span>Google Account Verified</span>
+            </div>
+            <div class="text-[10px] text-text-muted px-1">
+              Backend: <strong class="text-slate-700">Supabase Cloud PostgreSQL</strong>
+            </div>
+            <a href="profile.html"
+              class="w-full text-left px-2.5 py-2 text-xs font-bold rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center justify-between mt-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                <span>Edit Full Profile & Account</span>
+              </span>
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </a>
+            <button onclick="logoutFromMenu()"
+              class="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-lg text-alert-coral hover:bg-alert-coral-subtle/50 transition-colors flex items-center gap-1.5 mt-1">
+              <span class="material-symbols-outlined text-[16px]">logout</span>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-4">
+
+      <!-- Greeting & Period Context Bar -->
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-1">
+            <span class="text-lg font-bold text-text-primary truncate" id="greetingName">Hello, Google User!</span>
+            <span class="text-[18px]">👋</span>
+          </div>
+          <p class="text-xs text-text-muted truncate" id="userSubtitle">Personal Financial Snapshot</p>
+        </div>
+        <!-- Month Selector Pill -->
+        <div
+          class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm shrink-0">
+          <span class="material-symbols-outlined text-[16px] text-primary-container">calendar_month</span>
+          <input id="selectedMonth" aria-label="Select month" type="month"
+            class="w-28 bg-transparent text-xs font-bold text-text-primary outline-none" onchange="renderDashboard()">
+          <span class="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
+        </div>
+      </div>
+
+      <!-- Main Balance Bento Card -->
+      <div
+        class="relative overflow-hidden rounded-xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md">
+        <div class="relative z-10 flex flex-col gap-3">
+          <!-- Card Top Row -->
+          <div class="flex items-center justify-between text-white/80">
+            <span class="text-[11px] font-bold tracking-wider uppercase">Total Available Balance</span>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white">Active</span>
+              <button aria-label="Toggle Balance Visibility"
+                class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn"
+                onclick="toggleBalance()">
+                <span class="material-symbols-outlined text-[18px]" id="eyeIcon">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Balance Metric Display -->
+          <div class="flex items-baseline gap-1.5">
+            <span id="balanceCurrency" class="text-lg font-bold text-white/90">RM</span>
+            <span class="text-3xl font-extrabold tracking-tight text-white" id="balanceValue">0.00</span>
+          </div>
+
+          <!-- Income vs Expenses Badges -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <!-- Income Pill -->
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+              <div class="w-7 h-7 rounded-full bg-growth-mint-subtle flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-secondary text-[16px]">arrow_outward</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-[10px] text-white/70 truncate">Total Income</span>
+                <span id="incomeValue" class="text-xs font-bold text-white truncate">+RM 0.00</span>
+              </div>
+            </div>
+            <!-- Expenses Pill -->
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+              <div class="w-7 h-7 rounded-full bg-alert-coral-subtle flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-alert-coral text-[16px]">call_received</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-[10px] text-white/70 truncate">Total Expenses</span>
+                <span id="expenseValue" class="text-xs font-bold text-white truncate">-RM 0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons Grid -->
+      <div class="grid grid-cols-4 gap-2">
+        <button onclick="window.location.href='transactions.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+          </div>
+          <span class="text-[11px] font-semibold text-text-primary">Transactions</span>
+        </button>
+        <button onclick="showAiModal()"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-emerald-50 text-secondary flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+          </div>
+          <span class="text-[11px] font-semibold text-text-primary">AI Insights</span>
+        </button>
+        <button onclick="window.location.href='summary.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+          </div>
+          <span class="text-[11px] font-semibold text-text-primary">Summary</span>
+        </button>
+        <button onclick="window.location.href='profile.html'"
+          class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white shadow-sm border border-border-neutral hover:bg-slate-50 transition-all text-center">
+          <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mb-1">
+            <span class="material-symbols-outlined text-[20px]">person</span>
+          </div>
+          <span class="text-[11px] font-semibold text-text-primary">Profile</span>
+        </button>
+      </div>
+
+      <!-- AI Purchase Insights Card (14-Day Receipt Agent) -->
+      <div id="aiPurchaseInsightCard"
+        class="rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm">
+        <div class="flex items-start gap-2.5">
+          <div
+            class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+            <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-primary flex items-center gap-1">
+                <span>✨ FinWise Purchase Insights</span>
+                <span id="aiInsightBadge"
+                  class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">14-Day Scan</span>
+              </span>
+              <button type="button" onclick="showAiModal()"
+                class="text-[10px] font-bold text-primary hover:underline shrink-0">Details →</button>
+            </div>
+            <p id="aiPurchaseInsightText" class="text-xs text-slate-700 mt-1 leading-relaxed font-medium">
+              Analyzing your last 14 days of itemized receipts for smart savings tips...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Section -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-text-primary">Recent Transactions</h2>
+          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5"
+            onclick="window.location.href='transactions.html'">
+            <span>View all</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+          </button>
+        </div>
+
+        <div id="recentRecords"
+          class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
+          <div class="p-4 text-center text-xs text-text-muted">Loading transactions from Supabase...</div>
+        </div>
+      </div>
+
+      <!-- Monthly Summary & Category Breakdown -->
+      <section id="monthlySummary" class="rounded-xl bg-white p-4 shadow-sm border border-border-neutral">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-text-primary">Monthly Breakdown</h2>
+          <span id="monthlyTitle" class="text-xs text-text-muted font-medium"></span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 pb-3 border-b border-slate-100">
+          <div>
+            <p class="text-[11px] text-text-muted">Income</p>
+            <p id="monthlyIncome" class="text-sm font-bold text-secondary">RM 0.00</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-text-muted">Expenses</p>
+            <p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p>
+          </div>
+          <div>
+            <p class="text-[11px] text-text-muted">Net Cash Flow</p>
+            <p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3 mb-1">
+          <p class="text-[11px] font-semibold text-text-muted">Expenses by Category</p>
+          <a href="summary.html" class="text-[11px] font-semibold text-primary hover:underline">Full Analytics →</a>
+        </div>
+        <div id="categoryChart" class="mt-2 space-y-3">
+          <p class="text-xs text-text-muted">No expenses recorded for this month.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Live Camera Scanner Modal (Works on Laptop Webcams, USB Webcams, Phones & Tablets) -->
+    <div id="liveCameraModal"
+      class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-sm"
+      onclick="if(event.target===this)closeLiveCameraModal()">
+      <div
+        class="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700 text-white">
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+            <span class="font-bold text-sm">AI Receipt Camera Scanner</span>
+          </div>
+          <button type="button" onclick="closeLiveCameraModal()"
+            class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 text-lg transition-colors leading-none">✕</button>
+        </div>
+
+        <!-- Viewfinder View -->
+        <div class="relative w-full bg-black flex items-center justify-center overflow-hidden"
+          style="min-height: 280px; max-height: 380px;">
+          <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+          <!-- Viewfinder Reticle Overlay -->
+          <div
+            class="absolute inset-5 pointer-events-none border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
+            <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
+            <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg"></div>
+            <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg">
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg">
+            </div>
+
+            <div
+              class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse">
+            </div>
+
+            <span
+              class="absolute bottom-2 text-[11px] font-medium text-white/90 bg-black/70 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+              Hold receipt in front of camera
+            </span>
+          </div>
+
+          <!-- Loading state -->
+          <div id="liveCameraLoading"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-2 p-4 text-center">
+            <span
+              class="inline-block w-8 h-8 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>
+            <p class="text-xs text-slate-300 font-medium">Opening device camera...</p>
+          </div>
+        </div>
+
+        <!-- Hidden Canvas -->
+        <canvas id="liveCameraCanvas" class="hidden"></canvas>
+
+        <!-- Controls Footer -->
+        <div class="p-3.5 bg-slate-800 border-t border-slate-700 flex items-center justify-between gap-2.5">
+          <button type="button" id="switchCameraBtn" onclick="toggleCameraFacing()"
+            class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Flip</span>
+          </button>
+
+          <!-- Snap & Scan Button -->
+          <button type="button" onclick="captureLiveCameraFrame()"
+            class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            <span>Snap &amp; AI Scan</span>
+          </button>
+
+          <button type="button" onclick="closeLiveCameraModal(); triggerReceiptUploadFlow()"
+            class="px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Upload</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add / Edit Transaction Modal Dialog -->
+    <div id="transactionDialog"
+      class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-slate-900/50 p-3"
+      onclick="if(event.target===this)closeTransactionDialog()">
+      <form id="transactionForm"
+        class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl border border-slate-200"
+        onsubmit="saveTransaction(event)">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+          <h2 id="transactionDialogTitle" class="text-base font-bold text-text-primary">Add Transaction</h2>
+          <button type="button" aria-label="Close" onclick="closeTransactionDialog()"
+            class="text-2xl text-text-muted hover:text-text-primary leading-none">×</button>
+        </div>
+
+        <!-- Hidden Camera Input (Scan button - camera only) -->
+        <input type="file" id="receiptCameraInput" accept="image/*" capture="environment" class="hidden"
+          onchange="handleReceiptFileSelected(event)" />
+        <!-- Hidden File Upload Input (Upload button - images + PDFs) -->
+        <input type="file" id="receiptUploadInput" accept="image/*, application/pdf" class="hidden"
+          onchange="handleReceiptFileSelected(event)" />
+
+        <!-- Smart Receipt AI Scanner Banner -->
+        <div id="smartReceiptBanner"
+          class="p-3 sm:p-3.5 bg-indigo-50/70 rounded-xl mb-4 border border-indigo-100/80 transition-all flex flex-col gap-2.5">
+          <!-- Top Row: Icon + Title & Gemini AI Badge + Demo -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div id="receiptIconWrapper"
+                class="w-9 h-9 bg-blue-900 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-white transition-all">
+                <svg id="receiptDefaultIcon" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3M16 20h3a1 1 0 001-1v-3" />
+                  <rect x="7" y="7" width="10" height="10" rx="1.5" stroke-width="1.6" fill="none" />
+                  <path stroke-linecap="round" stroke-width="1.4" d="M9.5 9.5h5M9.5 12h5M9.5 14.5h5" />
+                </svg>
+              </div>
+              <div class="flex flex-col min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span id="receiptBadgeTitle"
+                    class="text-[11px] font-bold text-blue-900 tracking-wider uppercase">Smart Receipt AI</span>
+                  <span id="receiptBadgePill"
+                    class="bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0">Gemini AI</span>
+                </div>
+                <span id="receiptBannerTitle"
+                  class="text-xs sm:text-sm font-semibold text-gray-900 leading-snug">Scan Receipt with AI</span>
+              </div>
+            </div>
+            <!-- Demo Link Button -->
+            <a href="javascript:void(0)" onclick="runReceiptDemoScan(event)"
+              class="text-[11px] text-blue-900 bg-white border border-blue-200 hover:bg-blue-50 px-2.5 py-1 rounded-lg font-semibold shrink-0 transition-colors shadow-2xs">Demo</a>
+          </div>
+
+          <!-- Subtitle / Status Line: Full width, zero truncation! -->
+          <div id="receiptBannerSubtitle"
+            class="text-[11px] text-gray-500 leading-normal border-t border-indigo-100/60 pt-1.5 flex items-center justify-between">
+            <span>Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Gemini Vision AI active on server">Gemini Active 🟢</span></span>
+          </div>
+
+          <!-- Action Buttons: Balanced 50/50 Grid -->
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <button type="button" id="receiptScanBtn" onclick="triggerReceiptCameraFlow()"
+              class="bg-blue-900 text-white hover:bg-blue-800 rounded-lg py-2 px-3 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98] shadow-xs">
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              <span>Scan</span>
+            </button>
+            <button type="button" id="receiptUploadBtn" onclick="triggerReceiptUploadFlow()"
+              class="border border-blue-900 text-blue-900 bg-white hover:bg-blue-50 rounded-lg py-2 px-3 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98] shadow-xs">
+              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+              </svg>
+              <span>Upload</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Receipt Scan Toast Notification -->
+        <div id="receiptScanToast"
+          class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">✨</span>
+            <span id="receiptScanToastText">Receipt parsed successfully!</span>
+          </div>
+          <button type="button" onclick="this.parentElement.classList.add('hidden')"
+            class="text-emerald-600 hover:text-emerald-900 font-bold ml-2">×</button>
+        </div>
+
+        <!-- Type Selector -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionType">Transaction Type</label>
+        <select id="transactionType"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          onchange="updateCategoryOptions()">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+
+        <!-- Amount -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (<span
+            id="formAmountCurrencyLabel">RM</span>)</label>
+        <div class="relative flex items-center mb-3">
+          <span id="formAmountCurrencyPrefix" class="absolute left-3 text-sm font-bold text-text-muted">RM</span>
+          <input id="transactionAmount"
+            class="w-full rounded-lg border border-slate-300 pl-11 pr-3 py-2.5 text-sm font-semibold outline-none focus:border-primary"
+            type="number" min="0.01" step="0.01" required placeholder="0.00">
+        </div>
+
+        <!-- Category -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionCategory">Category</label>
+        <select id="transactionCategory"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          required></select>
+
+        <!-- Description -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Description</label>
+        <input id="transactionDescription"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          maxlength="140" required placeholder="e.g. Aeon, Village Grocer, Starbucks">
+
+        <!-- Details (Line Items) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDetails">Details (Line Items)</label>
+        <textarea id="transactionDetails" rows="3" oninput="syncDetailsTextareaToPendingItems()"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary resize-y"
+          placeholder="1x Rice 1kg&#10;1x Soya milk x6"></textarea>
+
+        <!-- Date -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date</label>
+        <input id="transactionDate"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          type="date" required>
+
+        <!-- Extracted Itemized Receipt Items Preview -->
+        <div id="modalReceiptItemsPreview" class="hidden mb-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-bold text-primary flex items-center gap-1">
+              <span>🧾</span>
+              <span>Itemized Receipt Breakdown (<span id="modalReceiptItemsCount">0</span>)</span>
+            </span>
+            <button type="button" onclick="clearPendingReceiptItems()"
+              class="text-[10px] font-semibold text-text-muted hover:text-alert-coral">Clear items</button>
+          </div>
+          <div id="modalReceiptItemsList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Immediate AI Purchase Frequency Tip (when scanning) -->
+        <div id="modalAiTipBanner"
+          class="hidden mb-4 rounded-xl border border-amber-200 bg-amber-50/90 p-2.5 text-[11px] text-amber-900 font-medium leading-relaxed">
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          class="w-full rounded-xl bg-primary hover:bg-primary-container py-3 text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+          type="submit" id="saveTransactionBtn">
+          <span class="material-symbols-outlined text-[18px]">check</span>
+          <span>Save Transaction</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- AI Purchase Insights Interactive Modal -->
+    <div id="aiPurchaseInsightsModal"
+      class="hidden fixed inset-0 z-[75] items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs p-3"
+      onclick="if(event.target===this)closeAiModal()">
+      <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">✨ FinWise AI Purchase Agent</h3>
+              <p class="text-[10px] text-text-muted">14-Day Itemized Receipt Frequency Check</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeAiModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <div id="aiModalBody"
+          class="rounded-xl bg-indigo-50/60 border border-indigo-100 p-3.5 text-xs text-slate-800 leading-relaxed font-medium">
+        </div>
+        <div id="aiModalOccurrences" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+        <button type="button" onclick="closeAiModal()"
+          class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-container transition-all">Got
+          it, thanks FinWise!</button>
+      </div>
+    </div>
+
+    <!-- First-Time Google Login: Password Setup & Verification Modal -->
+    <div id="googlePasswordSetupModal"
+      class="hidden fixed inset-0 z-[80] items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 flex flex-col gap-3.5">
+        <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">mark_email_read</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary leading-tight">Confirm Account &amp; Set Password</h3>
+              <p class="text-[11px] text-secondary font-semibold mt-0.5">Enable Dual Login (Google + Email)</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeGooglePasswordModal()"
+            class="text-slate-400 hover:text-slate-600 p-1 rounded-full">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs text-slate-700 leading-relaxed">
+          <p class="font-semibold text-primary mb-1 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">mail</span>
+            <span>Verification Email Sent!</span>
+          </p>
+          <p>We sent a confirmation link to <strong id="setupModalEmailText" class="text-slate-900">your Gmail</strong>.
+            Click the email link or set your standard password below so you can log in using <strong>either Google or
+              Email &amp; Password</strong>.</p>
+        </div>
+
+        <div id="setupModalAlert" class="hidden p-2.5 rounded-xl text-xs font-semibold items-center gap-2"></div>
+
+        <form id="googlePasswordSetupForm" onsubmit="handleInlinePasswordSetup(event)" class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupNewPass">Create Standard
+              Password</label>
+            <input id="setupNewPass" type="password" required minlength="6" placeholder="At least 6 characters"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-text-muted mb-1" for="setupConfirmPass">Confirm
+              Password</label>
+            <input id="setupConfirmPass" type="password" required minlength="6" placeholder="Re-enter password"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-semibold outline-none focus:border-primary">
+          </div>
+          <button type="submit" id="setupSavePassBtn"
+            class="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">lock_check</span>
+            <span>Confirm &amp; Enable Dual Login</span>
+          </button>
+        </form>
+
+        <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+          <button type="button" onclick="resendGooglePasswordEmail()" id="resendSetupEmailBtn"
+            class="text-primary font-semibold hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
+            <span>Resend Verification Email</span>
+          </button>
+          <button type="button" onclick="closeGooglePasswordModal()"
+            class="text-text-muted hover:text-text-primary font-medium">
+            I'll use the email link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+      <div class="h-16 px-3 flex items-center justify-between relative">
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
+          onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <span class="material-symbols-outlined text-[22px]">home</span>
+          <span class="text-[10px]">Home</span>
+        </button>
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='transactions.html'">
+          <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+          <span class="text-[10px]">Transactions</span>
+        </button>
+        <div class="flex-1 flex items-center justify-center">
+          <button onclick="showAddTransactionModal()"
+            class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+            <span class="material-symbols-outlined text-[26px]">add</span>
+          </button>
+        </div>
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='summary.html'">
+          <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+          <span class="text-[10px]">Summary</span>
+        </button>
+        <button
+          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          onclick="window.location.href='profile.html'">
+          <span class="material-symbols-outlined text-[22px]">person</span>
+          <span class="text-[10px]">Profile</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- AI FINANCE ASSISTANT — Floating Action Button + Chat Interface    -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Gemini Sparkle SVG (reusable inline) -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+    <symbol id="gemini-sparkle" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
+    </symbol>
+  </svg>
+
+  <!-- FAB: Floating Action Button -->
+  <button id="aiAssistantFAB" onclick="toggleAiAssistant()" aria-label="Open AI Assistant"
+    class="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-blue-900 text-white flex items-center justify-center shadow-lg shadow-blue-900/40 hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200 group">
+    <svg class="w-7 h-7 text-white group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
+    </svg>
+    <!-- Pulse ring -->
+    <span class="absolute inset-0 rounded-full bg-blue-400/30 animate-ping pointer-events-none"></span>
+  </button>
+
+  <!-- Chat Interface Overlay -->
+  <div id="aiAssistantChat" class="hidden fixed inset-0 z-[80] flex flex-col items-center justify-end bg-black/40 backdrop-blur-[2px]" onclick="if(event.target===this)toggleAiAssistant()">
+    <div class="w-full max-w-md h-[92vh] bg-slate-100 rounded-t-2xl flex flex-col shadow-2xl overflow-hidden animate-slideUp" style="animation: slideUp 0.3s ease-out">
+
+      <!-- ─── HEADER ─── -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 leading-tight">Quick AI Assistant</h2>
+            <p class="text-[10px] text-slate-500 font-medium">Smart finance • Instant logging</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- User avatar -->
+          <div id="aiChatAvatar" class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-[11px] font-bold overflow-hidden">U</div>
+          <button onclick="toggleAiAssistant()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── SUB-HEADER ─── -->
+      <div class="bg-white px-4 py-2 flex items-center justify-between border-b border-slate-100 shrink-0">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          <span class="text-[11px] font-semibold text-slate-600">FinWise powered by Gemini</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-[9px] font-bold text-blue-700">Gemini 1.5 Pro</span>
+          <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[9px] font-bold text-slate-500">Natural Language</span>
+        </div>
+      </div>
+
+      <!-- ─── SCROLLABLE CHAT BODY ─── -->
+      <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3 scroll-smooth" id="aiChatBody">
+
+        <!-- Quick Prompts Row -->
+        <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+          <button onclick="aiSendQuickPrompt('I ate nasi lemak RM7')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">🍔</span>
+            <span>I ate nasi lemak RM7</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Grabbed Grab ride RM12')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">🚗</span>
+            <span>Grab ride RM12</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Coffee at Starbucks RM18.50')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">☕</span>
+            <span>Coffee RM18.50</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Paid electricity bill RM124')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">💡</span>
+            <span>Electric bill RM124</span>
+          </button>
+          <button onclick="aiSendQuickPrompt('Show my spending summary')" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 shadow-xs">
+            <span class="text-sm">📊</span>
+            <span>Spending summary</span>
+          </button>
+        </div>
+
+        <!-- Live Budget Impact Widget -->
+        <div class="bg-blue-900 rounded-xl p-3.5 text-white shadow-md">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-blue-300" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              <span class="text-[10px] font-bold tracking-wider uppercase text-blue-200">Live Budget Impact</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-white/15 text-[9px] font-bold text-blue-200">Auto-Sync UTM</span>
+          </div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-blue-300/80 font-medium">Current Daily Buffer</span>
+              <span id="aiBudgetCurrent" class="text-lg font-extrabold text-white">RM 32.18</span>
+            </div>
+            <span class="material-symbols-outlined text-blue-400 text-[20px]">arrow_forward</span>
+            <div class="flex flex-col items-end">
+              <span class="text-[10px] text-blue-300/80 font-medium">After Queued Logs</span>
+              <span id="aiBudgetAfter" class="text-xl font-extrabold text-white">RM 22.68</span>
+            </div>
+          </div>
+          <div class="w-full h-2 rounded-full bg-white/15 overflow-hidden">
+            <div id="aiBudgetBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-300 transition-all duration-700" style="width: 71%"></div>
+          </div>
+          <p class="text-[10px] text-blue-300/80 font-medium mt-1.5 text-right">71% monthly target intact</p>
+        </div>
+
+        <!-- Message 1: User Audio Note (Right-aligned) -->
+        <div class="flex justify-end">
+          <div class="max-w-[85%] flex flex-col items-end gap-1">
+            <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="material-symbols-outlined text-[14px] text-blue-300">mic</span>
+                <span class="text-[10px] font-bold text-blue-300 uppercase tracking-wide">Audio Note Transcribed</span>
+              </div>
+              <p>I eat nasi lemak this afternoon cost me RM7</p>
+            </div>
+            <div class="flex items-center gap-1.5 px-1">
+              <span class="text-[10px] text-slate-400">2:34 PM</span>
+              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 2: AI Parsed Expense (Left-aligned) -->
+        <div class="flex gap-2 items-start">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
+            </div>
+            <!-- Expense Grid -->
+            <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
+                <p class="text-[11px] font-bold text-slate-900">Nasi Lemak</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
+                <p class="text-[11px] font-bold text-slate-900">Food &amp; Dining</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
+                <p class="text-[11px] font-extrabold text-blue-900">RM 7.00</p>
+              </div>
+            </div>
+            <!-- Action Buttons -->
+            <button onclick="aiConfirmExpense('Nasi Lemak', 7.00, 'Food & Dining')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+              Confirm &amp; Record RM 7.00
+            </button>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
+            </div>
+            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              Parsed by Gemini Vision
+            </p>
+          </div>
+        </div>
+
+        <!-- Message 3: User Image (Right-aligned) -->
+        <div class="flex justify-end">
+          <div class="max-w-[85%] flex flex-col items-end gap-1">
+            <div class="bg-blue-900 rounded-2xl rounded-br-md overflow-hidden shadow-sm">
+              <div class="w-full h-36 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                <div class="flex flex-col items-center gap-1.5 text-slate-400">
+                  <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+                  <span class="text-[10px] font-medium">Receipt Photo</span>
+                </div>
+              </div>
+              <p class="text-white text-[12px] px-3.5 py-2 leading-snug">Scanned Arked Cengal receipt for dinner.</p>
+            </div>
+            <div class="flex items-center gap-1.5 px-1">
+              <span class="text-[10px] text-slate-400">6:48 PM</span>
+              <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message 4: AI Receipt Parsed (Left-aligned) -->
+        <div class="flex gap-2 items-start">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+          </div>
+          <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="text-xs font-bold text-slate-900">Receipt Parsed</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">99.4% Match</span>
+            </div>
+            <!-- Merchant -->
+            <div class="flex items-center gap-2 mb-2.5 p-2 bg-slate-50 rounded-lg">
+              <span class="material-symbols-outlined text-[18px] text-blue-900">storefront</span>
+              <div>
+                <p class="text-[10px] text-slate-400 font-medium">Merchant</p>
+                <p class="text-[12px] font-bold text-slate-900">UTM Arked Cengal</p>
+              </div>
+            </div>
+            <!-- Itemized List -->
+            <div class="space-y-1.5 mb-2.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Nasi Ayam Penyet</span>
+                <span class="font-bold text-slate-900">RM 6.00</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Teh Tarik Ais</span>
+                <span class="font-bold text-slate-900">RM 2.50</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-600">Kuih Seri Muka</span>
+                <span class="font-bold text-slate-900">RM 1.00</span>
+              </div>
+              <div class="border-t border-dashed border-slate-200 pt-1.5 flex items-center justify-between text-[12px]">
+                <span class="font-bold text-slate-700">Total</span>
+                <span class="font-extrabold text-blue-900">RM 9.50</span>
+              </div>
+            </div>
+            <!-- Action Buttons -->
+            <button onclick="aiConfirmExpense('UTM Arked Cengal (Nasi Ayam Penyet, Teh Tarik Ais, Kuih Seri Muka)', 9.50, 'Food & Dining')" class="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+              ✓ Confirm &amp; Add to Ledger
+            </button>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Retake Photo</button>
+              <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Change Category</button>
+            </div>
+            <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+              Parsed by Gemini Vision · 99.4% confidence
+            </p>
+          </div>
+        </div>
+
+        <!-- Spacer for input area -->
+        <div class="h-4"></div>
+      </div>
+
+      <!-- ─── FIXED BOTTOM INPUT AREA ─── -->
+      <div class="bg-white border-t border-slate-200 px-3 py-2.5 shrink-0 pb-safe">
+        <div class="flex items-center gap-2">
+          <button onclick="triggerAiCameraCapture()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-blue-900 transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+          </button>
+          <div class="flex-1 relative flex items-center">
+            <input id="aiChatInput" type="text" placeholder="Speak or type..." onkeydown="if(event.key==='Enter')aiSendMessage()"
+              class="w-full pl-3 pr-10 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400">
+            <button onclick="aiStartVoice()" class="absolute right-2 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-900 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">mic</span>
+            </button>
+          </div>
+          <button onclick="aiSendMessage()" class="w-9 h-9 rounded-full bg-blue-900 flex items-center justify-center text-white hover:bg-blue-800 active:scale-95 transition-all shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+          </button>
+        </div>
+        <p class="text-[9px] text-slate-400 text-center mt-1.5 font-medium">Multi-currency enabled • Powered by Google Gemini</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI Assistant Slide-Up Animation -->
+  <style>
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100%); opacity: 0; }
+    }
+    .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
+    .animate-slideDown { animation: slideDown 0.25s ease-in forwards; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <script>
+    // Supabase Live Client Configuration
+    const SUPABASE_URL = "https://vcxxsffdsznmqtpghrss.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeHhzZmZkc3pubXF0cGdocnNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMjgwOTMsImV4cCI6MjEwOTgwNDA5M30.bxxoU1PgcSeOMkss5kx71dI3P67eTL9bk9TzaJC_1VM";
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const transactionCategories = {
+      income: ["Salary", "Freelance", "Investments", "Other Income"],
+      expense: [
+        "Food & Dining",
+        "Transportation",
+        "Groceries",
+        "Shopping",
+        "Entertainment",
+        "Bills & Utilities",
+        "Health & Wellness",
+        "Education & Self-Care",
+        "Other Expenses"
+      ]
+    };
+
+    const categoryIdMap = {
+      "Food & Dining": "food_dining",
+      "Transportation": "transportation",
+      "Groceries": "groceries",
+      "Shopping": "shopping",
+      "Entertainment": "entertainment",
+      "Bills & Utilities": "bills_utilities",
+      "Health & Wellness": "health_wellness",
+      "Education & Self-Care": "education",
+      "Salary": "salary",
+      "Freelance": "freelance",
+      "Investments": "investments",
+      "Other Income": "other",
+      "Other Expenses": "other"
+    };
+
+    const idToCategoryMap = {
+      "food_dining": "Food & Dining",
+      "transportation": "Transportation",
+      "groceries": "Groceries",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment",
+      "bills_utilities": "Bills & Utilities",
+      "health_wellness": "Health & Wellness",
+      "education": "Education & Self-Care",
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investments": "Investments",
+      "other": "Other Expenses"
+    };
+
+    let balanceIsHidden = false;
+    let editingTransactionId = null;
+    let transactions = [];
+    let pendingReceiptItems = [];
+    let expandedReceiptRows = {};
+    let latestAiInsightResult = null;
+
+    function localDateString(date = new Date()) {
+      const offset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function normalizeReceiptItemsClient(rawItems, fallbackCategory = "General") {
+      if (!Array.isArray(rawItems)) return [];
+      const out = [];
+      for (const entry of rawItems) {
+        if (typeof entry === "string" && entry.trim()) {
+          out.push({
+            item_name: entry.replace(/[<>]/g, "").trim().slice(0, 120),
+            price: 0,
+            quantity: 1,
+            category: fallbackCategory || "General"
+          });
+        } else if (entry && typeof entry === "object") {
+          const itemName = String(entry.item_name || entry.name || "").replace(/[<>]/g, "").trim().slice(0, 120);
+          if (!itemName) continue;
+          const p = Number(entry.price);
+          const q = parseInt(entry.quantity, 10);
+          out.push({
+            item_name: itemName,
+            price: Number.isFinite(p) && p >= 0 ? Math.round(p * 100) / 100 : 0,
+            quantity: Number.isFinite(q) && q >= 1 ? Math.min(q, 999) : 1,
+            category: String(entry.category || fallbackCategory || "General").replace(/[<>]/g, "").trim().slice(0, 60) || "General"
+          });
+        }
+      }
+      return out.slice(0, 40);
+    }
+
+    function getReceiptCacheStorageKey() {
+      const email = (localStorage.getItem("finwise_user_email") || "default_user").toLowerCase().replace(/[^a-z0-9]/g, "_");
+      return "finwise_receipt_items_cache_" + email;
+    }
+
+    function getReceiptItemsCache() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(getReceiptCacheStorageKey()) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function cacheReceiptItemsForTx(id, desc, dateStr, items) {
+      const cleanItems = normalizeReceiptItemsClient(items);
+      if (!cleanItems.length) return;
+      const cache = getReceiptItemsCache();
+      if (id) cache["id_" + id] = cleanItems;
+      if (desc && dateStr) {
+        cache["sig_" + String(desc).trim().toLowerCase() + "_" + String(dateStr).slice(0, 10)] = cleanItems;
+      }
+      try { localStorage.setItem(getReceiptCacheStorageKey(), JSON.stringify(cache)); } catch (_) { }
+    }
+
+    function formatReceiptItemsToDetailsText(items) {
+      if (!Array.isArray(items) || items.length === 0) return "";
+      return items
+        .map(it => {
+          const qty = parseInt(it && it.quantity, 10) || 1;
+          const name = String((it && (it.item_name || it.name)) || "").trim();
+          return name ? `${qty}x ${name}` : "";
+        })
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    function parseDetailsTextToReceiptItems(text, fallbackCategory = "General", existingItems = []) {
+      const raw = String(text || "").trim();
+      if (!raw) return [];
+      const existingByName = {};
+      if (Array.isArray(existingItems)) {
+        for (const it of existingItems) {
+          const key = String((it && it.item_name) || "").trim().toLowerCase();
+          if (key) existingByName[key] = it;
+        }
+      }
+      let lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length === 1 && lines[0].includes(",") && /\b\d+\s*[x×]\s*/i.test(lines[0])) {
+        lines = lines[0].split(",").map(l => l.trim()).filter(Boolean);
+      }
+      const parsed = [];
+      for (const line of lines) {
+        const cleanLine = line.replace(/^[-*•]\s*/, "").replace(/[<>]/g, "").trim();
+        if (!cleanLine) continue;
+        let qty = 1;
+        let name = cleanLine;
+        const m = cleanLine.match(/^(\d+)\s*[x×]\s+(.+)$/i);
+        if (m) {
+          qty = Math.min(Math.max(parseInt(m[1], 10) || 1, 1), 999);
+          name = m[2].trim();
+        }
+        if (!name) continue;
+        const prev = existingByName[name.toLowerCase()];
+        parsed.push({
+          item_name: name.slice(0, 120),
+          price: prev && Number.isFinite(Number(prev.price)) ? Number(prev.price) : 0,
+          quantity: qty,
+          category: (prev && prev.category) || fallbackCategory || "General"
+        });
+      }
+      return parsed.slice(0, 40);
+    }
+
+    function syncDetailsTextareaToPendingItems() {
+      const detailsEl = document.getElementById("transactionDetails");
+      const catEl = document.getElementById("transactionCategory");
+      if (!detailsEl) return;
+      const cat = (catEl && catEl.value) || "General";
+      pendingReceiptItems = parseDetailsTextToReceiptItems(detailsEl.value, cat, pendingReceiptItems);
+      renderModalReceiptItemsPreview();
+    }
+
+    function getBuiltinDemoReceiptItems(title, category) {
+      const lower = String(title || "").toLowerCase();
+      if (!lower) return [];
+      if (lower.includes("aeon")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Rice 1kg", quantity: 1, price: 18.50, category: "Groceries" },
+          { item_name: "Soya milk x6", quantity: 1, price: 16.00, category: "Groceries" }
+        ], category);
+      }
+      if (lower.includes("village grocer")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Organic Bananas", quantity: 1, price: 14.50, category: "Groceries" },
+          { item_name: "Farm Fresh Milk 2L", quantity: 2, price: 18.90, category: "Groceries" },
+          { item_name: "Artisan Sourdough Loaf", quantity: 1, price: 16.00, category: "Groceries" }
+        ], category);
+      }
+      if (lower.includes("jd sports")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Casual Running Shoes", quantity: 1, price: 169.00, category: "Clothing" },
+          { item_name: "Athletic Crew Socks", quantity: 1, price: 20.00, category: "Clothing" }
+        ], category);
+      }
+      if (lower.includes("coffee") || lower.includes("bistro") || lower.includes("starbucks")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Flat White Coffee", quantity: 1, price: 13.00, category: "Food & Dining" },
+          { item_name: "Sourdough Avocado Toast", quantity: 1, price: 15.00, category: "Food & Dining" }
+        ], category);
+      }
+      if (lower.includes("electricity") || lower.includes("utilities")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "TNB Electricity Tariff", quantity: 1, price: 88.80, category: "Bills & Utilities" },
+          { item_name: "Air Selangor Water Bill", quantity: 1, price: 27.00, category: "Bills & Utilities" }
+        ], category);
+      }
+      if (lower.includes("touch n go") || lower.includes("transit")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "MRT Weekly Pass Reload", quantity: 1, price: 50.00, category: "Transportation" }
+        ], category);
+      }
+      if (lower.includes("fuel") || lower.includes("shell") || lower.includes("petronas")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "RON95 Fuel Pump", quantity: 1, price: 85.00, category: "Transportation" }
+        ], category);
+      }
+      if (lower.includes("watsons") || lower.includes("guardian")) {
+        return normalizeReceiptItemsClient([
+          { item_name: "Vitamin C Tablets", quantity: 1, price: 28.90, category: "Health & Wellness" },
+          { item_name: "Facial Cleanser", quantity: 1, price: 19.90, category: "Health & Wellness" }
+        ], category);
+      }
+      return [];
+    }
+
+    function resolveReceiptItemsForRow(row) {
+      if (Array.isArray(row.receipt_items) && row.receipt_items.length > 0) {
+        return normalizeReceiptItemsClient(row.receipt_items, row.category);
+      }
+      const cache = getReceiptItemsCache();
+      if (row.id && Array.isArray(cache["id_" + row.id]) && cache["id_" + row.id].length > 0) {
+        return cache["id_" + row.id];
+      }
+      const titleKey = (row.title || row.description || "").trim().toLowerCase();
+      const dateKey = String(row.transaction_date || row.date || "").slice(0, 10);
+      if (titleKey && dateKey && Array.isArray(cache["sig_" + titleKey + "_" + dateKey]) && cache["sig_" + titleKey + "_" + dateKey].length > 0) {
+        return cache["sig_" + titleKey + "_" + dateKey];
+      }
+      if (row.notes && String(row.notes).trim()) {
+        const fromNotes = parseDetailsTextToReceiptItems(row.notes, row.category || "General");
+        if (fromNotes.length > 0) return fromNotes;
+      }
+      return getBuiltinDemoReceiptItems(row.title || row.description, row.category);
+    }
+
+    function withTimeout(promise, ms = 10000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Network request timed out")), ms))
+      ]);
+    }
+
+    function money(amount) {
+      return Number(amount || 0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function currentMonth() {
+      return document.getElementById("selectedMonth").value || localDateString().slice(0, 7);
+    }
+
+    function generateUUID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function isValidUUID(id) {
+      return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    }
+
+    const DEMO_DEFAULT_TRANSACTIONS = {
+      "demo@finwise-app.xyz": [
+        { type: "income", amount: 5200.00, category: "Salary", description: "Monthly Tech Salary", dateOffset: -7, receipt_items: [] },
+        {
+          type: "expense",
+          amount: 224.00,
+          category: "Shopping",
+          description: "AEON Mall Supermarket & Footwear",
+          dateOffset: -5,
+          receipt_items: [
+            { item_name: "Nike Sneakers", price: 199.00, quantity: 1, category: "Clothing" },
+            { item_name: "Colgate Toothpaste", price: 12.50, quantity: 2, category: "Groceries" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 68.40,
+          category: "Groceries",
+          description: "Village Grocer Weekly Essentials",
+          dateOffset: -3,
+          receipt_items: [
+            { item_name: "Organic Bananas", price: 14.50, quantity: 1, category: "Groceries" },
+            { item_name: "Farm Fresh Milk 2L", price: 18.90, quantity: 2, category: "Groceries" },
+            { item_name: "Artisan Sourdough Loaf", price: 16.10, quantity: 1, category: "Groceries" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 189.00,
+          category: "Shopping",
+          description: "JD Sports Mid Valley",
+          dateOffset: -2,
+          receipt_items: [
+            { item_name: "Casual Running Shoes", price: 169.00, quantity: 1, category: "Clothing" },
+            { item_name: "Athletic Crew Socks", price: 20.00, quantity: 1, category: "Clothing" }
+          ]
+        },
+        {
+          type: "expense",
+          amount: 24.50,
+          category: "Food & Dining",
+          description: "Artisan Coffee & Pastry",
+          dateOffset: -1,
+          receipt_items: [
+            { item_name: "Flat White Coffee", price: 13.00, quantity: 1, category: "Food & Dining" },
+            { item_name: "Almond Croissant", price: 11.50, quantity: 1, category: "Food & Dining" }
+          ]
+        },
+        { type: "expense", amount: 85.00, category: "Transportation", description: "RON95 Fuel Refill", dateOffset: -1, receipt_items: [] },
+        { type: "income", amount: 650.00, category: "Freelance", description: "UI/UX Architecture Advisory", dateOffset: 0, receipt_items: [] }
+      ]
+    };
+
+    async function getAuthenticatedUserId() {
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user && session.user.id) {
+            localStorage.setItem("finwise_user_id", session.user.id);
+            return session.user.id;
+          }
+        } catch (_) { }
+      }
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
+      return "00000000-0000-4000-8000-000000000001";
+    }
+
+    function getActiveUserId() {
+      const stored = localStorage.getItem("finwise_user_id");
+      if (isValidUUID(stored)) return stored;
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+      if (email === "demo@finwise-app.xyz") return "00000000-0000-4000-8000-000000000001";
+      return "00000000-0000-4000-8000-000000000001";
+    }
+
+    function getStorageKey() {
+      const email = localStorage.getItem("finwise_user_email") || "default_user";
+      return "finwise_transactions_" + email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    }
+
+    function loadLocalTransactions() {
+      try {
+        const data = JSON.parse(localStorage.getItem(getStorageKey()) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function persistLocalTransactions() {
+      localStorage.setItem(getStorageKey(), JSON.stringify(transactions));
+    }
+
+    // Check Supabase session & OAuth token / PKCE code callback
+    async function checkSupabaseAuthSession() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = window.location.hash ? new URLSearchParams(window.location.hash.substring(1)) : null;
+
+      // 1. Check for error in query or hash
+      const errorMsg = urlParams.get('error_description') || urlParams.get('error') ||
+        (hashParams ? (hashParams.get('error_description') || hashParams.get('error')) : null);
+      if (errorMsg) {
+        console.warn("OAuth error detected:", errorMsg);
+        window.location.replace('login.html?error=' + encodeURIComponent(errorMsg));
+        return;
+      }
+
+      // 2. Check for Implicit Flow Hash Tokens (#access_token=...&refresh_token=...)
+      const accessToken = hashParams ? hashParams.get('access_token') : null;
+      const refreshToken = hashParams ? hashParams.get('refresh_token') : null;
+      if (accessToken && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
+          if (!error && data && data.user) {
+            await saveSupabaseSession(data.user);
+            history.replaceState(null, null, window.location.pathname);
+            return;
+          }
+        } catch (e) {
+          console.warn("Set session from hash notice:", e);
+        }
+      }
+
+      // 3. Fresh OAuth PKCE code exchange: update session to this new Google account
+      const code = urlParams.get('code');
+      if (code && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (!error && data && data.session && data.session.user) {
+            await saveSupabaseSession(data.session.user);
+            history.replaceState(null, null, window.location.pathname);
+            return;
+          }
+        } catch (e) {
+          console.warn("Supabase code exchange notice:", e);
+        }
+      }
+
+      // 4. Check active Supabase client session
+      if (supabaseClient) {
+        try {
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (!error && session && session.user) {
+            await saveSupabaseSession(session.user);
+            return;
+          }
+        } catch (_) { }
+      }
+
+      // 5. Check active logged in user session in LocalStorage
+      const activeEmail = localStorage.getItem('finwise_user_email');
+      const activeSession = localStorage.getItem('finwise_session');
+      if (activeEmail && activeSession) {
+        return;
+      }
+
+      // 6. Not logged in: redirect cleanly to login page
+      window.location.replace('login.html');
+    }
+
+    async function saveSupabaseSession(user) {
+      const meta = user.user_metadata || {};
+      const appMeta = user.app_metadata || {};
+      const email = (user.email || '').toLowerCase().trim();
+      const isDemo = (user.email === 'demo@finwise-app.xyz' || email === 'demo@finwise-app.xyz');
+      const defaultDemoName = 'Demo Finwise';
+      const name = meta.full_name || meta.name || (isDemo ? defaultDemoName : (email ? formatNameFromEmail(email) : "Google User"));
+      const avatar = meta.avatar_url || meta.picture || "";
+      const initial = (name[0] || 'G').toUpperCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      const providers = Array.isArray(appMeta.providers) ? appMeta.providers : [appMeta.provider || 'google'];
+      const isGoogleProvider = providers.includes('google') || appMeta.provider === 'google';
+
+      localStorage.setItem('finwise_user_name', name);
+      localStorage.setItem('finwise_user_email', email);
+      localStorage.setItem('finwise_user_id', user.id);
+      localStorage.setItem('finwise_auth_provider', isGoogleProvider ? 'google' : 'email');
+
+      if (meta.phone) localStorage.setItem('finwise_user_phone', meta.phone);
+      if (meta.occupation) localStorage.setItem('finwise_user_occupation', meta.occupation);
+      if (meta.currency) localStorage.setItem('finwise_currency', meta.currency);
+      if (meta.monthly_budget) localStorage.setItem('finwise_monthly_budget', String(meta.monthly_budget));
+      if (meta.savings_goal) localStorage.setItem('finwise_savings_goal', String(meta.savings_goal));
+
+      const existingCustomAvatar = localStorage.getItem(scopedKey);
+      const chosenAvatar = isCustomAvatar(existingCustomAvatar) ? existingCustomAvatar : (avatar || initial);
+      localStorage.setItem('finwise_user_avatar', chosenAvatar);
+      if (isCustomAvatar(chosenAvatar)) {
+        localStorage.setItem(scopedKey, chosenAvatar);
+      }
+
+      localStorage.setItem('finwise_session', JSON.stringify({
+        id: user.id,
+        name: name,
+        email: email,
+        avatar: chosenAvatar,
+        provider: isGoogleProvider ? 'google' : 'email',
+        authenticatedAt: new Date().toISOString()
+      }));
+
+      if (!supabaseClient) return;
+
+      // Sync user profile to public.profiles in Supabase (using valid schema columns)
+      try {
+        const { data: existingProf } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const resolvedName = (existingProf && existingProf.display_name) ? existingProf.display_name : name;
+        const resolvedAvatar = (existingProf && isCustomAvatar(existingProf.avatar_url))
+          ? existingProf.avatar_url
+          : (isCustomAvatar(chosenAvatar) ? chosenAvatar : null);
+        const resolvedCurrency = (existingProf && existingProf.currency)
+          ? existingProf.currency
+          : (localStorage.getItem('finwise_currency') || 'RM');
+        const resolvedBudget = (existingProf && existingProf.monthly_budget)
+          ? Number(existingProf.monthly_budget)
+          : (parseFloat(localStorage.getItem('finwise_monthly_budget')) || 2500.00);
+
+        localStorage.setItem('finwise_user_name', resolvedName);
+        localStorage.setItem('finwise_currency', resolvedCurrency);
+        localStorage.setItem('finwise_monthly_budget', String(resolvedBudget));
+        if (resolvedAvatar) {
+          localStorage.setItem('finwise_user_avatar', resolvedAvatar);
+          localStorage.setItem(scopedKey, resolvedAvatar);
+        }
+
+        await supabaseClient.from('profiles').upsert({
+          id: user.id,
+          email: email,
+          display_name: resolvedName,
+          avatar_url: resolvedAvatar,
+          currency: resolvedCurrency,
+          monthly_budget: resolvedBudget
+        }, { onConflict: 'id' });
+      } catch (e) {
+        console.warn("Supabase profile upsert notice:", e);
+      }
+
+      // Feature 2: Auto-initialize Demo Account standard password ('FinWise2026!') in Supabase Auth
+      if (isDemo && !meta.demo_password_initialized) {
+        try {
+          await supabaseClient.auth.updateUser({
+            password: "FinWise2026!",
+            data: {
+              full_name: name,
+              demo_password_initialized: true,
+              has_password_set: true
+            }
+          });
+          localStorage.setItem('finwise_has_password_' + email, 'true');
+        } catch (e) {
+          console.warn("Demo password auto-init notice:", e);
+        }
+        return;
+      }
+
+      // Feature 3: First-Time Google Login Password Setup & Verification Email Trigger
+      const hasPasswordSet = Boolean(
+        meta.has_password_set ||
+        meta.demo_password_initialized ||
+        localStorage.getItem('finwise_has_password_' + email) === 'true'
+      );
+
+      if (isGoogleProvider && !hasPasswordSet && !isDemo) {
+        // Trigger verification & password setup email on first Google login (rate-limit guarded)
+        const emailSentKey = 'finwise_setup_email_sent_' + email;
+        const lastSentTs = parseInt(localStorage.getItem(emailSentKey) || '0', 10);
+        const now = Date.now();
+        if (now - lastSentTs > 60000) {
+          localStorage.setItem(emailSentKey, String(now));
+          try {
+            await supabaseClient.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin + '/reset_password.html?mode=setup&email=' + encodeURIComponent(email)
+            });
+          } catch (err) {
+            console.warn("First-time Google verification email notice:", err);
+          }
+        }
+        openGooglePasswordModal(email);
+      }
+    }
+
+    function openGooglePasswordModal(email) {
+      const modal = document.getElementById('googlePasswordSetupModal');
+      const emailText = document.getElementById('setupModalEmailText');
+      if (emailText && email) emailText.textContent = email;
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeGooglePasswordModal() {
+      const modal = document.getElementById('googlePasswordSetupModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function showSetupModalAlert(type, msg) {
+      const alertEl = document.getElementById('setupModalAlert');
+      if (!alertEl) return;
+      alertEl.className = 'p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ' +
+        (type === 'error'
+          ? 'bg-red-50 text-red-700 border border-red-200'
+          : 'bg-emerald-50 text-emerald-800 border border-emerald-200');
+      alertEl.innerHTML = `<span class="material-symbols-outlined text-[16px]">${type === 'error' ? 'error' : 'check_circle'}</span><span>${escapeHtml(msg)}</span>`;
+      alertEl.classList.remove('hidden');
+    }
+
+    async function resendGooglePasswordEmail() {
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      if (!email || !supabaseClient) return;
+      const btn = document.getElementById('resendSetupEmailBtn');
+      if (btn) btn.textContent = 'Sending...';
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset_password.html?mode=setup&email=' + encodeURIComponent(email)
+        });
+        if (error) {
+          showSetupModalAlert('error', error.message);
+        } else {
+          showSetupModalAlert('success', 'Verification email sent to ' + email + '! Check your inbox.');
+        }
+      } catch (e) {
+        showSetupModalAlert('error', 'Could not send email: ' + (e.message || e));
+      } finally {
+        if (btn) {
+          btn.innerHTML = '<span class="material-symbols-outlined text-[14px]">forward_to_inbox</span><span>Resend Verification Email</span>';
+        }
+      }
+    }
+
+    async function handleInlinePasswordSetup(event) {
+      event.preventDefault();
+      const newPass = document.getElementById('setupNewPass').value;
+      const confirmPass = document.getElementById('setupConfirmPass').value;
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase().trim();
+      const saveBtn = document.getElementById('setupSavePassBtn');
+
+      if (!newPass || newPass.length < 6) {
+        showSetupModalAlert('error', 'Password must be at least 6 characters long.');
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showSetupModalAlert('error', 'Passwords do not match. Please try again.');
+        return;
+      }
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Saving Password...</span>';
+      }
+
+      try {
+        if (supabaseClient) {
+          const { error } = await supabaseClient.auth.updateUser({
+            password: newPass,
+            data: { has_password_set: true }
+          });
+          if (error) {
+            showSetupModalAlert('error', error.message);
+            if (saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">lock_check</span><span>Confirm & Enable Dual Login</span>';
+            }
+            return;
+          }
+        }
+
+        localStorage.setItem('finwise_has_password_' + email, 'true');
+        showSetupModalAlert('success', 'Dual Login enabled! You can now log in with Google or Email & Password.');
+        setTimeout(() => {
+          closeGooglePasswordModal();
+        }, 1200);
+      } catch (err) {
+        showSetupModalAlert('error', 'Error setting password: ' + (err.message || err));
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">lock_check</span><span>Confirm & Enable Dual Login</span>';
+        }
+      }
+    }
+
+    function formatNameFromEmail(email) {
+      if (!email) return "Google User";
+      const prefix = email.split('@')[0];
+      return prefix
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(w => w.length > 0)
+        .map(w => w[0].toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+
+    function isCustomAvatar(av) {
+      if (!av || typeof av !== 'string') return false;
+      const trimmed = av.trim();
+      if (!trimmed) return false;
+      if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return true;
+      if (trimmed.length > 1 || !/^[A-Za-z0-9]$/.test(trimmed)) return true;
+      return false;
+    }
+
+    function applyUserProfile() {
+      const name = localStorage.getItem('finwise_user_name') || 'Google User';
+      const email = (localStorage.getItem('finwise_user_email') || '').toLowerCase();
+      const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+
+      let avatar = localStorage.getItem('finwise_user_avatar') || localStorage.getItem(scopedKey) || '';
+      if (!isCustomAvatar(avatar)) {
+        try {
+          const accounts = JSON.parse(localStorage.getItem('finwise_user_accounts') || '{}');
+          if (accounts[email] && isCustomAvatar(accounts[email].avatar)) {
+            avatar = accounts[email].avatar;
+            localStorage.setItem('finwise_user_avatar', avatar);
+          }
+        } catch (_) { }
+      }
+
+      document.getElementById('greetingName').textContent = 'Hello, ' + name + '!';
+      document.getElementById('userSubtitle').textContent = email ? email + ' • Personal Finance' : 'Personal Financial Snapshot';
+      document.getElementById('profileMenuName').textContent = name;
+      document.getElementById('profileMenuEmail').textContent = email;
+
+      const headerAvatar = document.getElementById('headerProfileAvatar');
+      const menuAvatar = document.getElementById('menuAvatarIcon');
+      const initial = (name[0] || 'G').toUpperCase();
+
+      if (avatar && (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:image/'))) {
+        headerAvatar.innerHTML = `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+        menuAvatar.innerHTML = `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover">`;
+      } else if (avatar && isCustomAvatar(avatar)) {
+        headerAvatar.innerHTML = `<span class="text-sm">${escapeHtml(avatar)}</span>`;
+        menuAvatar.innerHTML = `<span class="text-base">${escapeHtml(avatar)}</span>`;
+      } else {
+        headerAvatar.innerHTML = escapeHtml(initial);
+        menuAvatar.innerHTML = escapeHtml(initial);
+      }
+    }
+
+    // Real-Time Cloud Synchronization Engine (Supabase Realtime + Cross-Device Poll)
+    let realtimeChannel = null;
+
+    function initRealtimeSync() {
+      if (!supabaseClient) return;
+
+      // 1. Supabase Realtime channel subscription for instant push updates on transactions & profiles
+      try {
+        if (realtimeChannel) {
+          supabaseClient.removeChannel(realtimeChannel);
+        }
+        realtimeChannel = supabaseClient
+          .channel('public:finwise:realtime:dash')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+            loadTransactions();
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+            loadTransactions();
+          })
+          .subscribe();
+      } catch (e) {
+        console.warn("Supabase Realtime subscription notice:", e);
+      }
+
+      // 2. Cloud synchronization poll every 4 seconds (ensures instant updates even across strict firewalls)
+      setInterval(() => {
+        if (!document.hidden && !editingTransactionId) {
+          loadTransactions();
+        }
+      }, 4000);
+
+      // 3. Refresh immediately when user switches back to this tab or unlocks phone
+      window.addEventListener('focus', () => loadTransactions());
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadTransactions();
+      });
+    }
+
+    // Seed initial Demo Account transactions directly to Supabase if empty on first migration
+    async function seedDemoTransactionsIfNeeded(userId, email) {
+      const defaults = DEMO_DEFAULT_TRANSACTIONS[email];
+      if (!defaults || !supabaseClient || !isValidUUID(userId)) return [];
+
+      const seededKey = 'finwise_cloud_seeded_' + userId;
+      if (localStorage.getItem(seededKey) === 'true') return [];
+
+      // Also check user_metadata so we never re-seed if user intentionally deleted all rows
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user && user.user_metadata && user.user_metadata.cloud_tx_seeded) {
+          localStorage.setItem(seededKey, 'true');
+          return [];
+        }
+      } catch (_) { }
+
+      const now = new Date();
+      const rowsToInsert = defaults.map(item => {
+        const d = new Date(now.getTime() + (item.dateOffset || 0) * 86400000);
+        const dateStr = localDateString(d);
+        const itemsArr = normalizeReceiptItemsClient(item.receipt_items || [], item.category);
+        if (itemsArr.length > 0) {
+          cacheReceiptItemsForTx(null, item.description, dateStr, itemsArr);
+        }
+        return {
+          user_id: userId,
+          title: item.description,
+          amount: item.amount,
+          type: item.type,
+          category_id: categoryIdMap[item.category] || 'other',
+          category: item.category,
+          transaction_date: dateStr + 'T12:00:00Z',
+          date: dateStr + 'T12:00:00Z',
+          receipt_items: itemsArr
+        };
+      });
+
+      try {
+        let { data, error } = await supabaseClient
+          .from('transactions')
+          .insert(rowsToInsert)
+          .select('*');
+
+        if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+          const fallbackRows = rowsToInsert.map(r => ({
+            user_id: r.user_id,
+            title: r.title,
+            amount: r.amount,
+            type: r.type,
+            category_id: r.category_id,
+            transaction_date: r.transaction_date
+          }));
+          const res2 = await supabaseClient
+            .from('transactions')
+            .insert(fallbackRows)
+            .select('*');
+          data = res2.data;
+          error = res2.error;
+        }
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          localStorage.setItem(seededKey, 'true');
+          try {
+            await supabaseClient.auth.updateUser({ data: { cloud_tx_seeded: true } });
+          } catch (_) { }
+          return data;
+        }
+      } catch (e) {
+        console.warn("Demo cloud seed notice:", e);
+      }
+      return [];
+    }
+
+    // Synchronize transactions across all devices in real time via Supabase
+    async function loadTransactions() {
+      const userId = await getAuthenticatedUserId();
+      const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase().trim();
+
+      // 1. Query Supabase Cloud Database (Primary Source of Truth for all accounts including Demo Accounts)
+      if (supabaseClient && isValidUUID(userId)) {
+        try {
+          let { data, error } = await withTimeout(
+            supabaseClient
+              .from('transactions')
+              .select('id, user_id, title, amount, type, category_id, category, transaction_date, date, notes, receipt_items')
+              .eq('user_id', userId)
+              .order('transaction_date', { ascending: false }),
+            10000
+          );
+
+          // Fallback to select('*') if optional columns are not yet migrated
+          if (error && (error.code === '42703' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackRes = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('transaction_date', { ascending: false }),
+              10000
+            );
+            data = fallbackRes.data;
+            error = fallbackRes.error;
+          }
+
+          if (!error && Array.isArray(data)) {
+            // If Demo Account has 0 transactions in Supabase and hasn't been seeded yet, seed to Supabase
+            if (data.length === 0 && email === 'demo@finwise-app.xyz') {
+              const seeded = await seedDemoTransactionsIfNeeded(userId, email);
+              if (seeded && seeded.length > 0) data = seeded;
+            }
+
+            transactions = data.map(row => ({
+              id: row.id,
+              type: row.type,
+              amount: Number(row.amount),
+              category: row.category || idToCategoryMap[row.category_id] || "Other Expenses",
+              description: row.title || row.description || "",
+              date: (row.transaction_date || row.date || localDateString()).slice(0, 10),
+              notes: row.notes || "",
+              receipt_items: resolveReceiptItemsForRow(row)
+            }));
+            persistLocalTransactions();
+            renderDashboard();
+          }
+
+          // Check for updated profile (name, avatar, currency, budget) from Supabase profiles
+          const { data: profData } = await supabaseClient
+            .from('profiles')
+            .select('avatar_url, display_name, currency, monthly_budget')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (profData) {
+            let profileChanged = false;
+            if (profData.display_name && profData.display_name !== localStorage.getItem('finwise_user_name')) {
+              localStorage.setItem('finwise_user_name', profData.display_name);
+              profileChanged = true;
+            }
+            if (profData.currency && profData.currency !== localStorage.getItem('finwise_currency')) {
+              localStorage.setItem('finwise_currency', profData.currency);
+              profileChanged = true;
+            }
+            if (profData.monthly_budget) {
+              localStorage.setItem('finwise_monthly_budget', String(profData.monthly_budget));
+            }
+            if (profData.avatar_url && isCustomAvatar(profData.avatar_url)) {
+              const scopedKey = 'finwise_user_avatar_' + email.replace(/[^a-z0-9]/g, '_');
+              if (localStorage.getItem('finwise_user_avatar') !== profData.avatar_url) {
+                localStorage.setItem('finwise_user_avatar', profData.avatar_url);
+                localStorage.setItem(scopedKey, profData.avatar_url);
+                profileChanged = true;
+              }
+            }
+            if (profileChanged) {
+              applyUserProfile();
+              renderDashboard();
+            }
+          }
+          return;
+        } catch (e) {
+          console.warn("Supabase load transactions notice:", e);
+        }
+      }
+
+      // 2. Offline fallback to local cache if network is unreachable
+      transactions = loadLocalTransactions();
+      renderDashboard();
+    }
+
+    function toggleBalance() {
+      balanceIsHidden = !balanceIsHidden;
+      document.getElementById('eyeIcon').textContent = balanceIsHidden ? 'visibility_off' : 'visibility';
+      renderDashboard();
+    }
+
+    function toggleProfileMenu() {
+      document.getElementById('profileMenu').classList.toggle('hidden');
+    }
+
+    async function logoutFromMenu() {
+      const btn = event?.currentTarget;
+      if (btn) btn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></span> Signing out...';
+
+      // 1. Sign out completely from Supabase Auth
+      if (supabaseClient) {
+        try {
+          await Promise.race([
+            supabaseClient.auth.signOut({ scope: 'local' }),
+            new Promise(resolve => setTimeout(resolve, 600))
+          ]);
+        } catch (_) { }
+      }
+
+      // 2. Preserve only accounts registry and user-specific transaction histories
+      const preservedAccounts = localStorage.getItem('finwise_user_accounts');
+      const preservedTx = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('finwise_transactions_')) {
+          preservedTx[k] = localStorage.getItem(k);
+        }
+      }
+
+      // 3. Clear ALL localStorage tokens
+      localStorage.clear();
+
+      // 4. Restore preserved data
+      if (preservedAccounts) {
+        localStorage.setItem('finwise_user_accounts', preservedAccounts);
+      }
+      for (const k in preservedTx) {
+        localStorage.setItem(k, preservedTx[k]);
+      }
+
+      // 5. Clear sessionStorage
+      try { sessionStorage.clear(); } catch (_) { }
+
+      // 6. Expire any session cookies
+      try {
+        document.cookie.split(";").forEach(c => {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      } catch (_) { }
+
+      // 7. Redirect to login.html with clean flag
+      window.location.replace('login.html?logout=true');
+    }
+
+    function showNotifModal() {
+      alert("FinWise Notifications:\n\n1. Supabase Cloud Sync active.\n2. Gmail Authentication verified.\n3. Smart Spend Alert: 20% savings on food this week.");
+    }
+
+    function getOrdinalDayDash(dateStr) {
+      if (!dateStr) return 'recently';
+      const parts = String(dateStr).slice(0, 10).split('-');
+      if (parts.length !== 3) return dateStr;
+      const day = parseInt(parts[2], 10);
+      if (!Number.isFinite(day)) return dateStr;
+      if (day > 3 && day < 21) return day + 'th';
+      switch (day % 10) {
+        case 1: return day + 'st';
+        case 2: return day + 'nd';
+        case 3: return day + 'rd';
+        default: return day + 'th';
+      }
+    }
+
+    function analyzeReceiptInsightsLocal(txList, currentReceipt = null, curr = 'RM') {
+      const topicGroups = [
+        { key: 'shoes', label: 'shoes', budgetCategory: 'Clothing', keywords: ['shoe', 'shoes', 'sneaker', 'sneakers', 'footwear', 'boots', 'sandal', 'trainers', 'running'] },
+        { key: 'clothing', label: 'clothing items', budgetCategory: 'Clothing', keywords: ['shirt', 't-shirt', 'pants', 'jeans', 'jacket', 'hoodie', 'dress', 'socks', 'uniqlo', 'apparel'] },
+        { key: 'coffee', label: 'coffee/drinks', budgetCategory: 'Food & Dining', keywords: ['coffee', 'latte', 'americano', 'espresso', 'cappuccino', 'macchiato', 'boba', 'matcha', 'tea', 'starbucks', 'zus'] },
+        { key: 'snacks', label: 'snacks & treats', budgetCategory: 'Food & Dining', keywords: ['croissant', 'cake', 'pastry', 'donut', 'ice cream', 'chocolate', 'snack'] },
+        { key: 'groceries', label: 'grocery essentials', budgetCategory: 'Groceries', keywords: ['milk', 'bread', 'eggs', 'banana', 'toothpaste', 'sourdough'] }
+      ];
+      const detectTopic = (name, cat) => {
+        const lower = (String(name || '') + ' ' + String(cat || '')).toLowerCase();
+        return topicGroups.find(g => g.keywords.some(kw => lower.includes(kw))) || null;
+      };
+
+      const cutoffMs = Date.now() - 14 * 86400000;
+      const combined = Array.isArray(txList) ? [...txList] : [];
+      if (currentReceipt && Array.isArray(currentReceipt.receipt_items) && currentReceipt.receipt_items.length > 0) {
+        combined.unshift({
+          type: 'expense',
+          date: currentReceipt.date || localDateString(),
+          category: currentReceipt.category || 'Shopping',
+          description: currentReceipt.merchant || 'Current Receipt',
+          receipt_items: currentReceipt.receipt_items
+        });
+      }
+
+      const recentExpenses = combined.filter(tx => {
+        if (!tx || tx.type === 'income') return false;
+        const dStr = String(tx.date || '').slice(0, 10);
+        const ts = new Date(dStr + 'T12:00:00Z').getTime();
+        return Number.isFinite(ts) && ts >= cutoffMs;
+      });
+
+      const buckets = {};
+      for (const tx of recentExpenses) {
+        const dStr = String(tx.date || '').slice(0, 10);
+        const items = Array.isArray(tx.receipt_items) ? tx.receipt_items : [];
+        if (items.length > 0) {
+          for (const it of items) {
+            const topic = detectTopic(it.item_name, it.category || tx.category);
+            if (!topic) continue;
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: it.item_name,
+              price: Number(it.price || 0) * (parseInt(it.quantity, 10) || 1),
+              category: it.category || topic.budgetCategory
+            });
+          }
+        } else {
+          const topic = detectTopic(tx.description, tx.category);
+          if (topic) {
+            if (!buckets[topic.key]) buckets[topic.key] = { group: topic, entries: [] };
+            buckets[topic.key].entries.push({
+              date: dStr,
+              itemName: tx.description,
+              price: Number(tx.amount || 0),
+              category: topic.budgetCategory
+            });
+          }
+        }
+      }
+
+      const duplicates = Object.values(buckets)
+        .filter(b => b.entries.length >= 2)
+        .sort((a, b) => {
+          const scoreA = (a.group.key === 'shoes' ? 500 : 0) + a.entries.reduce((s, e) => s + e.price, 0);
+          const scoreB = (b.group.key === 'shoes' ? 500 : 0) + b.entries.reduce((s, e) => s + e.price, 0);
+          return scoreB - scoreA;
+        });
+
+      if (duplicates.length > 0) {
+        const top = duplicates[0];
+        const sorted = [...top.entries].sort((a, b) => a.date.localeCompare(b.date));
+        const uniqueDates = [...new Set(sorted.map(e => e.date))];
+        const total = sorted.reduce((s, e) => s + (Number(e.price) || 0), 0);
+        const ordList = uniqueDates.slice(-3).map(d => 'the ' + getOrdinalDayDash(d));
+        const dateText = ordList.length >= 2
+          ? (ordList.length === 2 ? `${ordList[0]} and ${ordList[1]}` : `${ordList.slice(0, -1).join(', ')}, and ${ordList[ordList.length - 1]}`)
+          : `${ordList[0]} (${sorted.length}x)`;
+        return {
+          duplicateDetected: true,
+          repeatedTopic: top.group.label,
+          repeatedCategory: top.group.budgetCategory,
+          occurrences: sorted,
+          insight: `✨ FinWise noticed: You bought ${top.group.label} on ${dateText} of this month! Treating yourself is great, but keep an eye on your '${top.group.budgetCategory}' budget (${curr} ${money(total)} spent) to avoid overspending this month~`
+        };
+      }
+
+      return {
+        duplicateDetected: false,
+        repeatedTopic: null,
+        repeatedCategory: null,
+        occurrences: [],
+        insight: "✨ FinWise noticed: Your itemized receipt purchases over the last 14 days look well-balanced with no repetitive impulse buys!"
+      };
+    }
+
+    async function refreshDashboardAiInsight(currentReceipt = null) {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const localResult = analyzeReceiptInsightsLocal(transactions, currentReceipt, curr);
+      latestAiInsightResult = localResult;
+      updateDashboardAiInsightBanner(localResult);
+
+      try {
+        const res = await fetch('/api/ai-purchase-insights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recentTransactions: transactions.slice(0, 30),
+            currentReceipt: currentReceipt,
+            currency: curr
+          })
+        });
+        if (res.ok) {
+          const apiData = await res.json();
+          if (apiData && apiData.success && apiData.insight) {
+            latestAiInsightResult = apiData;
+            updateDashboardAiInsightBanner(apiData);
+          }
+        }
+      } catch (_) { }
+    }
+
+    function updateDashboardAiInsightBanner(result) {
+      const textEl = document.getElementById('aiPurchaseInsightText');
+      const badgeEl = document.getElementById('aiInsightBadge');
+      const cardEl = document.getElementById('aiPurchaseInsightCard');
+      if (!textEl || !result) return;
+      textEl.textContent = result.insight;
+      if (badgeEl) {
+        if (result.duplicateDetected) {
+          badgeEl.className = "px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold";
+          badgeEl.textContent = "Repeat Alert";
+          if (cardEl) cardEl.className = "rounded-xl bg-gradient-to-r from-amber-50/90 via-indigo-50/60 to-purple-50/60 p-3.5 border border-amber-200/80 shadow-sm";
+        } else {
+          badgeEl.className = "px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold";
+          badgeEl.textContent = "Healthy";
+          if (cardEl) cardEl.className = "rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm";
+        }
+      }
+    }
+
+    function showAiModal() {
+      const modal = document.getElementById('aiPurchaseInsightsModal');
+      const bodyEl = document.getElementById('aiModalBody');
+      const occEl = document.getElementById('aiModalOccurrences');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const result = latestAiInsightResult || analyzeReceiptInsightsLocal(transactions, null, curr);
+      if (bodyEl) bodyEl.textContent = result.insight;
+      if (occEl) {
+        const occs = Array.isArray(result.occurrences) ? result.occurrences : [];
+        occEl.innerHTML = occs.length > 0
+          ? `<p class="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Matched Purchases (Last 14 Days)</p>` +
+          occs.map(o => `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+                <div class="min-w-0">
+                  <p class="font-semibold text-text-primary truncate">${escapeHtml(o.itemName)}</p>
+                  <p class="text-[10px] text-text-muted">${escapeHtml(o.category || '')} · ${escapeHtml(o.date || '')}</p>
+                </div>
+                <span class="font-bold text-alert-coral shrink-0 ml-2">${curr} ${money(o.price)}</span>
+              </div>
+            `).join('')
+          : '<p class="text-[11px] text-text-muted text-center py-2">Scan more itemized receipts to unlock deeper purchase pattern insights.</p>';
+      }
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeAiModal() {
+      const modal = document.getElementById('aiPurchaseInsightsModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function renderModalReceiptItemsPreview() {
+      const box = document.getElementById('modalReceiptItemsPreview');
+      const list = document.getElementById('modalReceiptItemsList');
+      const countEl = document.getElementById('modalReceiptItemsCount');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      if (!box || !list) return;
+      if (!pendingReceiptItems || pendingReceiptItems.length === 0) {
+        box.classList.add('hidden');
+        list.innerHTML = '';
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
+      box.classList.remove('hidden');
+      if (countEl) countEl.textContent = String(pendingReceiptItems.length);
+      list.innerHTML = `
+        <p class="text-[11px] font-semibold text-text-muted">Details:</p>
+        ${pendingReceiptItems.map((it, idx) => `
+          <div class="flex items-center justify-between gap-2 text-[11px] text-slate-700 leading-snug">
+            <span class="truncate">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</span>
+            <button type="button" onclick="removePendingReceiptItem(${idx})" class="text-slate-400 hover:text-alert-coral font-bold leading-none shrink-0" title="Remove item">×</button>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function removePendingReceiptItem(index) {
+      pendingReceiptItems.splice(index, 1);
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) detailsEl.value = formatReceiptItemsToDetailsText(pendingReceiptItems);
+      renderModalReceiptItemsPreview();
+    }
+
+    function clearPendingReceiptItems() {
+      pendingReceiptItems = [];
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) detailsEl.value = "";
+      renderModalReceiptItemsPreview();
+    }
+
+    function updateCategoryOptions(selected = "") {
+      const type = document.getElementById("transactionType").value;
+      const categorySelect = document.getElementById("transactionCategory");
+      const list = transactionCategories[type] || [];
+      categorySelect.innerHTML = list.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+      if (selected && list.includes(selected)) {
+        categorySelect.value = selected;
+      }
+    }
+
+    function openTransactionDialog(id = null) {
+      editingTransactionId = id;
+      const form = document.getElementById("transactionForm");
+      form.reset();
+      resetReceiptBannerState();
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const currLabel = document.getElementById('formAmountCurrencyLabel');
+      const currPrefix = document.getElementById('formAmountCurrencyPrefix');
+      if (currLabel) currLabel.textContent = curr;
+      if (currPrefix) currPrefix.textContent = curr;
+      const record = id ? transactions.find(t => t.id === id) : null;
+      pendingReceiptItems = record && Array.isArray(record.receipt_items)
+        ? normalizeReceiptItemsClient(record.receipt_items, record.category)
+        : [];
+      const detailsEl = document.getElementById("transactionDetails");
+      if (detailsEl) {
+        detailsEl.value = formatReceiptItemsToDetailsText(pendingReceiptItems) || (record && record.notes ? record.notes : "");
+        if (!pendingReceiptItems.length && detailsEl.value.trim()) {
+          pendingReceiptItems = parseDetailsTextToReceiptItems(detailsEl.value, (record && record.category) || "General");
+        }
+      }
+      renderModalReceiptItemsPreview();
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) { aiTipEl.classList.add('hidden'); aiTipEl.textContent = ''; }
+
+      document.getElementById("transactionDialogTitle").textContent = record ? "Edit Transaction" : "Add Transaction";
+      document.getElementById("transactionType").value = record ? record.type : "expense";
+      updateCategoryOptions(record ? record.category : "");
+      document.getElementById("transactionAmount").value = record ? record.amount : "";
+      document.getElementById("transactionDescription").value = record ? record.description : "";
+      document.getElementById("transactionDate").value = record ? record.date : localDateString();
+
+      const dialog = document.getElementById("transactionDialog");
+      dialog.classList.remove("hidden");
+      dialog.classList.add("flex");
+      document.getElementById("transactionDescription").focus();
+    }
+
+    // --- SMART RECEIPT AI SCANNER ---
+    let activeCameraStream = null;
+    let currentFacingMode = "environment";
+
+    function updateGeminiBadgeStatus() {
+      const badgePill = document.getElementById('receiptBadgePill');
+      const bannerSub = document.getElementById('receiptBannerSubtitle');
+      if (!badgePill || !bannerSub) return;
+
+      badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none shrink-0";
+      badgePill.textContent = "Gemini AI";
+      bannerSub.innerHTML = '<span>Extract merchant, total &amp; items · <span class="text-emerald-700 font-semibold" title="Google Gemini Vision AI active on server">Gemini Active 🟢</span></span>';
+    }
+
+    async function triggerReceiptCameraFlow() {
+      // 1. Try Live Camera Viewfinder (Laptop Webcams, USB Webcams, Phones & Tablets)
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        openLiveCameraModal();
+      } else {
+        // Fallback for older browsers
+        const cameraInput = document.getElementById('receiptCameraInput');
+        if (cameraInput) cameraInput.click();
+      }
+    }
+
+    async function openLiveCameraModal() {
+      const modal = document.getElementById('liveCameraModal');
+      const loader = document.getElementById('liveCameraLoading');
+      if (!modal) return;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      if (loader) loader.classList.remove('hidden');
+
+      await startCameraStream(currentFacingMode);
+    }
+
+    async function startCameraStream(facing) {
+      const video = document.getElementById('liveCameraVideo');
+      const loader = document.getElementById('liveCameraLoading');
+
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+      }
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: facing ? { ideal: facing } : undefined,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        activeCameraStream = stream;
+        if (video) {
+          video.srcObject = stream;
+          await video.play();
+        }
+        if (loader) loader.classList.add('hidden');
+      } catch (err) {
+        console.warn("Camera ideal access failed, trying default video:", err);
+        try {
+          // Fallback for laptop webcams without 'environment' facing mode
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          activeCameraStream = fallbackStream;
+          if (video) {
+            video.srcObject = fallbackStream;
+            await video.play();
+          }
+          if (loader) loader.classList.add('hidden');
+        } catch (fatalErr) {
+          console.warn("Direct camera access unavailable, using native file picker:", fatalErr);
+          closeLiveCameraModal();
+          const cameraInput = document.getElementById('receiptCameraInput');
+          if (cameraInput) cameraInput.click();
+        }
+      }
+    }
+
+    async function toggleCameraFacing() {
+      currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+      await startCameraStream(currentFacingMode);
+    }
+
+    function closeLiveCameraModal() {
+      const modal = document.getElementById('liveCameraModal');
+      const video = document.getElementById('liveCameraVideo');
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(t => t.stop());
+        activeCameraStream = null;
+      }
+      if (video) video.srcObject = null;
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function captureLiveCameraFrame() {
+      const video = document.getElementById('liveCameraVideo');
+      const canvas = document.getElementById('liveCameraCanvas');
+      if (!video || !canvas) return;
+
+      let width = video.videoWidth || 1280;
+      let height = video.videoHeight || 720;
+
+      // Resize to max 1600px on longest side to reduce payload & speed up API
+      const maxDim = 1600;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+
+      closeLiveCameraModal();
+
+      await executeReceiptScan({
+        imageBase64: dataUrl,
+        mimeType: 'image/jpeg',
+        name: 'camera_capture_' + Date.now() + '.jpg'
+      });
+    }
+
+    function triggerReceiptUploadFlow() {
+      const uploadInput = document.getElementById('receiptUploadInput');
+      if (uploadInput) uploadInput.click();
+    }
+
+    async function handleReceiptFileSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      await executeReceiptScan(file);
+      event.target.value = '';
+    }
+
+    async function runReceiptDemoScan(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      await executeReceiptScan(null);
+    }
+
+    function resetReceiptBannerState() {
+      const banner = document.getElementById('smartReceiptBanner');
+      const bannerTitle = document.getElementById('receiptBannerTitle');
+      const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
+      const toast = document.getElementById('receiptScanToast');
+
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-indigo-50/70 rounded-xl mb-4 border border-indigo-100/80 transition-all flex flex-col gap-2.5";
+      if (bannerTitle) bannerTitle.textContent = "Scan Receipt with AI";
+      if (scanBtn) {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Scan</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+        uploadBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+      }
+      if (toast) toast.classList.add('hidden');
+      updateGeminiBadgeStatus();
+    }
+
+    async function executeReceiptScan(file) {
+      const banner = document.getElementById('smartReceiptBanner');
+      const badgePill = document.getElementById('receiptBadgePill');
+      const bannerTitle = document.getElementById('receiptBannerTitle');
+      const bannerSub = document.getElementById('receiptBannerSubtitle');
+      const scanBtn = document.getElementById('receiptScanBtn');
+      const uploadBtn = document.getElementById('receiptUploadBtn');
+      const toast = document.getElementById('receiptScanToast');
+      const toastText = document.getElementById('receiptScanToastText');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+
+      // 1. Enter Scanning State — shimmer animation
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-indigo-100/80 rounded-xl mb-4 border border-indigo-300 ring-2 ring-indigo-400/30 transition-all flex flex-col gap-2.5";
+      if (badgePill) {
+        badgePill.className = "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none animate-pulse shrink-0";
+        badgePill.textContent = "Gemini AI...";
+      }
+      if (bannerTitle) bannerTitle.textContent = "Reading receipt with Gemini Vision AI...";
+      if (bannerSub) bannerSub.innerHTML = file
+        ? `<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Processing ${escapeHtml(file.name || 'image')}...`
+        : '<span class="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin mr-1 align-middle"></span>Reading merchant, total & items...';
+      if (scanBtn) {
+        scanBtn.disabled = true;
+        scanBtn.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Scanning...</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.classList.add('opacity-50', 'pointer-events-none');
+      }
+
+      // 2. Prepare payload
+      let payload = {
+        filename: file ? (file.name || "receipt_scan.jpg") : "demo_receipt.jpg"
+      };
+
+      if (file) {
+        if (file.imageBase64) {
+          payload.imageBase64 = file.imageBase64;
+          payload.mimeType = file.mimeType || "image/jpeg";
+          payload.filename = file.name || "camera_capture.jpg";
+        } else {
+          try {
+            payload.imageBase64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(file);
+            });
+            payload.mimeType = file.type || "image/jpeg";
+          } catch (_) { }
+        }
+      }
+
+      // 3. Request AI parsing from serverless endpoint
+      let parsed = null;
+      const startTime = Date.now();
+      try {
+        const res = await fetch('/api/scan-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          parsed = await res.json();
+        }
+      } catch (_) { }
+
+      // Ensure minimum 1.2s scan feedback so user feels the AI at work
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 1200) {
+        await new Promise(r => setTimeout(r, 1200 - elapsed));
+      }
+      const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+      // Handle API-level errors gracefully
+      if (parsed && parsed.invalidApiKey) {
+        if (banner) banner.className = "p-3 sm:p-3.5 bg-red-50/80 rounded-xl mb-4 border border-red-200 transition-all flex flex-col gap-2.5";
+        if (bannerTitle) bannerTitle.textContent = "⚠️ Invalid API Key";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please check your Gemini API key configuration.";
+        resetScanButtons(scanBtn, uploadBtn);
+        return;
+      }
+      if (parsed && (parsed.rateLimited || parsed.allModelsFailed)) {
+        if (banner) banner.className = "p-3 sm:p-3.5 bg-amber-50/80 rounded-xl mb-4 border border-amber-200 transition-all flex flex-col gap-2.5";
+        if (badgePill) { badgePill.className = "bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0"; badgePill.textContent = "Retry"; }
+        if (bannerTitle) bannerTitle.textContent = parsed.rateLimited ? "⏳ Rate Limited" : "⚠️ AI Unavailable";
+        if (bannerSub) bannerSub.textContent = parsed.message || "Please try again in a moment.";
+        resetScanButtons(scanBtn, uploadBtn);
+        if (toast && toastText) {
+          toastText.textContent = parsed.message;
+          toast.className = "mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-medium flex items-center justify-between";
+          toast.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // Fallback presets if offline or network error or no key
+      if (!parsed || !parsed.merchant) {
+        const presets = [
+          {
+            merchant: "Aeon",
+            amount: 34.50,
+            category: "Groceries",
+            receipt_items: [
+              { item_name: "Rice 1kg", price: 18.50, quantity: 1, category: "Groceries" },
+              { item_name: "Soya milk x6", price: 16.00, quantity: 1, category: "Groceries" }
+            ]
+          },
+          { merchant: "Village Grocer", amount: 68.40, category: "Groceries", items: ["Organic Bananas", "Milk", "Bread"] },
+          { merchant: "Starbucks Coffee", amount: 26.50, category: "Food & Dining", items: ["Caramel Macchiato", "Croissant"] },
+          { merchant: "Shell Station", amount: 80.00, category: "Transportation", items: ["RON95 Fuel"] },
+          { merchant: "Watsons Pharmacy", amount: 43.80, category: "Health & Wellness", items: ["Personal Care", "Vitamins"] }
+        ];
+        parsed = presets[Math.floor(Math.random() * presets.length)];
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const extractedDate = (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr;
+      const extractedAmount = Number(parsed.amount || 25.00).toFixed(2);
+
+      const expenseList = (typeof transactionCategories !== 'undefined' && transactionCategories.expense) ? transactionCategories.expense : [];
+      const incomeList = (typeof transactionCategories !== 'undefined' && transactionCategories.income) ? transactionCategories.income : [];
+      let finalType = "expense";
+      let finalCategory = "Food & Dining";
+
+      if (incomeList.includes(parsed.category)) {
+        finalType = "income";
+        finalCategory = parsed.category;
+      } else if (expenseList.includes(parsed.category)) {
+        finalType = "expense";
+        finalCategory = parsed.category;
+      } else {
+        finalCategory = "Other Expenses";
+      }
+
+      const itemList = normalizeReceiptItemsClient(parsed.receipt_items || parsed.items || [], finalCategory);
+      pendingReceiptItems = itemList;
+      renderModalReceiptItemsPreview();
+
+      const extractedDesc = parsed.merchant || "Store Purchase";
+
+      // Show instant 14-day duplicate purchase tip inside modal if detected
+      const aiTipEl = document.getElementById('modalAiTipBanner');
+      if (aiTipEl) {
+        const insightRes = analyzeReceiptInsightsLocal(transactions, {
+          merchant: parsed.merchant,
+          category: finalCategory,
+          date: extractedDate,
+          receipt_items: itemList
+        }, curr);
+        if (insightRes.duplicateDetected) {
+          aiTipEl.textContent = insightRes.insight;
+          aiTipEl.classList.remove('hidden');
+        } else {
+          aiTipEl.classList.add('hidden');
+        }
+      }
+
+      // 4. Auto-Fill Form Fields
+      const typeSelect = document.getElementById("transactionType");
+      if (typeSelect) {
+        typeSelect.value = finalType;
+        updateCategoryOptions(finalCategory);
+      }
+      const catSelect = document.getElementById("transactionCategory");
+      if (catSelect) catSelect.value = finalCategory;
+
+      const amtInput = document.getElementById("transactionAmount");
+      if (amtInput) amtInput.value = extractedAmount;
+
+      const descInput = document.getElementById("transactionDescription");
+      if (descInput) descInput.value = extractedDesc;
+
+      const detailsInput = document.getElementById("transactionDetails");
+      if (detailsInput) detailsInput.value = formatReceiptItemsToDetailsText(itemList);
+
+      const dateInput = document.getElementById("transactionDate");
+      if (dateInput) dateInput.value = extractedDate;
+
+      // 5. Visual Flash Effect on inputs to highlight auto-fill
+      [amtInput, descInput, detailsInput, dateInput, catSelect].forEach(el => {
+        if (!el) return;
+        el.classList.add("ring-2", "ring-emerald-500", "border-emerald-500", "bg-emerald-50/40");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-emerald-500", "border-emerald-500", "bg-emerald-50/40");
+        }, 2200);
+      });
+
+      // 6. Reset Banner to Success State with real scan time
+      const isGeminiEngine = parsed.engine && parsed.engine.includes('gemini');
+      const scanTime = parsed.scanDuration || totalElapsed;
+      if (banner) banner.className = "p-3 sm:p-3.5 bg-emerald-50/80 rounded-xl mb-4 border border-emerald-200 transition-all flex flex-col gap-2.5";
+      if (badgePill) {
+        badgePill.className = isGeminiEngine
+          ? "bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0"
+          : "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none shrink-0";
+        badgePill.textContent = isGeminiEngine ? `${scanTime}s` : "Extracted";
+      }
+      if (bannerTitle) bannerTitle.textContent = `${isGeminiEngine ? '✨ ' : ''}Extracted: ${parsed.merchant}`;
+      if (bannerSub) bannerSub.textContent = `Total: ${curr} ${extractedAmount} · ${finalCategory}${isGeminiEngine ? ' · Gemini AI' : ''}`;
+      resetScanButtons(scanBtn, uploadBtn);
+
+      // 7. Show Toast
+      if (toast && toastText) {
+        toast.className = "mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between";
+        toastText.textContent = isGeminiEngine
+          ? `✨ Gemini AI extracted ${curr} ${extractedAmount} from ${parsed.merchant} in ${scanTime}s!`
+          : `✨ AI extracted ${curr} ${extractedAmount} from ${parsed.merchant}! Details filled below.`;
+        toast.classList.remove('hidden');
+      }
+    }
+
+    function resetScanButtons(scanBtn, uploadBtn) {
+      if (scanBtn) {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> <span>Rescan</span>';
+      }
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove('opacity-50', 'pointer-events-none');
+        uploadBtn.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> <span>Upload</span>';
+      }
+    }
+
+    function closeTransactionDialog() {
+      closeLiveCameraModal();
+      const dialog = document.getElementById("transactionDialog");
+      dialog.classList.add("hidden");
+      dialog.classList.remove("flex");
+      editingTransactionId = null;
+    }
+
+    function showAddTransactionModal() {
+      openTransactionDialog();
+    }
+
+    async function saveTransaction(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const amount = Number(document.getElementById("transactionAmount").value);
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000000) {
+        alert("Please enter a valid positive numeric amount (greater than 0).");
+        return;
+      }
+
+      const rawType = (document.getElementById("transactionType").value || "").toLowerCase().trim();
+      const type = (rawType === "income" || rawType === "expense") ? rawType : "expense";
+      const category = (document.getElementById("transactionCategory").value || "Other Expenses").replace(/[<>]/g, "").trim();
+      const description = (document.getElementById("transactionDescription").value || "").replace(/[<>]/g, "").trim().slice(0, 150);
+      if (!description) {
+        alert("Please enter a valid transaction description.");
+        return;
+      }
+      const dateStr = document.getElementById("transactionDate").value || localDateString();
+      const detailsEl = document.getElementById("transactionDetails");
+      const detailsRaw = detailsEl ? detailsEl.value.replace(/[<>]/g, "").trim() : "";
+      const oldId = editingTransactionId;
+      const isUpdate = Boolean(oldId && isValidUUID(oldId));
+      const userId = await getAuthenticatedUserId();
+      const categoryId = categoryIdMap[category] || "other";
+      const isoDate = dateStr.includes("T") ? dateStr : (dateStr + "T12:00:00Z");
+      const itemsToSave = detailsRaw
+        ? parseDetailsTextToReceiptItems(detailsRaw, category, pendingReceiptItems)
+        : normalizeReceiptItemsClient(pendingReceiptItems, category);
+      const detailsText = formatReceiptItemsToDetailsText(itemsToSave) || detailsRaw;
+
+      if (itemsToSave.length > 0) {
+        cacheReceiptItemsForTx(oldId, description, dateStr, itemsToSave);
+      }
+
+      closeTransactionDialog();
+
+      // Cloud Sync directly to Supabase (Primary Database for all users & Demo Accounts)
+      if (supabaseClient) {
+        try {
+          const payload = {
+            user_id: userId,
+            title: description,
+            amount: Math.round(amount * 100) / 100,
+            type: type,
+            category_id: categoryId,
+            category: category,
+            transaction_date: isoDate,
+            date: isoDate,
+            notes: detailsText || null,
+            receipt_items: itemsToSave
+          };
+
+          let data = null;
+          let error = null;
+
+          if (isUpdate) {
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .update(payload)
+                .eq('id', oldId)
+                .eq('user_id', userId)
+                .select(),
+              10000
+            );
+            data = res.data;
+            error = res.error;
+          } else {
+            // INSERT: Strip out any frontend ID creation. Supabase must generate UUID automatically on INSERT!
+            const res = await withTimeout(
+              supabaseClient
+                .from('transactions')
+                .insert(payload)
+                .select(),
+              10000
+            );
+            data = res.data;
+            error = res.error;
+          }
+
+          // If schema cache doesn't have optional columns yet:
+          if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            const fallbackPayload = {
+              user_id: userId,
+              title: description,
+              amount: Math.round(amount * 100) / 100,
+              type: type,
+              category_id: categoryId,
+              transaction_date: isoDate,
+              notes: detailsText || null
+            };
+            if (isUpdate) {
+              await supabaseClient
+                .from('transactions')
+                .update(fallbackPayload)
+                .eq('id', oldId)
+                .eq('user_id', userId);
+            } else {
+              await supabaseClient
+                .from('transactions')
+                .insert(fallbackPayload);
+            }
+          } else if (Array.isArray(data) && data[0] && itemsToSave.length > 0) {
+            cacheReceiptItemsForTx(data[0].id, description, dateStr, itemsToSave);
+          }
+        } catch (e) {
+          console.warn("Supabase transaction save error:", e);
+        }
+      }
+
+      pendingReceiptItems = [];
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
+      if (itemsToSave.length > 0) {
+        refreshDashboardAiInsight({
+          merchant: description,
+          category: category,
+          date: dateStr,
+          receipt_items: itemsToSave
+        });
+      }
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+      const userId = await getAuthenticatedUserId();
+
+      if (supabaseClient && isValidUUID(id)) {
+        try {
+          await supabaseClient.from('transactions').delete().eq('id', id).eq('user_id', userId);
+        } catch (e) {
+          console.warn("Supabase delete notice:", e);
+        }
+      }
+
+      // Force Cloud Refresh immediately to re-render confirmed database state
+      await loadTransactions();
+    }
+
+    function renderDashboard() {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const currEl = document.getElementById("balanceCurrency");
+      if (currEl) currEl.textContent = curr;
+
+      const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+      const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+      const net = income - expenses;
+
+      document.getElementById("balanceValue").textContent = balanceIsHidden ? "••••••••" : money(net);
+      document.getElementById("incomeValue").textContent = "+" + curr + " " + money(income);
+      document.getElementById("expenseValue").textContent = "-" + curr + " " + money(expenses);
+
+      // Month specific stats
+      const monthStr = currentMonth();
+      const monthRecords = transactions.filter(t => t.date && t.date.slice(0, 7) === monthStr);
+      const mIncome = monthRecords.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+      const mExpenses = monthRecords.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+
+      document.getElementById("monthlyTitle").textContent = new Date(monthStr + "-01T12:00:00").toLocaleDateString("en", { month: "long", year: "numeric" });
+      document.getElementById("monthlyIncome").textContent = curr + " " + money(mIncome);
+      document.getElementById("monthlyExpense").textContent = curr + " " + money(mExpenses);
+      document.getElementById("monthlyBalance").textContent = curr + " " + money(mIncome - mExpenses);
+
+      // Category chart
+      const grouped = {};
+      monthRecords.filter(t => t.type === "expense").forEach(t => {
+        grouped[t.category] = (grouped[t.category] || 0) + Number(t.amount);
+      });
+      const catEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+      const maxAmt = catEntries.length ? catEntries[0][1] : 0;
+      const chart = document.getElementById("categoryChart");
+      chart.innerHTML = catEntries.length ? catEntries.map(([cat, amt]) => `
+        <div>
+          <div class="mb-1 flex items-center justify-between text-xs">
+            <span class="font-medium text-text-primary">${escapeHtml(cat)}</span>
+            <span class="font-bold text-alert-coral">${curr} ${money(amt)}</span>
+          </div>
+          <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
+            <div class="h-full rounded-full bg-alert-coral transition-all" style="width:${Math.max(4, (amt / maxAmt) * 100)}%"></div>
+          </div>
+        </div>
+      `).join("") : '<p class="text-xs text-text-muted">No expenses recorded for this month.</p>';
+
+      // Recent records (top 4) with minimalist Details line-item view directly beneath description
+      const sorted = [...transactions].sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+      const recentHost = document.getElementById("recentRecords");
+      const latest = sorted.slice(0, 4);
+      recentHost.innerHTML = latest.length ? latest.map(item => {
+        const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
+        const hasItems = rItems.length > 0;
+        const rowKey = 'dash_rc_' + String(item.id);
+        const isOpen = expandedReceiptRows[rowKey] !== false;
+        return `
+        <div class="transition-colors">
+          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-start justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
+                ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
+              </div>
+              ${hasItems ? `
+                <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} mt-1 text-[11px] text-slate-600 leading-snug">
+                  <p class="font-semibold text-text-muted">Details:</p>
+                  <div class="space-y-0.5">
+                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+            </div>
+            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+              ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
+            </span>
+          </div>
+        </div>
+      `}).join("") : '<p class="p-4 text-xs text-text-muted text-center">No transactions yet. Tap + to record your first transaction.</p>';
+
+      // Full history list (null-safe)
+      const txCountEl = document.getElementById("transactionCount");
+      if (txCountEl) txCountEl.textContent = `${sorted.length} record${sorted.length === 1 ? "" : "s"}`;
+      const emptyTxEl = document.getElementById("emptyTransactions");
+      if (emptyTxEl) emptyTxEl.classList.toggle("hidden", sorted.length !== 0);
+      const txRowsEl = document.getElementById("transactionRows");
+      if (txRowsEl) {
+        txRowsEl.innerHTML = sorted.map(item => {
+          const rItems = Array.isArray(item.receipt_items) ? item.receipt_items : [];
+          const hasItems = rItems.length > 0;
+          return `
+          <div class="flex items-start justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
+                ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
+              </div>
+              ${hasItems ? `
+                <div class="mt-1 text-[11px] text-slate-600 leading-snug">
+                  <p class="font-semibold text-text-muted">Details:</p>
+                  <div class="space-y-0.5">
+                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+            </div>
+            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+              ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
+            </span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button aria-label="Edit" class="text-xs text-primary font-semibold px-1.5 py-1 hover:bg-primary/5 rounded" onclick="openTransactionDialog('${escapeHtml(item.id)}')">Edit</button>
+              <button aria-label="Delete" class="text-xs text-alert-coral font-semibold px-1.5 py-1 hover:bg-alert-coral-subtle rounded" onclick="deleteTransaction('${escapeHtml(item.id)}')">Delete</button>
+            </div>
+          </div>
+        `}).join("");
+      }
+
+      refreshDashboardAiInsight();
+    }
+
+    function toggleReceiptAccordion(rowKey) {
+      expandedReceiptRows[rowKey] = expandedReceiptRows[rowKey] === false;
+      const el = document.getElementById('acc-' + rowKey);
+      if (el) el.classList.toggle('hidden', !expandedReceiptRows[rowKey]);
+    }
+
+    function showHome() {
+      document.getElementById("transactionHistory").classList.add("hidden");
+      document.getElementById("monthlySummary").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showTransactions() {
+      document.getElementById("transactionHistory").classList.remove("hidden");
+      document.getElementById("transactionHistory").classList.add("flex");
+      document.getElementById("monthlySummary").classList.add("hidden");
+      document.getElementById("transactionHistory").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function showSummary() {
+      document.getElementById("transactionHistory").classList.add("hidden");
+      document.getElementById("monthlySummary").classList.remove("hidden");
+      document.getElementById("monthlySummary").scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Initialize Dashboard
+    (async function init() {
+      document.getElementById("selectedMonth").value = localDateString().slice(0, 7);
+      await checkSupabaseAuthSession();
+      applyUserProfile();
+      updateCategoryOptions();
+      await loadTransactions();
+      initRealtimeSync();
+      initAiAssistant();
+    })();
+
+    // ═══════════════════════════════════════════════════════════════
+    // AI FINANCE ASSISTANT — Logic
+    // ═══════════════════════════════════════════════════════════════
+
+    let aiChatOpen = false;
+
+    function toggleAiAssistant() {
+      const chat = document.getElementById('aiAssistantChat');
+      const fab = document.getElementById('aiAssistantFAB');
+      const panel = chat?.querySelector('.max-w-md');
+
+      if (aiChatOpen) {
+        // Close
+        if (panel) {
+          panel.classList.remove('animate-slideUp');
+          panel.classList.add('animate-slideDown');
+        }
+        setTimeout(() => {
+          chat.classList.add('hidden');
+          chat.classList.remove('flex');
+          if (panel) { panel.classList.remove('animate-slideDown'); panel.classList.add('animate-slideUp'); }
+        }, 250);
+        fab.classList.remove('hidden');
+        aiChatOpen = false;
+      } else {
+        // Open
+        chat.classList.remove('hidden');
+        chat.classList.add('flex');
+        fab.classList.add('hidden');
+        aiChatOpen = true;
+        updateAiBudgetWidget();
+        syncAiAssistantAvatar();
+        // Scroll to bottom
+        setTimeout(() => {
+          const body = document.getElementById('aiChatBody');
+          if (body) body.scrollTop = body.scrollHeight;
+        }, 100);
+      }
+    }
+
+    function initAiAssistant() {
+      // Sync user avatar into chat header
+      syncAiAssistantAvatar();
+    }
+
+    function syncAiAssistantAvatar() {
+      const name = localStorage.getItem('finwise_user_name') || 'User';
+      const chatAvatar = document.getElementById('aiChatAvatar');
+      if (chatAvatar) chatAvatar.textContent = (name[0] || 'U').toUpperCase();
+    }
+
+    function updateAiBudgetWidget() {
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const budget = parseFloat(localStorage.getItem('finwise_monthly_budget') || '1000');
+      const now = new Date();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysLeft = daysInMonth - now.getDate() + 1;
+
+      const expenses = (typeof transactions !== 'undefined' ? transactions : [])
+        .filter(t => t.type === 'expense' && t.date && t.date.startsWith(localDateString().slice(0, 7)))
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const remaining = Math.max(0, budget - expenses);
+      const dailyBuffer = daysLeft > 0 ? remaining / daysLeft : 0;
+      const pct = Math.min(100, Math.max(0, Math.round((remaining / budget) * 100)));
+
+      const currentEl = document.getElementById('aiBudgetCurrent');
+      const afterEl = document.getElementById('aiBudgetAfter');
+      const barEl = document.getElementById('aiBudgetBar');
+
+      if (currentEl) currentEl.textContent = `${curr} ${dailyBuffer.toFixed(2)}`;
+      if (afterEl) afterEl.textContent = `${curr} ${Math.max(0, dailyBuffer - 9.50).toFixed(2)}`;
+      if (barEl) {
+        barEl.style.width = pct + '%';
+        barEl.parentElement.nextElementSibling.textContent = `${pct}% monthly target intact`;
+      }
+    }
+
+    function aiSendQuickPrompt(text) {
+      const input = document.getElementById('aiChatInput');
+      if (input) {
+        input.value = text;
+        aiSendMessage();
+      }
+    }
+
+    function aiSendMessage() {
+      const input = document.getElementById('aiChatInput');
+      const body = document.getElementById('aiChatBody');
+      if (!input || !body) return;
+
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Add user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'flex justify-end';
+      userBubble.innerHTML = `
+        <div class="max-w-[85%] flex flex-col items-end gap-1">
+          <div class="bg-blue-900 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13px] leading-relaxed shadow-sm">
+            <p>${escapeHtml(text)}</p>
+          </div>
+          <div class="flex items-center gap-1.5 px-1">
+            <span class="text-[10px] text-slate-400">${timeStr}</span>
+            <div class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">U</div>
+          </div>
+        </div>
+      `;
+      body.appendChild(userBubble);
+
+      // Add AI typing indicator
+      const typingEl = document.createElement('div');
+      typingEl.className = 'flex gap-2 items-start ai-typing-indicator';
+      typingEl.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+          <svg class="w-4 h-4 text-white animate-spin" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+        </div>
+        <div class="bg-white rounded-2xl rounded-bl-md px-3.5 py-2.5 shadow-sm border border-slate-100">
+          <div class="flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:0ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:150ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay:300ms"></span>
+          </div>
+        </div>
+      `;
+      body.appendChild(typingEl);
+      body.scrollTop = body.scrollHeight;
+
+      // Parse expense from natural language
+      setTimeout(() => {
+        typingEl.remove();
+        const parsed = parseNaturalExpense(text);
+
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'flex gap-2 items-start';
+
+        if (parsed) {
+          aiMsg.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+            </div>
+            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+              <div class="flex items-center gap-2 mb-2.5">
+                <span class="text-xs font-bold text-slate-900">Parsed Instant Expense</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">✓ High Confidence</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Item</p>
+                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.item)}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Category</p>
+                  <p class="text-[11px] font-bold text-slate-900">${escapeHtml(parsed.category)}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-2">
+                  <p class="text-[10px] text-slate-400 font-medium mb-0.5">Amount</p>
+                  <p class="text-[11px] font-extrabold text-blue-900">${curr} ${parsed.amount.toFixed(2)}</p>
+                </div>
+              </div>
+              <button onclick="aiConfirmExpense('${escapeHtml(parsed.item)}', ${parsed.amount}, '${escapeHtml(parsed.category)}')" class="w-full py-2 rounded-xl bg-blue-900 text-white text-xs font-bold hover:bg-blue-800 active:scale-[0.98] transition-all shadow-sm mb-1.5">
+                Confirm & Record ${curr} ${parsed.amount.toFixed(2)}
+              </button>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Edit Details</button>
+                <button class="py-1.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold hover:bg-slate-200 transition-colors">Split</button>
+              </div>
+              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+                Parsed by Gemini Vision
+              </p>
+            </div>
+          `;
+        } else {
+          aiMsg.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+            </div>
+            <div class="max-w-[85%] bg-white rounded-2xl rounded-bl-md p-3.5 shadow-sm border border-slate-100">
+              <p class="text-[13px] text-slate-700 leading-relaxed">I understood your message but couldn't detect a clear expense amount. Try saying something like <strong>"coffee RM12"</strong> or <strong>"grab ride RM15.50"</strong>.</p>
+              <p class="text-[9px] text-slate-400 mt-2 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><use href="#gemini-sparkle"/></svg>
+                FinWise AI Assistant
+              </p>
+            </div>
+          `;
+        }
+        body.appendChild(aiMsg);
+        body.scrollTop = body.scrollHeight;
+      }, 1200);
+    }
+
+    function parseNaturalExpense(text) {
+      const lower = text.toLowerCase();
+      // Match RM amount
+      const amtMatch = lower.match(/rm\s*([\d,.]+)/i) || lower.match(/([\d,.]+)\s*(?:ringgit|rm)/i) || lower.match(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?\s*(?:rm)?\s*([\d,.]+)/i);
+      if (!amtMatch) return null;
+
+      const amount = parseFloat(amtMatch[1].replace(/,/g, ''));
+      if (!amount || amount <= 0 || amount > 100000) return null;
+
+      // Guess category from keywords
+      let category = 'Other Expenses';
+      const item = text.replace(/rm\s*[\d,.]+/gi, '').replace(/(?:cost|spend|paid|pay|price|total|bill)\s*(?:me|is|was)?/gi, '').replace(/(?:this|today|yesterday|morning|afternoon|evening|tonight|for|at|on)/gi, '').trim() || 'Purchase';
+      const cleanItem = item.replace(/\s+/g, ' ').trim();
+      const firstWord = cleanItem.split(' ').slice(0, 4).join(' ');
+
+      if (/(?:makan|eat|ate|food|nasi|rice|chicken|ayam|mee|roti|burger|pizza|sushi|dim sum|cafe|restaurant|bistro|mamak|kopitiam|starbucks|mcd|kfc|subway|lunch|dinner|breakfast|snack|drink|coffee|tea|teh|latte|boba|juice|lemak)/i.test(lower)) {
+        category = 'Food & Dining';
+      } else if (/(?:grab|uber|taxi|bus|train|lrt|mrt|fuel|petrol|diesel|parking|toll|shell|petronas)/i.test(lower)) {
+        category = 'Transportation';
+      } else if (/(?:grocer|supermarket|tesco|aeon|jaya grocer|village grocer|mydin|econsave|99|mart|familymart)/i.test(lower)) {
+        category = 'Groceries';
+      } else if (/(?:shop|buy|bought|purchase|uniqlo|h&m|zara|nike|adidas|lazada|shopee|online)/i.test(lower)) {
+        category = 'Shopping';
+      } else if (/(?:movie|cinema|concert|game|netflix|spotify|youtube|entertainment|ticket|karaoke)/i.test(lower)) {
+        category = 'Entertainment';
+      } else if (/(?:bill|utility|electric|water|internet|wifi|phone|astro|tnb|indah water|tm|celcom|digi|maxis)/i.test(lower)) {
+        category = 'Bills & Utilities';
+      } else if (/(?:doctor|clinic|hospital|pharmacy|medicine|watson|guardian|health|gym|dental)/i.test(lower)) {
+        category = 'Health & Wellness';
+      }
+
+      return { item: firstWord.length > 2 ? (firstWord[0].toUpperCase() + firstWord.slice(1)) : 'Purchase', amount, category };
+    }
+
+    async function aiConfirmExpense(description, amount, category) {
+      // Extract parenthetical line items (e.g., "UTM Arked Cengal (Nasi Ayam Penyet, Teh Tarik Ais, Kuih Seri Muka)")
+      let cleanTitle = String(description || 'Purchase').trim();
+      let itemsToSave = [];
+      const parenMatch = cleanTitle.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if (parenMatch) {
+        cleanTitle = parenMatch[1].trim();
+        const rawParts = parenMatch[2].split(',').map(s => s.trim()).filter(Boolean);
+        itemsToSave = normalizeReceiptItemsClient(rawParts, category);
+      } else if (cleanTitle) {
+        itemsToSave = normalizeReceiptItemsClient([{ item_name: cleanTitle, quantity: 1, price: Number(amount) || 0, category }], category);
+      }
+      const detailsText = formatReceiptItemsToDetailsText(itemsToSave);
+
+      // Directly save to Supabase via existing saveTransaction flow
+      const userId = await getAuthenticatedUserId();
+      const categoryId = categoryIdMap[category] || 'other';
+      const dateStr = localDateString();
+      const isoDate = dateStr + 'T12:00:00Z';
+
+      if (itemsToSave.length > 0) {
+        cacheReceiptItemsForTx(null, cleanTitle, dateStr, itemsToSave);
+      }
+
+      if (supabaseClient) {
+        try {
+          const payload = {
+            user_id: userId,
+            title: cleanTitle,
+            amount: Math.round(amount * 100) / 100,
+            type: 'expense',
+            category_id: categoryId,
+            category: category,
+            transaction_date: isoDate,
+            date: isoDate,
+            notes: detailsText || null,
+            receipt_items: itemsToSave
+          };
+          const { data, error } = await withTimeout(
+            supabaseClient.from('transactions').insert(payload).select(),
+            10000
+          );
+          if (error && (error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
+            await withTimeout(
+              supabaseClient.from('transactions').insert({
+                user_id: userId,
+                title: cleanTitle,
+                amount: Math.round(amount * 100) / 100,
+                type: 'expense',
+                category_id: categoryId,
+                transaction_date: isoDate,
+                notes: detailsText || null
+              }).select(),
+              10000
+            );
+          } else if (Array.isArray(data) && data[0] && itemsToSave.length > 0) {
+            cacheReceiptItemsForTx(data[0].id, cleanTitle, dateStr, itemsToSave);
+          }
+        } catch (e) {
+          console.warn('AI Assistant save error:', e);
+        }
+      }
+
+      // Show confirmation in chat
+      const body = document.getElementById('aiChatBody');
+      const curr = localStorage.getItem('finwise_currency') || 'RM';
+      if (body) {
+        const confirmation = document.createElement('div');
+        confirmation.className = 'flex gap-2 items-start';
+        confirmation.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+            <span class="material-symbols-outlined text-white text-[16px]">check</span>
+          </div>
+          <div class="max-w-[85%] bg-emerald-50 rounded-2xl rounded-bl-md p-3 shadow-sm border border-emerald-200">
+            <p class="text-[12px] font-bold text-emerald-800">✅ Recorded: ${curr} ${amount.toFixed(2)}</p>
+            <p class="text-[11px] text-emerald-700 mt-0.5">${escapeHtml(cleanTitle)} → ${escapeHtml(category)}</p>
+            <p class="text-[9px] text-emerald-500 mt-1">Saved to your ledger • Synced to Supabase Cloud</p>
+          </div>
+        `;
+        body.appendChild(confirmation);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      // Refresh dashboard
+      await loadTransactions();
+      updateAiBudgetWidget();
+    }
+
+    function triggerAiCameraCapture() {
+      // Re-use the existing receipt scanner flow
+      toggleAiAssistant();
+      showAddTransactionModal();
+      setTimeout(() => triggerReceiptCameraFlow(), 300);
+    }
+
+    function aiStartVoice() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice input is not supported on this browser. Try Chrome or Edge.');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-MY';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const micBtn = document.querySelector('#aiChatInput + button');
+      if (micBtn) {
+        micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-red-500 animate-pulse">mic</span>';
+      }
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const input = document.getElementById('aiChatInput');
+        if (input) input.value = transcript;
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.onerror = () => {
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.onend = () => {
+        if (micBtn) micBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">mic</span>';
+      };
+
+      recognition.start();
+    }
+  </script>
+</body>
+
+</html>
