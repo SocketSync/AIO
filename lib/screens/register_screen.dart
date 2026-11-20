@@ -3,7 +3,6 @@ import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import 'login_screen.dart';
-import 'dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -273,9 +272,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       selectedEmail: email,
       selectedName: name,
     );
+    if (!mounted) return;
     setState(() => _isSigningUp = false);
 
-    if (user != null && mounted) {
+    if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.secondary,
@@ -291,9 +291,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
+      Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (route) => false);
     }
   }
 
@@ -341,9 +339,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: name,
       );
 
+      if (!mounted) return;
       setState(() => _isSigningUp = false);
 
-      if (user != null && mounted) {
+      if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.secondary,
@@ -359,20 +358,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
 
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
+        Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (route) => false);
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSigningUp = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Registration error: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registration error: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 

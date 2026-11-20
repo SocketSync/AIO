@@ -15,12 +15,15 @@ class SavingsGoalProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _currentUserId = '';
+  int _sessionEpoch = 0;
+  bool _disposed = false;
 
   // ---- Getters -------------------------------------------------------------
 
   List<SavingsGoal> get goals => _goals;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String get currentUserId => _currentUserId;
 
   List<SavingsGoal> get completedGoals =>
       _goals.where((g) => g.isCompleted).toList();
@@ -36,19 +39,27 @@ class SavingsGoalProvider extends ChangeNotifier {
   // ---- FETCH ---------------------------------------------------------------
 
   Future<void> fetchGoals(String userId) async {
+    final int epoch = ++_sessionEpoch;
     _currentUserId = userId;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
 
     try {
-      _goals = await _service.getSavingsGoals(userId);
+      final fetched = await _service.getSavingsGoals(userId);
+      if (epoch != _sessionEpoch || _disposed) return;
+      _goals = fetched;
     } catch (e) {
+      if (epoch != _sessionEpoch || _disposed) return;
       _errorMessage = 'Failed to load savings goals. Please try again.';
       debugPrint('[SavingsGoalProvider] fetchGoals error: $e');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (epoch == _sessionEpoch && !_disposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -192,5 +203,23 @@ class SavingsGoalProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Clear cached savings goals and active user scope on sign-out.
+  void clear() {
+    _sessionEpoch++;
+    _goals = [];
+    _isLoading = false;
+    _errorMessage = null;
+    _currentUserId = '';
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

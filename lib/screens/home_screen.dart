@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
-import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,9 +36,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () async {
               await AuthService().signOut();
               if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
               }
             },
           ),
@@ -297,9 +294,7 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () async {
                         await AuthService().signOut();
                         if (context.mounted) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
-                          );
+                          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
                         }
                       },
                       style: OutlinedButton.styleFrom(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'database_service.dart';
 import 'supabase_service.dart';
+
+enum AuthSessionEvent {
+  signedIn,
+  signedOut,
+  sessionExpired,
+}
 
 class AppUser {
   final String id;
@@ -63,11 +70,60 @@ class AuthService extends ChangeNotifier {
   AppUser? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
+  StreamSubscription<AuthState>? _authStateSubscription;
+  final StreamController<AuthSessionEvent> _sessionEventController =
+      StreamController<AuthSessionEvent>.broadcast();
+  final List<VoidCallback> _sessionResetCallbacks = [];
+  bool _isSessionInitialized = false;
+  bool _isSupabaseSession = false;
+  bool _isSigningOut = false;
+  bool _usedDeviceGoogleSignIn = false;
 
   AppUser? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _currentUser != null;
+  bool get isSessionInitialized => _isSessionInitialized;
+  Stream<AuthSessionEvent> get sessionEvents => _sessionEventController.stream;
+
+  bool get isAuthenticated {
+    if (_currentUser == null) return false;
+    if (_isSupabaseSession && SupabaseService.isConfigured) {
+      final client = SupabaseService().client;
+      if (client != null) {
+        final session = client.auth.currentSession;
+        if (session == null || session.isExpired) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void registerSessionResetCallback(VoidCallback callback) {
+    if (!_sessionResetCallbacks.contains(callback)) {
+      _sessionResetCallbacks.add(callback);
+    }
+  }
+
+  void unregisterSessionResetCallback(VoidCallback callback) {
+    _sessionResetCallbacks.remove(callback);
+  }
+
+  void _invokeSessionResetCallbacks() {
+    for (final callback in List<VoidCallback>.from(_sessionResetCallbacks)) {
+      try {
+        callback();
+      } catch (e) {
+        debugPrint('[AuthService] Session reset callback error: $e');
+      }
+    }
+  }
+
+  void _emitSessionEvent(AuthSessionEvent event) {
+    if (!_sessionEventController.isClosed) {
+      _sessionEventController.add(event);
+    }
+  }
 
   static String hashPassword(String password) {
     return sha256.convert(utf8.encode(password)).toString();
@@ -83,47 +139,181 @@ class AuthService extends ChangeNotifier {
     ),
   };
 
-  void _initSupabaseAuthListener() {
+  /// Check and restore any persisted Supabase session on app startup.
+  Future<bool> initializeSession() async {
+    _initSupabaseAuthListener();
+
     if (SupabaseService.isConfigured) {
       try {
         final client = SupabaseService().client;
         if (client != null) {
           final session = client.auth.currentSession;
-          if (session != null) {
-            _setUserFromSupabase(session.user);
-          }
-
-          client.auth.onAuthStateChange.listen((data) {
-            final authSession = data.session;
-            if (authSession != null) {
-              _setUserFromSupabase(authSession.user);
-            } else if (data.event == AuthChangeEvent.signedOut) {
-              _currentUser = null;
-              notifyListeners();
+          if (session != null && !session.isExpired) {
+            _setUserFromSupabase(session.user, notify: false);
+          } else if (session != null && session.isExpired) {
+            try {
+              final refreshed = await client.auth
+                  .refreshSession()
+                  .timeout(const Duration(seconds: 10));
+              final refreshedSession = refreshed.session;
+              if (refreshedSession != null && !refreshedSession.isExpired) {
+                _setUserFromSupabase(refreshedSession.user, notify: false);
+              } else {
+                await _clearExpiredSupabaseSession(client);
+              }
+            } catch (e) {
+              debugPrint('[AuthService] Expired session refresh failed: $e');
+              await _clearExpiredSupabaseSession(client);
             }
-          });
+          } else if (_isSupabaseSession) {
+            _currentUser = null;
+            _isSupabaseSession = false;
+          }
         }
       } catch (e) {
-        debugPrint('[AuthService] Supabase auth listener notice: $e');
+        debugPrint('[AuthService] Session initialization notice: $e');
       }
+    }
+
+    _isSessionInitialized = true;
+    notifyListeners();
+    return isAuthenticated;
+  }
+
+  Future<void> _clearExpiredSupabaseSession(SupabaseClient client) async {
+    _isSigningOut = true;
+    try {
+      await client.auth.signOut().timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('[AuthService] Clear expired Supabase session notice: $e');
+    } finally {
+      _isSigningOut = false;
+      _currentUser = null;
+      _isSupabaseSession = false;
+      _errorMessage = null;
     }
   }
 
-  void _setUserFromSupabase(User user) {
+  void _initSupabaseAuthListener() {
+    if (_authStateSubscription != null || !SupabaseService.isConfigured) {
+      return;
+    }
+
+    try {
+      final client = SupabaseService().client;
+      if (client == null) return;
+
+      final session = client.auth.currentSession;
+      if (session != null && !session.isExpired) {
+        _setUserFromSupabase(session.user, notify: false);
+      }
+
+      _authStateSubscription = client.auth.onAuthStateChange.listen(
+        (data) => handleAuthStateChange(data.event, data.session),
+        onError: (Object error, StackTrace stackTrace) {
+          debugPrint('[AuthService] Supabase auth stream error: $error');
+          if (_isSupabaseSession) {
+            final current = client.auth.currentSession;
+            if (current == null || current.isExpired) {
+              handleSessionExpired();
+            }
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('[AuthService] Supabase auth listener notice: $e');
+    }
+  }
+
+  /// Process auth state transitions from Supabase or tests.
+  void handleAuthStateChange(AuthChangeEvent event, Session? session) {
+    if (_isSigningOut && event == AuthChangeEvent.signedOut) {
+      return;
+    }
+
+    if (event == AuthChangeEvent.signedOut) {
+      handleSessionExpired();
+      return;
+    }
+
+    if (event == AuthChangeEvent.initialSession) {
+      _isSessionInitialized = true;
+      if (session != null && !session.isExpired) {
+        final wasAuthenticated = _currentUser != null;
+        _setUserFromSupabase(session.user);
+        if (!wasAuthenticated) {
+          _emitSessionEvent(AuthSessionEvent.signedIn);
+        }
+      } else if (_isSupabaseSession && _currentUser != null) {
+        handleSessionExpired();
+      } else {
+        notifyListeners();
+      }
+      return;
+    }
+
+    if (event == AuthChangeEvent.signedIn) {
+      _isSessionInitialized = true;
+      if (session != null && !session.isExpired) {
+        _setUserFromSupabase(session.user);
+        _emitSessionEvent(AuthSessionEvent.signedIn);
+      } else if (_isSupabaseSession && _currentUser != null) {
+        handleSessionExpired();
+      }
+      return;
+    }
+
+    if (event == AuthChangeEvent.tokenRefreshed ||
+        event == AuthChangeEvent.userUpdated) {
+      if (session != null && !session.isExpired) {
+        _setUserFromSupabase(session.user);
+      } else if (_currentUser != null) {
+        handleSessionExpired();
+      }
+      return;
+    }
+
+    // Fallback for any other auth event (including account deletion/revocation).
+    if (session != null && !session.isExpired) {
+      _setUserFromSupabase(session.user);
+    } else if (session == null && _currentUser != null) {
+      handleSessionExpired();
+    }
+  }
+
+  /// Clear active session state and trigger cache reset + login redirect.
+  void handleSessionExpired() {
+    final hadSession = _currentUser != null || _isSupabaseSession;
+    _currentUser = null;
+    _isSupabaseSession = false;
+    _errorMessage = null;
+    _isLoading = false;
+    _invokeSessionResetCallbacks();
+    notifyListeners();
+    if (hadSession) {
+      _emitSessionEvent(AuthSessionEvent.sessionExpired);
+    }
+  }
+
+  void _setUserFromSupabase(User user, {bool notify = true}) {
     final meta = user.userMetadata ?? {};
     final fullName = (meta['full_name'] as String?) ??
         (meta['name'] as String?) ??
         formatNameFromEmail(user.email ?? 'Google User');
     final avatar = (meta['avatar_url'] as String?) ?? (meta['picture'] as String?);
+    final provider = (user.appMetadata['provider'] as String?) ?? 'google';
 
     _currentUser = AppUser(
       id: user.id,
       email: user.email ?? '',
       displayName: fullName,
       photoUrl: avatar,
-      provider: 'google',
+      provider: provider,
     );
-    notifyListeners();
+    _isSupabaseSession = true;
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   /// Format realistic human name from email address (e.g. demo@finwise-app.xyz -> Demo Finwise)
@@ -172,6 +362,8 @@ class AuthService extends ChangeNotifier {
         photoUrl: account.photoUrl,
         provider: 'email',
       );
+      _isSupabaseSession = false;
+      _isSessionInitialized = true;
       _isLoading = false;
       notifyListeners();
       return _currentUser;
@@ -190,6 +382,7 @@ class AuthService extends ChangeNotifier {
               .timeout(const Duration(seconds: 10));
           if (response.user != null) {
             _setUserFromSupabase(response.user!);
+            _isSessionInitialized = true;
             _isLoading = false;
             notifyListeners();
             return _currentUser;
@@ -295,6 +488,8 @@ class AuthService extends ChangeNotifier {
       photoUrl: null,
       provider: 'email',
     );
+    _isSupabaseSession = false;
+    _isSessionInitialized = true;
 
     _isLoading = false;
     notifyListeners();
@@ -338,6 +533,8 @@ class AuthService extends ChangeNotifier {
         photoUrl: account?.photoUrl,
         provider: 'google',
       );
+      _isSupabaseSession = false;
+      _isSessionInitialized = true;
       _isLoading = false;
       notifyListeners();
       return _currentUser;
@@ -365,6 +562,7 @@ class AuthService extends ChangeNotifier {
     // Web OAuth is handled by Supabase; the device plugin needs a client ID.
     if (!kIsWeb) {
       try {
+        _usedDeviceGoogleSignIn = true;
         final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
         if (googleUser != null) {
@@ -376,6 +574,8 @@ class AuthService extends ChangeNotifier {
             photoUrl: googleUser.photoUrl,
             provider: 'google',
           );
+          _isSupabaseSession = false;
+          _isSessionInitialized = true;
           _isLoading = false;
           notifyListeners();
           return _currentUser;
@@ -620,25 +820,40 @@ class AuthService extends ChangeNotifier {
 
   /// Sign out and completely scrub active session state
   Future<void> signOut() async {
-    if (SupabaseService.isConfigured) {
-      try {
-        final client = SupabaseService().client;
-        if (client != null) {
-          await client.auth.signOut().timeout(const Duration(seconds: 10));
-        }
-      } catch (e) {
-        debugPrint('[AuthService] Supabase sign out error: $e');
-      }
-    }
+    final shouldSignOutGoogle = !kIsWeb &&
+        (_usedDeviceGoogleSignIn ||
+            (_isSupabaseSession && _currentUser?.provider == 'google'));
+    _isSigningOut = true;
 
     try {
-      await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
-    } catch (e) {
-      debugPrint('[AuthService] Google sign out error: $e');
+      if (SupabaseService.isConfigured) {
+        try {
+          final client = SupabaseService().client;
+          if (client != null) {
+            await client.auth.signOut().timeout(const Duration(seconds: 10));
+          }
+        } catch (e) {
+          debugPrint('[AuthService] Supabase sign out error: $e');
+        }
+      }
+
+      if (shouldSignOutGoogle) {
+        try {
+          await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
+        } catch (e) {
+          debugPrint('[AuthService] Google sign out error: $e');
+        }
+      }
+    } finally {
+      _isSigningOut = false;
+      _usedDeviceGoogleSignIn = false;
+      _currentUser = null;
+      _isSupabaseSession = false;
+      _errorMessage = null;
+      _isLoading = false;
+      _invokeSessionResetCallbacks();
+      notifyListeners();
+      _emitSessionEvent(AuthSessionEvent.signedOut);
     }
-    _currentUser = null;
-    _errorMessage = null;
-    _isLoading = false;
-    notifyListeners();
   }
 }

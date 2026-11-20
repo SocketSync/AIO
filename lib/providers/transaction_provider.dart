@@ -11,6 +11,8 @@ class TransactionProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _currentUserId = '';
+  int _sessionEpoch = 0;
+  bool _disposed = false;
 
   // Filters
   String? _selectedCategory;
@@ -21,6 +23,7 @@ class TransactionProvider extends ChangeNotifier {
   List<TransactionRecord> get transactions => _transactions;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String get currentUserId => _currentUserId;
   String? get selectedCategory => _selectedCategory;
   TransactionType? get selectedType => _selectedType;
   String get searchQuery => _searchQuery;
@@ -142,18 +145,26 @@ class TransactionProvider extends ChangeNotifier {
 
   // Load transactions for user
   Future<void> fetchTransactions(String userId) async {
+    final int epoch = ++_sessionEpoch;
     _currentUserId = userId;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
 
     try {
-      _transactions = await _databaseService.getTransactions(userId);
+      final fetched = await _databaseService.getTransactions(userId);
+      if (epoch != _sessionEpoch || _disposed) return;
+      _transactions = fetched;
     } catch (e) {
+      if (epoch != _sessionEpoch || _disposed) return;
       _errorMessage = 'Failed to load transactions: $e';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (epoch == _sessionEpoch && !_disposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -265,6 +276,27 @@ class TransactionProvider extends ChangeNotifier {
     _selectedType = null;
     _searchQuery = '';
     notifyListeners();
+  }
+
+  /// Clear cached transactions, filters, and active user scope on sign-out.
+  void clear() {
+    _sessionEpoch++;
+    _transactions = [];
+    _isLoading = false;
+    _errorMessage = null;
+    _currentUserId = '';
+    _selectedCategory = null;
+    _selectedType = null;
+    _searchQuery = '';
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }
 
