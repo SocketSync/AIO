@@ -17,9 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleGoogleSignInTapped() async {
     setState(() => _isSigningIn = true);
     final user = await AuthService().signInWithGoogle();
+    if (!mounted) return;
     setState(() => _isSigningIn = false);
 
-    if (user != null && mounted) {
+    if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.secondary,
@@ -40,13 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
-      Navigator.of(context).pushReplacementNamed('/dashboard');
+      Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (route) => false);
       return;
     }
 
-    if (mounted) {
-      _showGoogleAccountPicker();
-    }
+    _showGoogleAccountPicker();
   }
 
   void _showPasswordLoginDialog() {
@@ -131,27 +130,27 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isSigningIn = true);
     try {
       final user = await AuthService().signInWithPassword(email: email, password: password);
+      if (!mounted) return;
       setState(() => _isSigningIn = false);
 
-      if (user != null && mounted) {
+      if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.secondary,
             content: Text('Welcome back, ${user.displayName}! Verified with database.'),
           ),
         );
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (route) => false);
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSigningIn = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            content: Text('Login failed: ${e.toString().replaceAll("Exception: ", "")}'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text('Login failed: ${e.toString().replaceAll("Exception: ", "")}'),
+        ),
+      );
     }
   }
 
@@ -391,9 +390,10 @@ class _LoginScreenState extends State<LoginScreen> {
         selectedEmail: email,
         selectedName: name,
       );
+      if (!mounted) return;
       setState(() => _isSigningIn = false);
 
-      if (user != null && mounted) {
+      if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.secondary,
@@ -415,18 +415,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (route) => false);
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSigningIn = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            content: Text('Sign-in error: $e'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text('Sign-in error: $e'),
+        ),
+      );
     }
   }
 

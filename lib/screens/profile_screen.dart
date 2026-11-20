@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/savings_goal_provider.dart';
+import '../providers/transaction_provider.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../theme/app_theme.dart';
@@ -288,6 +290,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final success = await auth.deleteAccount();
       if (!mounted) return;
       if (success) {
+        Provider.of<TransactionProvider>(context, listen: false).clear();
+        Provider.of<SavingsGoalProvider>(context, listen: false).clear();
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -635,7 +639,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     );
-                    if (confirm == true) {
+                    if (confirm == true && context.mounted) {
+                      context.read<TransactionProvider>().clear();
+                      context.read<SavingsGoalProvider>().clear();
                       await auth.signOut();
                       if (context.mounted) {
                         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);

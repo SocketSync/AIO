@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/category_item.dart';
 import '../models/transaction_record.dart';
+import '../providers/savings_goal_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -24,9 +25,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final auth = Provider.of<AuthService>(context, listen: false);
-      final userId = auth.currentUser?.id ?? 'guest_user';
-      Provider.of<TransactionProvider>(context, listen: false).fetchTransactions(userId);
+      final userId = auth.currentUser?.id;
+      if (userId == null || userId.isEmpty) return;
+      Provider.of<TransactionProvider>(context, listen: false)
+          .fetchTransactions(userId);
     });
   }
 
@@ -201,9 +205,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     if (confirm == true && mounted) {
+      Provider.of<TransactionProvider>(context, listen: false).clear();
+      Provider.of<SavingsGoalProvider>(context, listen: false).clear();
       await Provider.of<AuthService>(context, listen: false).signOut();
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     }
   }

@@ -1,12 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finwise_app/main.dart';
 import 'package:finwise_app/models/transaction_record.dart';
-import 'package:finwise_app/services/database_service.dart';
-import 'package:finwise_app/services/auth_service.dart';
 import 'package:finwise_app/providers/savings_goal_provider.dart';
+import 'package:finwise_app/providers/transaction_provider.dart';
+import 'package:finwise_app/screens/add_transaction_screen.dart';
+import 'package:finwise_app/screens/budgets_screen.dart';
+import 'package:finwise_app/screens/dashboard_screen.dart';
+import 'package:finwise_app/screens/insights_screen.dart';
+import 'package:finwise_app/screens/login_screen.dart';
+import 'package:finwise_app/screens/main_navigation_shell.dart';
+import 'package:finwise_app/screens/profile_screen.dart';
+import 'package:finwise_app/screens/receipt_scanner_screen.dart';
+import 'package:finwise_app/screens/simulator_screen.dart';
+import 'package:finwise_app/services/auth_service.dart';
+import 'package:finwise_app/services/database_service.dart';
 
 void main() {
+  setUp(() async {
+    await AuthService().signOut();
+  });
+
+  tearDown(() async {
+    await AuthService().signOut();
+  });
   testWidgets(
       '1. Login screen smoke test - strictly renders FinWise branding & Google Sign-In only',
       (WidgetTester tester) async {
@@ -85,6 +104,11 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
     await tester.pumpWidget(const FinWiseApp());
     await tester.pumpAndSettle();
 
@@ -115,6 +139,11 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
     await tester.pumpWidget(const FinWiseApp());
     await tester.pumpAndSettle();
 
@@ -139,6 +168,11 @@ void main() {
     tester.view.physicalSize = const Size(800, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
 
     await tester.pumpWidget(const FinWiseApp());
     await tester.pumpAndSettle();
@@ -378,5 +412,216 @@ void main() {
     final updatedB = await db.getTransactions(userB);
     expect(updatedA.any((t) => t.id == 'tx_userA_exclusive'), true);
     expect(updatedB.any((t) => t.id == 'tx_userA_exclusive'), false);
+  });
+
+  testWidgets(
+      '9. AuthGate startup redirect - active session lands on MainNavigationShell instead of LoginScreen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MainNavigationShell), findsOneWidget);
+    expect(find.byType(DashboardScreen), findsOneWidget);
+    expect(find.byType(LoginScreen), findsNothing);
+    expect(find.text('Total Net Balance'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '10. Route guards - unauthenticated protected routes redirect to LoginScreen and authenticated routes open',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+
+    const protectedRoutes = [
+      '/dashboard',
+      '/budgets',
+      '/goals',
+      '/insights',
+      '/simulator',
+      '/profile',
+      '/add-transaction',
+      '/receipt-scanner',
+      '/scanner',
+    ];
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    for (final route in protectedRoutes) {
+      navigator.pushNamed(route);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LoginScreen), findsOneWidget,
+          reason: 'Unauthenticated route $route should redirect to LoginScreen');
+      expect(find.byType(MainNavigationShell), findsNothing);
+      expect(find.byType(DashboardScreen), findsNothing);
+      expect(find.byType(BudgetsScreen), findsNothing);
+      expect(find.byType(InsightsScreen), findsNothing);
+      expect(find.byType(SimulatorScreen), findsNothing);
+      expect(find.byType(ProfileScreen), findsNothing);
+      expect(find.byType(AddTransactionScreen), findsNothing);
+      expect(find.byType(ReceiptScannerScreen), findsNothing);
+    }
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+    await tester.pumpAndSettle();
+
+    navigator.pushNamed('/receipt-scanner');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ReceiptScannerScreen), findsOneWidget);
+    expect(find.text('Smart Receipt AI'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '11. signOut clears session state, resets provider caches, and clears navigation stack to LoginScreen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final BuildContext appContext = tester.element(find.byType(MaterialApp));
+    final txProvider =
+        Provider.of<TransactionProvider>(appContext, listen: false);
+    final goalProvider =
+        Provider.of<SavingsGoalProvider>(appContext, listen: false);
+
+    txProvider.setSearchQuery('Salary');
+    expect(txProvider.transactions, isNotEmpty);
+    expect(txProvider.currentUserId, isNotEmpty);
+    expect(goalProvider.currentUserId, isNotEmpty);
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/profile');
+    await tester.pumpAndSettle();
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(navigator.canPop(), isTrue);
+
+    await AuthService().signOut();
+    await tester.pumpAndSettle();
+
+    expect(AuthService().isAuthenticated, isFalse);
+    expect(AuthService().currentUser, isNull);
+    expect(txProvider.transactions, isEmpty);
+    expect(txProvider.searchQuery, isEmpty);
+    expect(txProvider.currentUserId, isEmpty);
+    expect(goalProvider.goals, isEmpty);
+    expect(goalProvider.currentUserId, isEmpty);
+    expect(navigator.canPop(), isFalse);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsNothing);
+    expect(find.byType(MainNavigationShell), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '12a. onAuthStateChange signedOut returns user to LoginScreen and clears stack & provider caches',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final BuildContext appContext = tester.element(find.byType(MaterialApp));
+    final txProvider =
+        Provider.of<TransactionProvider>(appContext, listen: false);
+    final goalProvider =
+        Provider.of<SavingsGoalProvider>(appContext, listen: false);
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/add-transaction');
+    await tester.pumpAndSettle();
+    navigator.pushNamed('/profile');
+    await tester.pumpAndSettle();
+    expect(navigator.canPop(), isTrue);
+
+    AuthService().handleAuthStateChange(AuthChangeEvent.signedOut, null);
+    await tester.pumpAndSettle();
+
+    expect(AuthService().isAuthenticated, isFalse);
+    expect(AuthService().currentUser, isNull);
+    expect(txProvider.transactions, isEmpty);
+    expect(txProvider.currentUserId, isEmpty);
+    expect(goalProvider.goals, isEmpty);
+    expect(goalProvider.currentUserId, isEmpty);
+    expect(navigator.canPop(), isFalse);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsNothing);
+    expect(find.byType(AddTransactionScreen), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '12b. onAuthStateChange tokenRefreshed with null session clears session and returns to LoginScreen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final BuildContext appContext = tester.element(find.byType(MaterialApp));
+    final txProvider =
+        Provider.of<TransactionProvider>(appContext, listen: false);
+    final goalProvider =
+        Provider.of<SavingsGoalProvider>(appContext, listen: false);
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/profile');
+    await tester.pumpAndSettle();
+    expect(navigator.canPop(), isTrue);
+
+    AuthService().handleAuthStateChange(AuthChangeEvent.tokenRefreshed, null);
+    await tester.pumpAndSettle();
+
+    expect(AuthService().isAuthenticated, isFalse);
+    expect(AuthService().currentUser, isNull);
+    expect(txProvider.transactions, isEmpty);
+    expect(txProvider.currentUserId, isEmpty);
+    expect(goalProvider.goals, isEmpty);
+    expect(goalProvider.currentUserId, isEmpty);
+    expect(navigator.canPop(), isFalse);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ProfileScreen), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 }
