@@ -11,6 +11,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  static const int _cooldownDurationSeconds = 60;
+
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -22,49 +24,76 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
     _cooldownTimer?.cancel();
+    _cooldownTimer = null;
+    _emailController.dispose();
     super.dispose();
   }
 
   void _startCooldown() {
-    setState(() => _resendCooldown = 60);
     _cooldownTimer?.cancel();
+    if (!mounted) return;
+
+    setState(() => _resendCooldown = _cooldownDurationSeconds);
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_resendCooldown > 0) {
-        setState(() => _resendCooldown--);
-      } else {
+      if (!mounted) {
         timer.cancel();
+        return;
+      }
+      if (_resendCooldown <= 1) {
+        timer.cancel();
+        _cooldownTimer = null;
+        setState(() => _resendCooldown = 0);
+      } else {
+        setState(() => _resendCooldown--);
       }
     });
   }
 
   Future<void> _handleSendResetLink() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return;
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) return;
 
-    final email = _emailController.text.trim();
+    await _sendResetEmail(_emailController.text.trim());
+  }
+
+  Future<void> _handleResendResetLink() async {
+    if (_isLoading || _resendCooldown > 0) return;
+
+    final email = (_sentToEmail ?? _emailController.text).trim();
+    if (email.isEmpty) return;
+
+    await _sendResetEmail(email);
+  }
+
+  Future<void> _sendResetEmail(String email) async {
     setState(() => _isLoading = true);
 
     final success = await AuthService().sendPasswordResetEmail(email);
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        if (success) {
-          _emailSent = true;
-          _sentToEmail = email;
-          _startCooldown();
-        }
-      });
+    if (!mounted) return;
 
-      if (!success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            content: Text(AuthService().errorMessage ?? 'Unable to send reset email. Please try again.'),
-          ),
-        );
+    setState(() {
+      _isLoading = false;
+      if (success) {
+        _emailSent = true;
+        _sentToEmail = email;
       }
+    });
+
+    if (success) {
+      _startCooldown();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text(
+            AuthService().errorMessage ??
+                'Unable to send reset email. Please try again.',
+          ),
+        ),
+      );
     }
   }
 
@@ -259,15 +288,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: _resendCooldown > 0 ? null : _handleSendResetLink,
+                          onPressed: (_resendCooldown > 0 || _isLoading)
+                              ? null
+                              : _handleResendResetLink,
                           style: OutlinedButton.styleFrom(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             side: const BorderSide(color: AppColors.borderNeutral),
                           ),
-                          child: Text(
-                            _resendCooldown > 0 ? 'Resend in ${_resendCooldown}s' : 'Resend Email',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Text(
+                                  _resendCooldown > 0
+                                      ? 'Resend in ${_resendCooldown}s'
+                                      : 'Resend Email',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
