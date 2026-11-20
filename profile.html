@@ -423,9 +423,9 @@
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px]">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='transactions.html'">
-          <span class="material-symbols-outlined text-[22px]">receipt_long</span>
-          <span class="text-[10px]">Transactions</span>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"         onclick="window.location.href='summary.html#goals'">
+          <span class="material-symbols-outlined text-[22px]">savings</span>
+          <span class="text-[10px]">Goals</span>
         </button>
         <div class="flex-1 flex items-center justify-center">
           <button onclick="window.location.href='transactions.html?add=true'" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
@@ -433,8 +433,8 @@
           </button>
         </div>
         <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
-          <span class="material-symbols-outlined text-[22px]">bar_chart</span>
-          <span class="text-[10px]">Summary</span>
+          <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+          <span class="text-[10px]">Insights</span>
         </button>
         <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
           <span class="material-symbols-outlined text-[22px]">person</span>
@@ -1328,6 +1328,7 @@
               // B. Fallback to direct RLS table purge if RPC not yet created
               if (userId) {
                 await withTimeout(supabaseClient.from('transactions').delete().eq('user_id', userId), 10000);
+                await withTimeout(supabaseClient.from('savings_goals').delete().eq('user_id', userId), 10000);
                 await withTimeout(supabaseClient.from('profiles').delete().eq('id', userId), 10000);
               }
             }
@@ -1337,6 +1338,7 @@
             if (userId) {
               try {
                 await supabaseClient.from('transactions').delete().eq('user_id', userId);
+                await supabaseClient.from('savings_goals').delete().eq('user_id', userId);
                 await supabaseClient.from('profiles').delete().eq('id', userId);
               } catch (_) {}
             }

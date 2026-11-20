@@ -684,7 +684,7 @@
           if (msg.includes('email not confirmed') || msg.includes('confirm')) {
             showAuthAlert('error', 'Please confirm your email address via the verification link sent to ' + email + '.');
           } else if (msg.includes('invalid') || msg.includes('credentials')) {
-            showAuthAlert('error', 'Invalid email or password. If you signed in with Google previously and have not set a password yet, please sign in with Google or click "Forgot Password" to set one.');
+            showAuthAlert('error', 'Incorrect password. Please try again.');
           } else {
             showAuthAlert('error', authError.message);
           }
@@ -810,11 +810,8 @@
         } catch (_) {}
       }
 
-      // 3. Normal visit to Login Page: Automatically clear previous/stale login tokens & sessions!
-      // No manual clicking needed! All stale sessions and tokens are wiped automatically.
-      if (!isOAuthCallback) {
-        await autoClearLoginTokens();
-      }
+      // 3. Normal visit: preserve an existing valid session.
+      // OAuth callbacks, logout, and account deletion control explicit session replacement.
 
       // 4. Check for alerts or messages
       const urlEmail = urlParams.get('email');

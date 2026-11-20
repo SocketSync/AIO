@@ -52,7 +52,7 @@
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
   <!-- Desktop Mobile Frame Wrapper -->
-  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+  <div class="w-full max-w-md sm:max-w-2xl lg:max-w-4xl bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
     <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
@@ -88,7 +88,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-4">
+    <main class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-3 space-y-4">
 
       <!-- MONTH SELECTOR BAR -->
       <div class="bg-white rounded-2xl p-3 shadow-sm border border-border-neutral flex items-center justify-between">
@@ -168,6 +168,28 @@
         </div>
       </div>
 
+      <!-- SAVINGS GOALS -->
+      <section id="goals" class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral scroll-mt-24">
+        <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-growth-mint-subtle flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-[18px]">savings</span>
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-text-primary">Savings Goals</h3>
+              <p id="active-goals-count" class="text-[10px] text-text-muted">Loading goals...</p>
+            </div>
+          </div>
+          <button type="button" onclick="openGoalModal('create')" class="h-9 px-3 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-container transition-colors flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[17px]">add</span>
+            <span>Add Goal</span>
+          </button>
+        </div>
+        <div id="savings-goals-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
+          <p class="col-span-full text-xs text-text-muted text-center py-6">Loading savings goals...</p>
+        </div>
+      </section>
+
       <!-- EXPENSES BY CATEGORY BREAKDOWN -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -230,24 +252,24 @@
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+    <nav class="fixed bottom-0 w-full max-w-md sm:max-w-2xl lg:max-w-4xl bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
         <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px]">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='transactions.html'">
-          <span class="material-symbols-outlined text-[22px]">receipt_long</span>
-          <span class="text-[10px]">Transactions</span>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
+          <span class="material-symbols-outlined text-[22px]">savings</span>
+          <span class="text-[10px]">Goals</span>
         </button>
         <div class="flex-1 flex items-center justify-center">
           <button onclick="window.location.href='transactions.html?add=true'" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
-          <span class="material-symbols-outlined text-[22px]">bar_chart</span>
-          <span class="text-[10px]">Summary</span>
+        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html#aiAssistant'">
+          <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+          <span class="text-[10px]">Insights</span>
         </button>
         <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
@@ -256,6 +278,74 @@
       </div>
     </nav>
 
+  </div>
+
+  <div id="goalModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" onclick="if(event.target === this) closeGoalModal()">
+    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p id="goalModalEyebrow" class="text-[10px] font-bold uppercase tracking-wider text-primary">Savings Goal</p>
+          <h2 id="goalModalTitle" class="text-lg font-bold text-text-primary">New Savings Goal</h2>
+        </div>
+        <button type="button" onclick="closeGoalModal()" aria-label="Close" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="goalForm" onsubmit="submitGoalForm(event)" class="space-y-3">
+        <input type="hidden" id="goalModalMode" value="create">
+        <input type="hidden" id="goalModalId" value="">
+        <div id="goalFormError" class="hidden rounded-lg bg-alert-coral-subtle px-3 py-2 text-xs font-semibold text-alert-coral"></div>
+        <label class="block">
+          <span class="text-xs font-semibold text-text-primary">Goal Name</span>
+          <input id="goalName" type="text" maxlength="150" required placeholder="e.g. Emergency Fund" class="mt-1 w-full h-11 rounded-xl border border-border-neutral px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-xs font-semibold text-text-primary">Target Amount (RM)</span>
+            <input id="goalTargetAmount" type="number" min="0.01" step="0.01" required placeholder="5000.00" class="mt-1 w-full h-11 rounded-xl border border-border-neutral px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+          </label>
+          <label id="goalInitialSavedLabel" class="block">
+            <span class="text-xs font-semibold text-text-primary">Already Saved (RM)</span>
+            <input id="goalInitialSaved" type="number" min="0" step="0.01" value="0.00" class="mt-1 w-full h-11 rounded-xl border border-border-neutral px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+          </label>
+        </div>
+        <label class="block">
+          <span class="text-xs font-semibold text-text-primary">Target Date</span>
+          <input id="goalTargetDate" type="date" required class="mt-1 w-full h-11 rounded-xl border border-border-neutral px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+        </label>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeGoalModal()" class="h-10 px-4 rounded-lg text-xs font-bold text-text-muted hover:bg-surface-container transition-colors">Cancel</button>
+          <button id="goalSubmitBtn" type="submit" class="h-10 px-4 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-container transition-colors">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="depositModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" onclick="if(event.target === this) closeDepositModal()">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-secondary">Goal Deposit</p>
+          <h2 class="text-lg font-bold text-text-primary">Add Deposit</h2>
+        </div>
+        <button type="button" onclick="closeDepositModal()" aria-label="Close" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form onsubmit="submitDeposit(event)" class="space-y-3">
+        <input type="hidden" id="depositGoalId" value="">
+        <p id="depositGoalName" class="text-xs text-text-muted"></p>
+        <div id="depositFormError" class="hidden rounded-lg bg-alert-coral-subtle px-3 py-2 text-xs font-semibold text-alert-coral"></div>
+        <label class="block">
+          <span class="text-xs font-semibold text-text-primary">Deposit Amount (RM)</span>
+          <input id="depositAmount" type="number" min="0.01" step="0.01" required placeholder="100.00" class="mt-1 w-full h-11 rounded-xl border border-border-neutral px-3 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/10">
+        </label>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeDepositModal()" class="h-10 px-4 rounded-lg text-xs font-bold text-text-muted hover:bg-surface-container transition-colors">Cancel</button>
+          <button type="submit" class="h-10 px-4 rounded-lg bg-secondary text-white text-xs font-bold hover:bg-secondary/90 transition-colors">Add</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -358,6 +448,394 @@
       return '00000000-0000-4000-8000-000000000001';
     }
 
+    let savingsGoals = [];
+    let goalsLoading = false;
+
+    function dateOnlyValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function parseGoalDate(value) {
+      if (!value) return new Date();
+      const date = new Date(String(value).slice(0, 10) + 'T12:00:00');
+      return Number.isNaN(date.getTime()) ? new Date() : date;
+    }
+
+    function formatGoalDate(value) {
+      return parseGoalDate(value).toLocaleDateString('en-MY', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function goalStatus(goal) {
+      const saved = Number(goal.current_saved_amount) || 0;
+      const target = Number(goal.target_amount) || 0;
+      if (saved >= target) return 'completed';
+      if (dateOnlyValue(new Date()) > String(goal.target_date || '').slice(0, 10)) return 'overdue';
+      return 'in-progress';
+    }
+
+    function goalCompletion(goal) {
+      const target = Number(goal.target_amount) || 0;
+      if (target <= 0) return 0;
+      const saved = Number(goal.current_saved_amount) || 0;
+      return Math.max(0, Math.min(100, (saved / target) * 100));
+    }
+
+    function validateGoalInput(name, targetAmount, targetDate, savedAmount, isCreate) {
+      const cleanName = String(name || '').trim();
+      if (!cleanName) return 'Goal name cannot be empty.';
+      if (cleanName.length > 150) return 'Goal name must be 150 characters or fewer.';
+      if (!Number.isFinite(targetAmount) || targetAmount <= 0) return 'Target amount must be a positive number.';
+      if (savedAmount != null && (!Number.isFinite(savedAmount) || savedAmount < 0)) return 'Saved amount cannot be negative.';
+      if (isCreate && (!targetDate || targetDate <= dateOnlyValue(new Date()))) {
+        return 'Target date must be a future date.';
+      }
+      return null;
+    }
+
+    async function loadSavingsGoals() {
+      if (goalsLoading) return;
+      goalsLoading = true;
+      const userId = await getAuthenticatedUserId();
+      const container = document.getElementById('savings-goals-container');
+
+      if (!supabaseClient || !isValidUUID(userId)) {
+        savingsGoals = [];
+        renderSavingsGoals();
+        goalsLoading = false;
+        return;
+      }
+
+      try {
+        const { data, error } = await withTimeout(
+          supabaseClient
+            .from('savings_goals')
+            .select('id,user_id,goal_name,target_amount,current_saved_amount,target_date,created_at,updated_at')
+            .eq('user_id', userId)
+            .order('target_date', { ascending: true }),
+          10000
+        );
+        if (error) throw error;
+        savingsGoals = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('Savings goals load notice:', error);
+        if (container) {
+          container.innerHTML = '<p class="col-span-full text-xs text-alert-coral text-center py-6">Failed to load savings goals. Please try again.</p>';
+        }
+        document.getElementById('active-goals-count').textContent = 'Unable to sync';
+        goalsLoading = false;
+        return;
+      }
+
+      renderSavingsGoals();
+      goalsLoading = false;
+    }
+
+    function renderSavingsGoals() {
+      const container = document.getElementById('savings-goals-container');
+      const activeCount = savingsGoals.filter(goal => goalStatus(goal) !== 'completed').length;
+      document.getElementById('active-goals-count').textContent = `${activeCount} Active`;
+      if (!container) return;
+
+      if (savingsGoals.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full rounded-xl border border-border-neutral bg-surface-container-low py-7 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary/30">savings</span>
+            <p class="mt-2 text-sm font-bold text-text-primary">No savings goals yet</p>
+            <p class="mt-1 text-xs text-text-muted">Tap "Add Goal" to get started.</p>
+          </div>`;
+        return;
+      }
+
+      const curr = getCurrency();
+      container.innerHTML = savingsGoals.map(goal => {
+        const status = goalStatus(goal);
+        const saved = Number(goal.current_saved_amount) || 0;
+        const target = Number(goal.target_amount) || 0;
+        const completion = goalCompletion(goal);
+        const remaining = Math.max(0, target - saved);
+        const isOverfunded = saved > target;
+        const accentClass = status === 'completed' ? 'text-secondary' : status === 'overdue' ? 'text-alert-coral' : 'text-primary';
+        const cardBg = status === 'completed' ? 'bg-growth-mint-subtle' : status === 'overdue' ? 'bg-alert-coral-subtle' : 'bg-white';
+        const badge = status === 'completed'
+          ? '<span class="px-2 py-1 rounded-full bg-growth-mint-subtle text-secondary text-[10px] font-bold">✓ Completed</span>'
+          : status === 'overdue'
+            ? '<span class="px-2 py-1 rounded-full bg-white/70 text-alert-coral text-[10px] font-bold">⚠ Overdue</span>'
+            : `<span class="px-2 py-1 rounded-full bg-primary/8 text-primary text-[10px] font-bold">${Math.round(completion)}%</span>`;
+
+        return `
+          <article class="rounded-xl border ${status === 'completed' ? 'border-secondary/40' : status === 'overdue' ? 'border-alert-coral/50' : 'border-border-neutral'} ${cardBg} p-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-lg ${status === 'completed' ? 'bg-secondary/10 text-secondary' : status === 'overdue' ? 'bg-alert-coral/10 text-alert-coral' : 'bg-primary/10 text-primary'} flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[20px]">${status === 'completed' ? 'check_circle' : status === 'overdue' ? 'warning' : 'savings'}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-bold text-text-primary truncate">${escapeHtml(goal.goal_name)}</p>
+                <p class="mt-0.5 text-[11px] ${status === 'overdue' ? 'text-alert-coral font-bold' : 'text-text-muted'}">Target: ${formatGoalDate(goal.target_date)}</p>
+              </div>
+              ${badge}
+              <div class="relative">
+                <button type="button" onclick="toggleGoalMenu('${goal.id}', event)" aria-label="Goal actions" class="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
+                  <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                </button>
+                <div id="goal-menu-${goal.id}" class="hidden absolute right-0 top-9 z-30 w-36 rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+                  ${status !== 'completed' ? `<button type="button" onclick="openDepositModal('${goal.id}')" class="w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold text-secondary hover:bg-growth-mint-subtle flex items-center gap-2"><span class="material-symbols-outlined text-[17px]">add_circle</span>Add Deposit</button>` : ''}
+                  <button type="button" onclick="openGoalModal('edit', '${goal.id}')" class="w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold text-primary hover:bg-primary/5 flex items-center gap-2"><span class="material-symbols-outlined text-[17px]">edit</span>Edit</button>
+                  <button type="button" onclick="deleteSavingsGoal('${goal.id}')" class="w-full px-2.5 py-2 rounded-lg text-left text-xs font-semibold text-alert-coral hover:bg-alert-coral-subtle flex items-center gap-2"><span class="material-symbols-outlined text-[17px]">delete</span>Delete</button>
+                </div>
+              </div>
+            </div>
+            <div class="h-2 mt-3 w-full rounded-full ${status === 'completed' ? 'bg-secondary/15' : status === 'overdue' ? 'bg-alert-coral/15' : 'bg-primary/10'} overflow-hidden">
+              <div class="h-full rounded-full ${status === 'completed' ? 'bg-secondary' : status === 'overdue' ? 'bg-alert-coral' : 'bg-primary'} transition-all duration-500" style="width:${completion}%"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-2 text-center">
+              <div class="text-left">
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted">SAVED</p>
+                <p class="text-sm font-bold ${accentClass}">${curr} ${money(saved)}</p>
+              </div>
+              <div>
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted">TARGET</p>
+                <p class="text-xs font-bold text-text-primary">${curr} ${money(target)}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted">${isOverfunded ? 'OVERFUNDED' : 'REMAINING'}</p>
+                <p class="text-xs font-semibold ${isOverfunded ? 'text-secondary' : status === 'overdue' ? 'text-alert-coral' : 'text-text-primary'}">${isOverfunded ? '+' : ''}${curr} ${money(isOverfunded ? saved - target : remaining)}</p>
+              </div>
+            </div>
+            ${status === 'completed'
+              ? '<div class="mt-3 rounded-lg bg-secondary/10 px-2.5 py-2 text-xs font-bold text-secondary">Goal achieved!</div>'
+              : status === 'overdue'
+                ? '<div class="mt-3 rounded-lg bg-white/70 px-2.5 py-2 text-[11px] font-medium text-alert-coral">Past target date - consider updating your goal.</div>'
+                : ''}
+          </article>`;
+      }).join('');
+    }
+
+    function toggleGoalMenu(goalId, event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById(`goal-menu-${goalId}`);
+      if (!menu) return;
+      document.querySelectorAll('[id^="goal-menu-"]').forEach(item => {
+        if (item !== menu) item.classList.add('hidden');
+      });
+      menu.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('[id^="goal-menu-"]').forEach(item => item.classList.add('hidden'));
+    });
+
+    function openGoalModal(mode, goalId) {
+      const modal = document.getElementById('goalModal');
+      const title = document.getElementById('goalModalTitle');
+      const eyebrow = document.getElementById('goalModalEyebrow');
+      const modeInput = document.getElementById('goalModalMode');
+      const idInput = document.getElementById('goalModalId');
+      const nameInput = document.getElementById('goalName');
+      const targetInput = document.getElementById('goalTargetAmount');
+      const savedInput = document.getElementById('goalInitialSaved');
+      const dateInput = document.getElementById('goalTargetDate');
+      const savedLabel = document.getElementById('goalInitialSavedLabel');
+      document.getElementById('goalFormError').classList.add('hidden');
+
+      modeInput.value = mode;
+      idInput.value = goalId || '';
+      nameInput.value = '';
+      targetInput.value = '';
+      savedInput.value = '0.00';
+      dateInput.value = dateOnlyValue(new Date(Date.now() + 30 * 86400000));
+      savedLabel.classList.remove('hidden');
+      title.textContent = 'New Savings Goal';
+      eyebrow.textContent = 'Savings Goal';
+
+      if (mode === 'edit') {
+        const goal = savingsGoals.find(item => item.id === goalId);
+        if (!goal) return;
+        title.textContent = 'Edit Goal';
+        eyebrow.textContent = 'Update Goal';
+        nameInput.value = goal.goal_name || '';
+        targetInput.value = Number(goal.target_amount || 0).toFixed(2);
+        dateInput.value = String(goal.target_date || '').slice(0, 10);
+        savedLabel.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      nameInput.focus();
+    }
+
+    function closeGoalModal() {
+      const modal = document.getElementById('goalModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function showGoalFormError(message) {
+      const box = document.getElementById('goalFormError');
+      box.textContent = message;
+      box.classList.remove('hidden');
+    }
+
+    async function submitGoalForm(event) {
+      event.preventDefault();
+      const mode = document.getElementById('goalModalMode').value;
+      const goalId = document.getElementById('goalModalId').value;
+      const name = document.getElementById('goalName').value;
+      const targetAmount = Number(document.getElementById('goalTargetAmount').value);
+      const savedAmount = Number(document.getElementById('goalInitialSaved').value);
+      const targetDate = document.getElementById('goalTargetDate').value;
+      const isCreate = mode === 'create';
+      const validationError = validateGoalInput(name, targetAmount, targetDate, isCreate ? savedAmount : null, isCreate);
+      if (validationError) {
+        showGoalFormError(validationError);
+        return;
+      }
+
+      const userId = await getAuthenticatedUserId();
+      if (!supabaseClient || !isValidUUID(userId)) {
+        showGoalFormError('Savings goals require a configured Supabase backend.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('goalSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      try {
+        let response;
+        if (isCreate) {
+          response = await withTimeout(
+            supabaseClient
+              .from('savings_goals')
+              .insert({
+                user_id: userId,
+                goal_name: name.trim(),
+                target_amount: targetAmount,
+                current_saved_amount: savedAmount,
+                target_date: targetDate
+              })
+              .select()
+              .single(),
+            10000
+          );
+        } else {
+          response = await withTimeout(
+            supabaseClient
+              .from('savings_goals')
+              .update({
+                goal_name: name.trim(),
+                target_amount: targetAmount,
+                target_date: targetDate
+              })
+              .eq('id', goalId)
+              .eq('user_id', userId)
+              .select()
+              .single(),
+            10000
+          );
+        }
+        if (response.error) throw response.error;
+        closeGoalModal();
+        await loadSavingsGoals();
+      } catch (error) {
+        console.warn('Savings goal save notice:', error);
+        showGoalFormError(isCreate ? 'Failed to create goal. Please try again.' : 'Failed to update goal. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save';
+      }
+    }
+
+    function openDepositModal(goalId) {
+      const goal = savingsGoals.find(item => item.id === goalId);
+      if (!goal) return;
+      document.getElementById('depositGoalId').value = goalId;
+      document.getElementById('depositGoalName').textContent = `Goal: ${goal.goal_name}`;
+      document.getElementById('depositAmount').value = '';
+      document.getElementById('depositFormError').classList.add('hidden');
+      const modal = document.getElementById('depositModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('depositAmount').focus();
+    }
+
+    function closeDepositModal() {
+      const modal = document.getElementById('depositModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function submitDeposit(event) {
+      event.preventDefault();
+      const goalId = document.getElementById('depositGoalId').value;
+      const depositAmount = Number(document.getElementById('depositAmount').value);
+      const errorBox = document.getElementById('depositFormError');
+      if (!Number.isFinite(depositAmount) || depositAmount <= 0) {
+        errorBox.textContent = 'Deposit amount must be a positive number.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      const goal = savingsGoals.find(item => item.id === goalId);
+      if (!goal) return;
+      const userId = await getAuthenticatedUserId();
+      if (!supabaseClient || !isValidUUID(userId)) {
+        errorBox.textContent = 'Savings goals require a configured Supabase backend.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      try {
+        const newSavedAmount = (Number(goal.current_saved_amount) || 0) + depositAmount;
+        const { error } = await withTimeout(
+          supabaseClient
+            .from('savings_goals')
+            .update({ current_saved_amount: newSavedAmount })
+            .eq('id', goalId)
+            .eq('user_id', userId)
+            .select()
+            .single(),
+          10000
+        );
+        if (error) throw error;
+        closeDepositModal();
+        await loadSavingsGoals();
+      } catch (error) {
+        console.warn('Savings goal deposit notice:', error);
+        errorBox.textContent = 'Failed to record deposit. Please try again.';
+        errorBox.classList.remove('hidden');
+      }
+    }
+
+    async function deleteSavingsGoal(goalId) {
+      const goal = savingsGoals.find(item => item.id === goalId);
+      if (!goal) return;
+      if (!window.confirm(`Delete "${goal.goal_name}"? This cannot be undone.`)) return;
+      const userId = await getAuthenticatedUserId();
+      if (!supabaseClient || !isValidUUID(userId)) {
+        alert('Savings goals require a configured Supabase backend.');
+        return;
+      }
+      try {
+        const { error } = await withTimeout(
+          supabaseClient
+            .from('savings_goals')
+            .delete()
+            .eq('id', goalId)
+            .eq('user_id', userId),
+          10000
+        );
+        if (error) throw error;
+        await loadSavingsGoals();
+      } catch (error) {
+        console.warn('Savings goal delete notice:', error);
+        alert('Failed to delete goal. Please try again.');
+      }
+    }
+
     // Real-Time Multi-Device Synchronization Engine (Supabase Cloud Sync)
     let realtimeChannel = null;
 
@@ -374,6 +852,9 @@
           .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
             loadTransactions();
           })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'savings_goals' }, () => {
+            loadSavingsGoals();
+          })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
             loadTransactions();
           })
@@ -384,13 +865,20 @@
       setInterval(() => {
         if (!document.hidden) {
           loadTransactions();
+          loadSavingsGoals();
         }
       }, 4000);
 
       // 3. Refresh immediately when user focuses or unlocks device
-      window.addEventListener('focus', () => loadTransactions());
+      window.addEventListener('focus', () => {
+        loadTransactions();
+        loadSavingsGoals();
+      });
       document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) loadTransactions();
+        if (!document.hidden) {
+          loadTransactions();
+          loadSavingsGoals();
+        }
       });
     }
 
@@ -804,6 +1292,7 @@
 
       initRealtimeSync();
       await loadTransactions();
+      await loadSavingsGoals();
     })();
   </script>
 </body>
