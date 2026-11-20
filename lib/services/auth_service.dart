@@ -595,6 +595,7 @@ class AuthService extends ChangeNotifier {
             debugPrint('[AuthService] RPC delete notice: $rpcErr. Falling back to direct RLS deletion.');
             // 2. Direct RLS table deletion
             await client.from('transactions').delete().eq('user_id', user.id).timeout(const Duration(seconds: 10));
+            await client.from('savings_goals').delete().eq('user_id', user.id).timeout(const Duration(seconds: 10));
             await client.from('profiles').delete().eq('id', user.id).timeout(const Duration(seconds: 10));
           }
         }

@@ -176,6 +176,11 @@
           </div>
         </div>
 
+        <label class="flex items-start gap-2.5 rounded-lg text-xs text-text-muted leading-relaxed cursor-pointer">
+          <input id="signup-terms" type="checkbox" checked class="mt-0.5 h-4 w-4 accent-primary">
+          <span>I agree to the Terms of Service, Privacy Policy, and consent to Google account verification.</span>
+        </label>
+
         <button class="w-full min-h-[48px] bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all mt-2" id="create-account-btn" type="submit">
           <span>Create Account</span>
           <span class="material-symbols-outlined text-[18px]">person_add</span>
@@ -515,14 +520,20 @@
       const nameInput = document.getElementById('signup-name');
       const emailInput = document.getElementById('signup-email');
       const passInput = document.getElementById('signup-password');
+      const termsInput = document.getElementById('signup-terms');
       const btn = document.getElementById('create-account-btn');
 
       const name = nameInput.value.trim();
       const email = emailInput.value.trim().toLowerCase();
       const password = passInput.value;
 
+      if (!termsInput.checked) {
+        showRegAlert('error', 'Please accept the Terms of Service to continue.');
+        return;
+      }
+
       if (!name || !email || !password) {
-        showRegAlert('error', 'Please fill out all required fields.');
+        showRegAlert('error', 'Please fill out all registration fields.');
         return;
       }
 
@@ -533,7 +544,7 @@
       }
 
       if (password.length < 6) {
-        showRegAlert('error', 'Password must be at least 6 characters.');
+        showRegAlert('error', 'Password must be at least 6 characters long.');
         passInput.focus();
         return;
       }
