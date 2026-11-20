@@ -251,6 +251,70 @@ void main() {
     expect(find.textContaining('Matric'), findsNothing);
   });
 
+  testWidgets(
+      '6b. Forgot Password resend cooldown timer counts down 60s, resends without Form crash, and disposes cleanly',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/forgot-password');
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), 'test.user@gmail.com');
+    await tester.tap(find.text('Send Reset Link'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+
+    expect(find.text('Check your email'), findsOneWidget);
+    expect(find.text('Resend in 60s'), findsOneWidget);
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Resend in 59s'), findsOneWidget);
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+
+    await tester.pump(const Duration(seconds: 59));
+    expect(find.text('Resend Email'), findsOneWidget);
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNotNull,
+    );
+
+    await tester.tap(find.text('Resend Email'));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Resend in 60s'), findsOneWidget);
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+
+    navigator.pop();
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5));
+    expect(tester.takeException(), isNull);
+  });
+
   test(
       '7. Password Verification with Database - Rejects incorrect password and accepts matching password',
       () async {
