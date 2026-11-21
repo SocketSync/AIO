@@ -28,7 +28,11 @@ class AppColors {
   static const Color error = Color(0xFFBA1A1A);
 }
 
+/// Material 3 theme configuration for the FinWise application.
 class AppTheme {
+  /// Default light Material 3 [ThemeData] (`useMaterial3: true`) seeded from
+  /// [AppColors.primary] and [AppColors.secondary] with [AppColors.surface]
+  /// scaffold styling.
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
