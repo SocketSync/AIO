@@ -1,6 +1,22 @@
 -- ==============================================================================
 -- FinWise Mobile Application - Database Schema (PostgreSQL / Supabase)
 -- Sprint 1: User Profiles, Categorized Transactions, and Security Policies (RLS)
+--
+-- Table Structure:
+--   * public.profiles      - 1:1 with auth.users; user preferences & budget
+--   * public.categories    - default expense/income category lookup catalog
+--   * public.transactions  - user-owned ledger entries with amount > 0 CHECK
+--   * public.savings_goals - defined in database/savings_goals_migration.sql
+--
+-- Triggers & RPC:
+--   * set_profiles_updated_at / set_transactions_updated_at - maintain updated_at
+--   * on_auth_user_created  - auto-provisions public.profiles on signup
+--   * trg_protect_demo_profile - prevents altering/deleting the demo profile
+--   * public.delete_user_account() - SECURITY DEFINER account & data purge RPC
+--
+-- Row-Level Security (RLS) Expectations:
+--   * profiles & transactions enforce strict owner isolation (auth.uid() = id
+--     and auth.uid() = user_id); categories are globally read-only (SELECT).
 -- ==============================================================================
 
 -- 1. Create Enums

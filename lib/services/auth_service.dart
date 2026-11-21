@@ -63,6 +63,8 @@ class AuthService extends ChangeNotifier {
 
   static const _uuid = Uuid();
 
+  /// Configured Google Sign-In client requesting email and profile scopes
+  /// for the Google authentication entry point (AIO-72).
   late final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
   );
