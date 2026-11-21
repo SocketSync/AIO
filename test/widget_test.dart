@@ -624,4 +624,40 @@ void main() {
     expect(find.byType(ProfileScreen), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+      '13. Add Transaction form validation - shows inline errors for empty fields and non-positive amounts',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/add-transaction');
+    await tester.pumpAndSettle();
+
+    final saveButton = find.text('Save Transaction');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Enter amount'), findsOneWidget);
+    expect(find.text('Please provide a description'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '0');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Enter valid amount > 0'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

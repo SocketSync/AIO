@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Vector-painted Google "G" mark used on the Google Sign-In button (AIO-72).
 class GoogleLogo extends StatelessWidget {
   final double size;
 
