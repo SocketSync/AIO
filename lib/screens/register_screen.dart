@@ -19,7 +19,12 @@ import 'login_screen.dart';
 /// indicators (`_hasMinLength`, `_hasNumber`, `_hasSpecialChar`).  These are only
 /// visual aids – they do not affect the underlying auth request.
 ///
-/// No functional changes are made; only documentation comments have been added
+/// Registration screen layout documentation:
+/// - Displays fields for Name, Email, Password, and Confirm Password.
+/// - Shows password strength indicators (min length, number, special character).
+/// - Includes Google Sign‑Up tile and navigation back to Login.
+/// - No functional changes are made; only documentation comments are added.
+
 /// to describe the layout and navigation flow.
 
   const RegisterScreen({super.key});
