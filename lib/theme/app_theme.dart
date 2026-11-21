@@ -29,6 +29,66 @@ class AppColors {
 }
 
 class AppTheme {
+  /// Default border radius shared across FinWise text inputs (AIO-66).
+  static const double inputBorderRadius = 12.0;
+
+  /// Centralized [InputDecorationTheme] for consistent form field styling (AIO-66).
+  static InputDecorationTheme get inputDecorationTheme {
+    final defaultBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(inputBorderRadius),
+      borderSide: const BorderSide(color: AppColors.borderNeutral),
+    );
+
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.surfaceContainerLowest,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      labelStyle: const TextStyle(
+        color: AppColors.textMuted,
+        fontSize: 14,
+      ),
+      hintStyle: const TextStyle(
+        color: AppColors.textMuted,
+        fontSize: 14,
+      ),
+      errorStyle: const TextStyle(
+        color: AppColors.error,
+        fontSize: 12,
+      ),
+      border: defaultBorder,
+      enabledBorder: defaultBorder,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: AppColors.error, width: 1.2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+      ),
+    );
+  }
+
+  /// Builds a reusable [InputDecoration] following FinWise input styling (AIO-66).
+  static InputDecoration inputDecoration({
+    String? labelText,
+    String? hintText,
+    String? helperText,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      helperText: helperText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -40,6 +100,7 @@ class AppTheme {
         surface: AppColors.surface,
       ),
       textTheme: GoogleFonts.interTextTheme(),
+      inputDecorationTheme: inputDecorationTheme,
     );
   }
 }
