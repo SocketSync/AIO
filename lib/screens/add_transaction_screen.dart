@@ -6,6 +6,12 @@ import '../models/transaction_record.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
+/// Full-screen transaction entry UI for recording a new income or expense.
+///
+/// Captures transaction type (Expense/Income segmented toggle), RM amount,
+/// description/title, category chip selection, date via `showDatePicker`, and
+/// optional line-item details (plus a Smart Receipt AI scanner shortcut), then
+/// submits the validated entry through [TransactionProvider.addTransaction].
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -14,6 +20,7 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
+  // Form controllers and transaction entry state fields
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
