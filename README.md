@@ -223,3 +223,5 @@ python server.py 3000
 # Open http://localhost:3000/login.html
 ```
 - **Public Demo Account**: Click **"Try Demo (Demo Finwise)"** on the login page (`demo@finwise-app.xyz` / `FinWise2026!`).
+
+<!-- AIO-58: Flutter project structure -->
