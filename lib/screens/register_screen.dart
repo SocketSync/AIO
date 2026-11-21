@@ -4,7 +4,24 @@ import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import 'login_screen.dart';
 
-class RegisterScreen extends StatefulWidget {
+/// RegisterScreen – user sign‑up entry point.
+///
+/// This screen collects the user's **name**, **email**, and **password** and
+/// provides three navigation actions:
+///   * **Submit** – creates a new account via `AuthService.signUpWithEmail`
+///     (implementation lives in a separate service file).
+///   * **Google Sign‑Up** – opens the same Google account picker used by the
+///     login flow.
+///   * **Back to Login** – a text button at the bottom navigates back to
+///     `LoginScreen`.
+///
+/// The UI is built with a `StatefulWidget` that tracks password‑strength
+/// indicators (`_hasMinLength`, `_hasNumber`, `_hasSpecialChar`).  These are only
+/// visual aids – they do not affect the underlying auth request.
+///
+/// No functional changes are made; only documentation comments have been added
+/// to describe the layout and navigation flow.
+
   const RegisterScreen({super.key});
 
   @override
