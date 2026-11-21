@@ -6,6 +6,8 @@ import 'insights_screen.dart';
 import 'simulator_screen.dart';
 import 'profile_screen.dart';
 
+/// Persistent bottom-navigation shell hosting the dashboard and core FinWise
+/// tabs (Home, Goals, Add Action, Insights, Simulator, Profile) (AIO-85).
 class MainNavigationShell extends StatefulWidget {
   final int initialTab;
   const MainNavigationShell({super.key, this.initialTab = 0});
