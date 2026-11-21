@@ -17,7 +17,10 @@ import 'register_screen.dart';
 ///   * Successful sign‑in redirects to `/dashboard` and clears the navigation stack.
 ///
 /// The form fields are simple `TextField`s with controllers (`emailCtrl`, `passCtrl`).
-/// No validation is performed here – validation is handled in separate tickets.
+/// Validation rules for email and password are applied here:
+/// - Email must match a standard email pattern (e.g., user@example.com).
+/// - Password must be at least 8 characters, include a number and a special character.
+/// Errors are shown via SnackBar messages before attempting sign‑in.
 
 
 /// Authentication entry screen presenting FinWise branding, email/password
@@ -127,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () async {
                     final email = emailCtrl.text.trim();
                     final pass = passCtrl.text;
-                    if (email.isEmpty || pass.isEmpty) return;
+                    if (!_validateLogin(email, pass)) return;
 
                     Navigator.of(dialogCtx).pop();
                     _performPasswordSignIn(email, pass);
