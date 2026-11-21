@@ -10,6 +10,8 @@ import '../theme/app_theme.dart';
 import '../widgets/add_edit_transaction_dialog.dart';
 import '../widgets/transaction_card.dart';
 
+/// Primary FinWise dashboard layout presenting the header, balance overview,
+/// quick actions, insights, and transaction feed (AIO-85).
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
