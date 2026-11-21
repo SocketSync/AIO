@@ -56,6 +56,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
+  /// Validates required transaction fields (`amount > 0`, non-empty
+  /// description, and selected category) and surfaces inline `Form` errors or
+  /// SnackBar error messages before persisting via `TransactionProvider`.
   Future<void> _handleSave() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
@@ -64,6 +67,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter an amount greater than 0'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedCategoryId.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a transaction category'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -363,6 +376,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 hintText: '0.00',
                                 border: InputBorder.none,
                               ),
+                              // Inline validation: require a positive numeric amount (> 0).
                               validator: (val) {
                                 if (val == null || val.trim().isEmpty) return 'Enter amount';
                                 final n = double.tryParse(val.trim());
@@ -397,6 +411,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
+                        // Inline validation: require a non-empty transaction description.
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) return 'Please provide a description';
                           return null;
