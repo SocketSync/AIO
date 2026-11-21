@@ -14,9 +14,12 @@ import 'screens/add_transaction_screen.dart';
 import 'screens/receipt_scanner_screen.dart';
 import 'screens/profile_screen.dart';
 
-/// Application entry point that initializes Flutter bindings, optional
-/// Supabase services, and the persisted auth session before launching
-/// [FinWiseApp] (AIO-67).
+/// Application entry point (AIO-67, AIO-79).
+///
+/// Bootstraps Flutter widget bindings, initializes the Supabase client via
+/// [SupabaseService.initialize] when compile-time `--dart-define` credentials
+/// are configured (without hardcoding secrets), restores any persisted auth
+/// session, and mounts [FinWiseApp].
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

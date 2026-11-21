@@ -1,6 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Singleton wrapper managing Supabase client initialization and connectivity.
+///
+/// Reads public client credentials exclusively from compile-time
+/// `--dart-define` values (`SUPABASE_URL` and `SUPABASE_ANON_KEY`) so secrets
+/// are never hardcoded in source control.
 class SupabaseService {
   static final SupabaseService _instance = SupabaseService._internal();
   factory SupabaseService() => _instance;
@@ -11,12 +16,16 @@ class SupabaseService {
 
   bool _isInitialized = false;
 
+  /// Compile-time Supabase project URL provided via `--dart-define=SUPABASE_URL=...`.
   static String? get supabaseUrl =>
       _configuredUrl.isEmpty ? null : _configuredUrl;
 
+  /// Compile-time Supabase public anon key provided via `--dart-define=SUPABASE_ANON_KEY=...`.
   static String? get supabaseAnonKey =>
       _configuredAnonKey.isEmpty ? null : _configuredAnonKey;
 
+  /// Returns `true` only when both `SUPABASE_URL` and `SUPABASE_ANON_KEY` are
+  /// provided at compile time and do not contain template placeholders.
   static bool get isConfigured {
     final url = supabaseUrl;
     final key = supabaseAnonKey;
@@ -28,8 +37,11 @@ class SupabaseService {
         !key.contains('your-supabase');
   }
 
+  /// Whether [initialize] has successfully initialized [Supabase.instance].
   bool get isInitialized => _isInitialized;
 
+  /// Returns the active [SupabaseClient] once initialized, or `null` when
+  /// credentials are unconfigured or initialization was deferred.
   SupabaseClient? get client {
     if (_isInitialized) {
       try {
@@ -42,7 +54,8 @@ class SupabaseService {
     return null;
   }
 
-  /// Initialize Supabase connection
+  /// Initialize the Supabase client via [Supabase.initialize] using
+  /// compile-time environment credentials; safely no-ops if unconfigured.
   Future<bool> initialize() async {
     if (!isConfigured) {
       debugPrint('[SupabaseService] Configuration not found or using placeholders in .env.');
