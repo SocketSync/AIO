@@ -39,6 +39,7 @@ class AppTheme {
         secondary: AppColors.secondary,
         surface: AppColors.surface,
       ),
+      // Inter typography scale applied app-wide via GoogleFonts
       textTheme: GoogleFonts.interTextTheme(),
     );
   }
