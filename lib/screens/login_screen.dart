@@ -4,6 +4,8 @@ import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import 'register_screen.dart';
 
+/// Authentication entry screen presenting FinWise branding, email/password
+/// sign-in, Google sign-in, and navigation to account registration (AIO-70).
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
