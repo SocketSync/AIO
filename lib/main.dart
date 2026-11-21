@@ -258,6 +258,8 @@ class _FinWiseAppState extends State<FinWiseApp> {
     }
   }
 
+  /// Builds the root [MultiProvider] state container and [MaterialApp]
+  /// navigation tree (AIO-28: Flutter App Architecture & Global State).
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
