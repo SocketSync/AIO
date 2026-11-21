@@ -4,6 +4,11 @@ import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../theme/app_theme.dart';
 
+/// Modal dialog UI for creating or editing a transaction record.
+///
+/// Captures type toggle (Expense/Income), RM amount, description/title,
+/// category chips, date picker selection, and optional line-item details,
+/// invoking [onSave] with the validated values upon submission.
 class AddEditTransactionDialog extends StatefulWidget {
   final TransactionRecord? transactionToEdit;
   final Function({
