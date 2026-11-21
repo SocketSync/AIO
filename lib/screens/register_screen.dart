@@ -1012,4 +1012,5 @@ class _CriteriaPill extends StatelessWidget {
   }
 }
 
+// AIO-73: Registration screen UI structure.
 // AIO-74: Registration form validation verified.
