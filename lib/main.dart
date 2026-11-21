@@ -14,6 +14,12 @@ import 'screens/add_transaction_screen.dart';
 import 'screens/receipt_scanner_screen.dart';
 import 'screens/profile_screen.dart';
 
+/// Application entry point.
+///
+/// Bootstraps Flutter widget bindings, initializes the Supabase client via
+/// [SupabaseService.initialize] when compile-time `--dart-define` credentials
+/// are configured (without hardcoding secrets), restores any persisted auth
+/// session, and mounts [FinWiseApp].
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
