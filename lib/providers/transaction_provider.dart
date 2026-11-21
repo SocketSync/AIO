@@ -3,6 +3,8 @@ import 'package:uuid/uuid.dart';
 import '../models/transaction_record.dart';
 import '../services/database_service.dart';
 
+/// Global [ChangeNotifier] state manager for user transactions, filters,
+/// balance aggregations, and AI receipt insights (AIO-28).
 class TransactionProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
   final _uuid = const Uuid();
