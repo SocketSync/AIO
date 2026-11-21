@@ -14,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isSigningIn = false;
 
+  /// Triggers the Google Sign-In flow via [AuthService] and falls back to the
+  /// account picker when device sign-in is unavailable (AIO-72).
   void _handleGoogleSignInTapped() async {
     setState(() => _isSigningIn = true);
     final user = await AuthService().signInWithGoogle();
