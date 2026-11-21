@@ -1,8 +1,11 @@
+/// Direction of a financial transaction in FinWise (AIO-77).
 enum TransactionType {
   income,
   expense,
 }
 
+/// Domain model representing a categorized income or expense transaction,
+/// including Supabase/JSON serialization and itemized receipt data (AIO-77).
 class TransactionRecord {
   final String id;
   final String userId;
