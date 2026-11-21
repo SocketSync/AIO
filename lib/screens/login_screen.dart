@@ -3,6 +3,22 @@ import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../widgets/google_logo.dart';
 import 'register_screen.dart';
+/// LoginScreen – authentication entry point.
+///
+/// This screen presents three authentication options:
+///   1. **Google Sign‑In** – launches the Google OAuth flow via `AuthService.signInWithGoogle()`.
+///   2. **Email/Password Sign‑In** – opens a modal dialog (`_showPasswordLoginDialog`) where users enter
+///      their email address and password.
+///   3. **Password Recovery** – the dialog contains a “Forgot password?” link (not shown in the UI yet);
+///      the intended flow is to navigate to a dedicated password‑recovery screen (to be added later).
+///
+/// Navigation links:
+///   * Tapping “Register” (via the `RegisterScreen` import) pushes the registration route.
+///   * Successful sign‑in redirects to `/dashboard` and clears the navigation stack.
+///
+/// The form fields are simple `TextField`s with controllers (`emailCtrl`, `passCtrl`).
+/// No validation is performed here – validation is handled in separate tickets.
+
 
 /// Authentication entry screen presenting FinWise branding, email/password
 /// sign-in, Google sign-in, and navigation to account registration (AIO-70).
