@@ -14,6 +14,9 @@ import 'screens/add_transaction_screen.dart';
 import 'screens/receipt_scanner_screen.dart';
 import 'screens/profile_screen.dart';
 
+/// Application entry point that initializes Flutter bindings, optional
+/// Supabase services, and the persisted auth session before launching
+/// [FinWiseApp] (AIO-67).
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -31,6 +34,8 @@ void main() async {
   runApp(const FinWiseApp());
 }
 
+/// Root widget for the FinWise application configuring providers, theme,
+/// and route guards (AIO-67).
 class FinWiseApp extends StatefulWidget {
   final String initialRoute;
   final AuthService? authService;
