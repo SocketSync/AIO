@@ -4,6 +4,8 @@ import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../theme/app_theme.dart';
 
+/// Expandable card widget rendering a single [TransactionRecord] with category
+/// styling, itemized receipt details, and edit/delete actions (AIO-34).
 class TransactionCard extends StatefulWidget {
   final TransactionRecord transaction;
   final VoidCallback onEdit;

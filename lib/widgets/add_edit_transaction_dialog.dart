@@ -4,6 +4,11 @@ import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../theme/app_theme.dart';
 
+/// Modal dialog UI for creating or editing a transaction record.
+///
+/// Captures type toggle (Expense/Income), RM amount, description/title,
+/// category chips, date picker selection, and optional line-item details,
+/// invoking [onSave] with the validated values upon submission.
 class AddEditTransactionDialog extends StatefulWidget {
   final TransactionRecord? transactionToEdit;
   final Function({
@@ -86,8 +91,11 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
     }
   }
 
+  /// Validates form fields (`amount > 0`, non-empty title, and selected
+  /// category) prior to invoking `widget.onSave` and closing the dialog.
   void _handleSubmit() {
     if (_formKey.currentState?.validate() ?? false) {
+      if (_selectedCategoryId.trim().isEmpty) return;
       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
       final rawDetails = _notesController.text.trim();
       final categoryName = CategoryItem.getById(_selectedCategoryId).name;
@@ -300,6 +308,7 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
+                    // Inline validation: require a positive numeric amount (> 0).
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return 'Please enter an amount';
                       final n = double.tryParse(val.trim());
@@ -331,6 +340,7 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
+                    // Inline validation: require a non-empty transaction title.
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) return 'Please enter a description';
                       return null;

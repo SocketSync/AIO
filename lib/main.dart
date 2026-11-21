@@ -14,6 +14,9 @@ import 'screens/add_transaction_screen.dart';
 import 'screens/receipt_scanner_screen.dart';
 import 'screens/profile_screen.dart';
 
+/// Application entry point that initializes Flutter bindings, optional
+/// Supabase services, and the persisted auth session before launching
+/// [FinWiseApp] (AIO-67).
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -31,6 +34,8 @@ void main() async {
   runApp(const FinWiseApp());
 }
 
+/// Root widget for the FinWise application configuring providers, theme,
+/// and route guards (AIO-67).
 class FinWiseApp extends StatefulWidget {
   final String initialRoute;
   final AuthService? authService;
@@ -45,6 +50,13 @@ class FinWiseApp extends StatefulWidget {
     this.savingsGoalProvider,
   });
 
+  /// Named routes that require an authenticated user session.
+  ///
+  /// Public routes (`/`, `/login`, `/register`, `/forgot-password`) remain
+  /// accessible without an active session, whereas protected routes
+  /// (`/dashboard`, `/budgets`, `/goals`, `/insights`, `/simulator`,
+  /// `/profile`, `/add-transaction`, `/receipt-scanner`, `/scanner`) are
+  /// guarded in [_FinWiseAppState._onGenerateRoute].
   static const Set<String> protectedRoutes = {
     '/dashboard',
     '/budgets',
@@ -172,6 +184,11 @@ class _FinWiseAppState extends State<FinWiseApp> {
     }
   }
 
+  /// Central named-route generator with authentication route guarding.
+  ///
+  /// Redirects unauthenticated requests targeting [FinWiseApp.protectedRoutes]
+  /// to `/login`, resolves authenticated tab and modal destinations, and falls
+  /// back to `/dashboard` (when authenticated) or `/login` for unknown routes.
   Route<dynamic> _onGenerateRoute(RouteSettings settings) {
     final String routeName = settings.name ?? '/';
     final bool isAuthenticated = _authService.isAuthenticated;
@@ -258,6 +275,8 @@ class _FinWiseAppState extends State<FinWiseApp> {
     }
   }
 
+  /// Builds the root [MultiProvider] state container and [MaterialApp]
+  /// navigation tree (AIO-28: Flutter App Architecture & Global State).
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
