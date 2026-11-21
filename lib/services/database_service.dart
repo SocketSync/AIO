@@ -5,6 +5,13 @@ import '../models/transaction_record.dart';
 import '../models/user_profile.dart';
 import 'supabase_service.dart';
 
+/// Data access layer coordinating Supabase PostgreSQL queries and a per-user
+/// in-memory cache fallback.
+///
+/// Interacts with `public.profiles`, `public.categories`, and
+/// `public.transactions`, relying on Supabase Row-Level Security (`auth.uid()`)
+/// for owner-scoped isolation and falling back to partitioned in-memory maps
+/// when Supabase credentials are not configured.
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;

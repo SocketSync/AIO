@@ -2,6 +2,17 @@
 -- FinWise: Comprehensive Security Audit & CIA Triad Hardening (PostgreSQL / Supabase)
 -- Execute this script in your Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/vcxxsffdsznmqtpghrss/sql/new
+--
+-- Security Hardening Expectations:
+--   * Confidentiality (RLS): drops permissive legacy policies and enforces
+--     strict owner-only access on public.profiles (auth.uid() = id) and
+--     public.transactions (auth.uid() = user_id), plus scoped read-only demo
+--     profile & demo UUID transaction policies and public SELECT on categories.
+--   * Integrity (Constraints): enforces NOT NULL and CHECK constraints on
+--     transaction amounts, non-empty titles, valid types, and profile budgets.
+--   * Availability & Safe Purge: protects the shared demo profile via
+--     trg_protect_demo_profile and restricts SECURITY DEFINER
+--     public.delete_user_account() execution strictly to authenticated users.
 -- ==============================================================================
 
 -- ==============================================================================
