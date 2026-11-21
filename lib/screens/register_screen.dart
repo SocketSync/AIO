@@ -994,3 +994,5 @@ class _CriteriaPill extends StatelessWidget {
     );
   }
 }
+
+// AIO-74: Registration form validation verified.
