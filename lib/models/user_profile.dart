@@ -85,3 +85,5 @@ class UserProfile {
   }
 }
 
+
+// AIO-76: User profile model.
