@@ -615,3 +615,5 @@ class _ForecastChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+
+// AIO-122: AI insights prompt dock.
