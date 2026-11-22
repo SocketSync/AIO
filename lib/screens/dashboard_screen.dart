@@ -827,3 +827,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
+// AIO-145: Web portal dashboard layout.
