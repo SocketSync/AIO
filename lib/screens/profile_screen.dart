@@ -218,6 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  /// AIO-131: Displays a restriction dialog blocking destructive actions on the demo account.
   void _showDemoRestrictedDialog() {
     showDialog(
       context: context,
@@ -250,6 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// AIO-131: Prompts the user for explicit confirmation before executing protected account deletion.
   Future<void> _confirmDeleteProfile() async {
     final auth = Provider.of<AuthService>(context, listen: false);
     final user = auth.currentUser;
