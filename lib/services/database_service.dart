@@ -384,7 +384,7 @@ class DatabaseService {
     return List.from(list);
   }
 
-  /// Validate and sanitize transaction inputs (Integrity: numeric amount, valid title)
+  /// AIO-139: Validate and sanitize user-provided transaction text fields (strip angle brackets, trim, and cap length).
   TransactionRecord _validateAndSanitizeTransaction(TransactionRecord tx) {
     if (tx.amount.isNaN || tx.amount.isInfinite || tx.amount <= 0 || tx.amount > 1000000000) {
       throw ArgumentError('Transaction amount must be a positive number greater than 0.');
