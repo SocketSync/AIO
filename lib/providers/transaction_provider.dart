@@ -123,18 +123,21 @@ class TransactionProvider extends ChangeNotifier {
     return sorted.take(5).toList();
   }
 
+  /// AIO-106: Computes total cash-flow inflow across all income transactions.
   double get totalIncome {
     return _transactions
         .where((t) => t.type == TransactionType.income)
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
+  /// AIO-106: Computes total cash-flow outflow across all expense transactions.
   double get totalExpense {
     return _transactions
         .where((t) => t.type == TransactionType.expense)
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
+  /// AIO-106: Computes net monthly cash-flow balance (totalIncome minus totalExpense).
   double get totalBalance => totalIncome - totalExpense;
 
   Map<String, double> get categoryExpenses {
