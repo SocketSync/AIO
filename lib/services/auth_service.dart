@@ -767,7 +767,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Delete Account & Profile permanently from Supabase & local state
+  /// AIO-131: Delete Account & Profile permanently from Supabase and local session state.
   Future<bool> deleteAccount() async {
     final user = _currentUser;
     if (user == null) return false;
