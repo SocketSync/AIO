@@ -141,7 +141,7 @@ class AuthService extends ChangeNotifier {
     ),
   };
 
-  /// Check and restore any persisted Supabase session on app startup.
+  /// AIO-93: Check and restore any persisted Supabase session on app startup.
   Future<bool> initializeSession() async {
     _initSupabaseAuthListener();
 
@@ -227,7 +227,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Process auth state transitions from Supabase or tests.
+  /// AIO-93: Process auth state transitions from Supabase or tests.
   void handleAuthStateChange(AuthChangeEvent event, Session? session) {
     if (_isSigningOut && event == AuthChangeEvent.signedOut) {
       return;

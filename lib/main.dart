@@ -161,6 +161,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
     _savingsGoalProvider.clear();
   }
 
+  /// AIO-93: Handles session lifecycle transitions (sign-in, sign-out, expiry) and resets caches.
   void _handleSessionEvent(AuthSessionEvent event) {
     if (!mounted) return;
     switch (event) {
@@ -304,6 +305,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
   }
 }
 
+/// AIO-93: Startup session gate that restores persisted auth state before routing.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
