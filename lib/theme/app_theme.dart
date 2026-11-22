@@ -39,6 +39,8 @@ class AppColors {
 }
 
 /// Material 3 theme configuration for the FinWise application.
+///
+/// Centralizes reusable control styling and color/typography choices for screens.
 class AppTheme {
   /// Default border radius shared across FinWise text inputs (AIO-66).
   static const double inputBorderRadius = 12.0;
