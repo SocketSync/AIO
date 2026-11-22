@@ -343,6 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 1. Total Balance Summary Card
+                      // AIO-95: Renders the dashboard net balance card with total balance, monthly income, and expense summary.
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
