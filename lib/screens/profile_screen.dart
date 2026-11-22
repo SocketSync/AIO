@@ -165,6 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// AIO-128: Validates and persists updated profile and financial preference settings (currency & monthly budget).
   Future<void> _saveChanges() async {
     final auth = Provider.of<AuthService>(context, listen: false);
 
@@ -550,6 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
 
             // SECTION 4: Financial Preferences
+            // AIO-128: Currency selector and monthly budget preference editing controls.
             _buildSectionCard(
               title: 'Financial Preferences',
               subtitle: 'Currency and budget limits',
