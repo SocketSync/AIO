@@ -381,3 +381,5 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   }
 }
 
+
+// AIO-119: Receipt scan timeout handling.
