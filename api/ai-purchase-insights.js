@@ -167,6 +167,10 @@ function buildDeterministicInsight(recentTransactions = [], currentReceipt = nul
   };
 }
 
+/**
+ * AIO-121: Serverless API endpoint (`POST /api/ai-purchase-insights`) that analyzes
+ * recent transactions and receipt line items via Gemini to generate personalized spending insights.
+ */
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
