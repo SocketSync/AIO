@@ -1,7 +1,9 @@
+/** AIO-117: Sanitizes extracted string fields from Gemini Vision receipt JSON responses. */
 function sanitizeText(str, maxLen = 100) {
   return String(str == null ? '' : str).replace(/[<>]/g, '').trim().slice(0, maxLen);
 }
 
+/** AIO-117: Validates and normalizes extracted receipt line items against the expected JSON schema. */
 function normalizeReceiptItems(rawReceiptItems, rawLegacyItems, fallbackCategory = 'Other Expenses', fallbackAmount = 0) {
   const normalized = [];
 
