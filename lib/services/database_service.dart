@@ -327,7 +327,7 @@ class DatabaseService {
     return updated;
   }
 
-  /// Update user monthly budget
+  /// AIO-128: Update user monthly budget preference in Supabase and local profile cache.
   Future<UserProfile> updateMonthlyBudget(String userId, double newBudget) async {
     final client = _supabaseService.client;
     if (client != null) {
