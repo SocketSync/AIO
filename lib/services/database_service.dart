@@ -12,6 +12,9 @@ import 'supabase_service.dart';
 /// `public.transactions`, relying on Supabase Row-Level Security (`auth.uid()`)
 /// for owner-scoped isolation and falling back to partitioned in-memory maps
 /// when Supabase credentials are not configured.
+///
+/// Provides transaction read, create, update, and delete operations through
+/// the configured backend or local cache.
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
