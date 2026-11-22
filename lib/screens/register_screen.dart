@@ -26,7 +26,7 @@ import 'login_screen.dart';
 /// - No functional changes are made; only documentation comments are added.
 
 /// to describe the layout and navigation flow.
-
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
@@ -317,6 +317,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  /// AIO-89: Validates registration inputs and creates an email/password account via [AuthService].
   void _handleFormSubmit() async {
     if (!_termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
