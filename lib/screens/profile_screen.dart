@@ -735,3 +735,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+// AIO-126: Profile customization UI.
