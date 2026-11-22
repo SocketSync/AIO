@@ -170,6 +170,7 @@ FinWise/
 ---
 
 ## 🚀 Setup & Installation Instructions
+<!-- AIO-142: Local environment prerequisites, installation steps, and server startup documentation -->
 
 ### Prerequisites
 - **Flutter SDK**: `>= 3.2.0` (`flutter --version`)
