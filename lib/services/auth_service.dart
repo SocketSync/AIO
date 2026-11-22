@@ -333,7 +333,7 @@ class AuthService extends ChangeNotifier {
     return _uuid.v5(Namespace.url.value, 'mailto:${email.trim().toLowerCase()}');
   }
 
-  /// Sign in with Email and Password (verifies against database and registry)
+  /// AIO-89: Sign in with Email and Password (verifies against local registry and Supabase backend).
   Future<AppUser?> signInWithPassword({
     required String email,
     required String password,
@@ -415,7 +415,7 @@ class AuthService extends ChangeNotifier {
     throw Exception(_errorMessage);
   }
 
-  /// Register new user with Email and Password
+  /// AIO-89: Register a new user with Email and Password and initialize their authenticated profile.
   Future<AppUser?> signUpWithEmail({
     required String email,
     required String password,

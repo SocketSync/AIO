@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _showGoogleAccountPicker();
   }
 
+  /// AIO-89: Opens the email/password login dialog and validates non-empty credentials.
   void _showPasswordLoginDialog() {
     final emailCtrl = TextEditingController();
     final passCtrl = TextEditingController();
@@ -148,6 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+
+  /// AIO-89: Validates non-empty email and password inputs before attempting sign-in.
+  bool _validateLogin(String email, String password) =>
+      email.isNotEmpty && password.isNotEmpty;
 
   void _performPasswordSignIn(String email, String password) async {
     setState(() => _isSigningIn = true);
