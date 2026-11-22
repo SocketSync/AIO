@@ -486,6 +486,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 20),
 
                       // 2. Quick Action Buttons Grid (Budgeting, AI Insights, Forecast, Simulator)
+                      // AIO-96: Displays quick action tiles for core financial modules and navigation shortcuts.
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -764,6 +765,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// AIO-96: Builds an individual dashboard quick action button card.
   Widget _buildQuickActionButton({
     required String title,
     required String subtitle,
