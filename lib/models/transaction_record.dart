@@ -100,6 +100,7 @@ class TransactionRecord {
     return map;
   }
 
+  /// AIO-104: Formats structured receipt line-item maps into human-readable details text.
   static String formatReceiptItemsToDetails(List<Map<String, dynamic>> items) {
     if (items.isEmpty) return '';
     return items
@@ -112,6 +113,7 @@ class TransactionRecord {
         .join('\n');
   }
 
+  /// AIO-104: Parses multi-line receipt details text into structured line-item maps.
   static List<Map<String, dynamic>> parseDetailsText(
     String? text, {
     String category = 'General',
