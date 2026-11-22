@@ -1266,6 +1266,7 @@
     }
 
     // Export User Financial Data
+    // AIO-129: Serializes user profile metadata and transactions into a downloadable JSON export file.
     function exportUserData() {
       const email = (localStorage.getItem("finwise_user_email") || "").toLowerCase();
       const storageKey = "finwise_transactions_" + email.replace(/[^a-z0-9]/g, "_");
