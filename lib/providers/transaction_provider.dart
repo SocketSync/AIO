@@ -302,3 +302,5 @@ class TransactionProvider extends ChangeNotifier {
   }
 }
 
+
+// AIO-98: Transaction type filters.
