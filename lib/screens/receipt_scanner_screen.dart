@@ -16,6 +16,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   int _selectedMode = 0; // 0: Receipt, 1: Invoice, 2: Utility Bill
   bool _isConfirming = false;
 
+  /// AIO-116: Confirms Gemini Vision extracted receipt data and logs the itemized expense transaction.
   void _confirmAndLogExpense() async {
     setState(() => _isConfirming = true);
     final provider = Provider.of<TransactionProvider>(context, listen: false);
