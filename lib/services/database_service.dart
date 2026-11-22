@@ -352,7 +352,7 @@ class DatabaseService {
     throw Exception('User profile not found');
   }
 
-  /// READ: Fetch transactions from Supabase (or local store)
+  /// AIO-134: READ — Fetch transactions from Supabase with automatic local in-memory cache fallback for offline access.
   Future<List<TransactionRecord>> getTransactions(String userId) async {
     final client = _supabaseService.client;
     if (client != null) {
