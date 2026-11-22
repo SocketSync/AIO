@@ -661,3 +661,5 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
+
+// AIO-141: Automated widget and unit tests.
