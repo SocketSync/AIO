@@ -120,5 +120,22 @@ class AppTheme {
       inputDecorationTheme: inputDecorationTheme,
     );
   }
-}
 
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.dark,
+        primary: AppColors.primaryFixedDim,
+        secondary: AppColors.secondaryFixed,
+        surface: const Color(0xFF0F172A),
+      ),
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
+      inputDecorationTheme: inputDecorationTheme,
+    );
+  }
+}
