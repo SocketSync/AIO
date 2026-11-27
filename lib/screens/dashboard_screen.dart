@@ -828,4 +828,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// AIO-145: Web portal dashboard layout.
+// AIO-105: Expandable transaction details card UI.

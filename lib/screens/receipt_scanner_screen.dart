@@ -381,3 +381,5 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   }
 }
 
+
+// AIO-114: Receipt image capture flow.
