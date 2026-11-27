@@ -302,7 +302,8 @@ class AuthService extends ChangeNotifier {
     final fullName = (meta['full_name'] as String?) ??
         (meta['name'] as String?) ??
         formatNameFromEmail(user.email ?? 'Google User');
-    final avatar = (meta['avatar_url'] as String?) ?? (meta['picture'] as String?);
+    final avatar =
+        (meta['avatar_url'] as String?) ?? (meta['picture'] as String?);
     final provider = (user.appMetadata['provider'] as String?) ?? 'google';
 
     _currentUser = AppUser(
@@ -330,7 +331,8 @@ class AuthService extends ChangeNotifier {
 
   /// Deterministic valid UUID v5 from email
   static String generateUserUuid(String email) {
-    return _uuid.v5(Namespace.url.value, 'mailto:${email.trim().toLowerCase()}');
+    return _uuid.v5(
+        Namespace.url.value, 'mailto:${email.trim().toLowerCase()}');
   }
 
   /// Sign in with Email and Password (verifies against database and registry)
@@ -398,7 +400,8 @@ class AuthService extends ChangeNotifier {
             notifyListeners();
             throw Exception(_errorMessage);
           } else if (e.message.toLowerCase().contains('confirm')) {
-            _errorMessage = 'Please confirm your email address or check your inbox.';
+            _errorMessage =
+                'Please confirm your email address or check your inbox.';
             _isLoading = false;
             notifyListeners();
             throw Exception(_errorMessage);
@@ -433,7 +436,8 @@ class AuthService extends ChangeNotifier {
     if (_registeredAccounts.containsKey(cleanEmail)) {
       _isLoading = false;
       notifyListeners();
-      throw Exception('An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
+      throw Exception(
+          'An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
     }
 
     // 1. Attempt Supabase Auth SignUp
@@ -441,19 +445,18 @@ class AuthService extends ChangeNotifier {
       final client = SupabaseService().client;
       if (client != null) {
         try {
-          final response = await client.auth
-              .signUp(
-                email: cleanEmail,
-                password: password,
-                data: {'full_name': cleanName},
-              )
-              .timeout(const Duration(seconds: 10));
+          final response = await client.auth.signUp(
+            email: cleanEmail,
+            password: password,
+            data: {'full_name': cleanName},
+          ).timeout(const Duration(seconds: 10));
           if (response.user != null) {
             final identities = response.user!.identities;
             if (identities != null && identities.isEmpty) {
               _isLoading = false;
               notifyListeners();
-              throw Exception('An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
+              throw Exception(
+                  'An account with this email is already registered. If you forgot your password, please reset it on the login screen.');
             }
             final sbUserId = response.user!.id;
             await client.from('profiles').upsert({
@@ -466,7 +469,8 @@ class AuthService extends ChangeNotifier {
           }
         } catch (e) {
           debugPrint('[AuthService] Supabase signUp notice: $e');
-          if (e.toString().contains('already registered') || e.toString().contains('already exists')) {
+          if (e.toString().contains('already registered') ||
+              e.toString().contains('already exists')) {
             _isLoading = false;
             notifyListeners();
             rethrow;
@@ -572,7 +576,8 @@ class AuthService extends ChangeNotifier {
           _currentUser = AppUser(
             id: userId,
             email: googleUser.email,
-            displayName: googleUser.displayName ?? formatNameFromEmail(googleUser.email),
+            displayName:
+                googleUser.displayName ?? formatNameFromEmail(googleUser.email),
             photoUrl: googleUser.photoUrl,
             provider: 'google',
           );
@@ -598,7 +603,8 @@ class AuthService extends ChangeNotifier {
     required String name,
     String? password,
   }) async {
-    return signUpWithEmail(email: email, password: password ?? 'FinWise2026!', name: name);
+    return signUpWithEmail(
+        email: email, password: password ?? 'FinWise2026!', name: name);
   }
 
   /// Send password reset link to user's email
@@ -676,6 +682,11 @@ class AuthService extends ChangeNotifier {
     String? occupation,
     String? currency,
     double? monthlyBudget,
+    String? username,
+    String? bio,
+    String? themePreference,
+    bool? aiInsightsEnabled,
+    bool? overspendingAlertsEnabled,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -689,7 +700,8 @@ class AuthService extends ChangeNotifier {
       if (cleanOldEmail == 'demo@finwise-app.xyz' ||
           cleanNewEmail == 'demo@finwise-app.xyz' ||
           _currentUser?.id == '00000000-0000-4000-8000-000000000001') {
-        _errorMessage = 'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
+        _errorMessage =
+            'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -699,7 +711,8 @@ class AuthService extends ChangeNotifier {
       if (newPassword != null && newPassword.isNotEmpty) {
         if (_registeredAccounts.containsKey(cleanOldEmail)) {
           final account = _registeredAccounts[cleanOldEmail]!;
-          if (currentPassword == null || hashPassword(currentPassword) != account.passwordHash) {
+          if (currentPassword == null ||
+              hashPassword(currentPassword) != account.passwordHash) {
             _errorMessage = 'Current password does not match database record.';
             _isLoading = false;
             notifyListeners();
@@ -708,17 +721,22 @@ class AuthService extends ChangeNotifier {
         }
       }
 
-      final existingAcc = _registeredAccounts[cleanNewEmail] ?? _registeredAccounts[cleanOldEmail];
+      final existingAcc = _registeredAccounts[cleanNewEmail] ??
+          _registeredAccounts[cleanOldEmail];
       final currentPassHash = (newPassword != null && newPassword.isNotEmpty)
           ? hashPassword(newPassword)
           : (existingAcc?.passwordHash ?? hashPassword('FinWise2026!'));
 
-      if (cleanNewEmail != cleanOldEmail && _registeredAccounts.containsKey(cleanOldEmail)) {
+      if (cleanNewEmail != cleanOldEmail &&
+          _registeredAccounts.containsKey(cleanOldEmail)) {
         _registeredAccounts.remove(cleanOldEmail);
       }
 
-      final newPhoto = photoUrl ?? _currentUser?.photoUrl ?? existingAcc?.photoUrl;
-      final userId = _currentUser?.id ?? existingAcc?.id ?? generateUserUuid(cleanNewEmail);
+      final newPhoto =
+          photoUrl ?? _currentUser?.photoUrl ?? existingAcc?.photoUrl;
+      final userId = _currentUser?.id ??
+          existingAcc?.id ??
+          generateUserUuid(cleanNewEmail);
 
       _registeredAccounts[cleanNewEmail] = RegisteredAccount(
         id: userId,
@@ -751,6 +769,11 @@ class AuthService extends ChangeNotifier {
           avatarUrl: newPhoto,
           currency: currency ?? 'RM',
           monthlyBudget: monthlyBudget ?? 2500.00,
+          username: username,
+          bio: bio,
+          themePreference: themePreference,
+          aiInsightsEnabled: aiInsightsEnabled,
+          overspendingAlertsEnabled: overspendingAlertsEnabled,
         );
       } catch (e) {
         debugPrint('[AuthService] Profile database sync notice: $e');
@@ -777,7 +800,8 @@ class AuthService extends ChangeNotifier {
     // Security Check: Demo account is strictly prohibited from deletion
     if (cleanEmail == 'demo@finwise-app.xyz' ||
         user.id == '00000000-0000-4000-8000-000000000001') {
-      _errorMessage = 'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
+      _errorMessage =
+          'On demo account, you cannot alter or delete profile info. The demo account is strictly reserved for testing input and output transactions, while profile information is strictly prohibited to edit or delete.';
       notifyListeners();
       return false;
     }
@@ -792,13 +816,28 @@ class AuthService extends ChangeNotifier {
         if (client != null) {
           try {
             // 1. Try secure PostgreSQL RPC function delete_user_account
-            await client.rpc('delete_user_account').timeout(const Duration(seconds: 10));
+            await client
+                .rpc('delete_user_account')
+                .timeout(const Duration(seconds: 10));
           } catch (rpcErr) {
-            debugPrint('[AuthService] RPC delete notice: $rpcErr. Falling back to direct RLS deletion.');
+            debugPrint(
+                '[AuthService] RPC delete notice: $rpcErr. Falling back to direct RLS deletion.');
             // 2. Direct RLS table deletion
-            await client.from('transactions').delete().eq('user_id', user.id).timeout(const Duration(seconds: 10));
-            await client.from('savings_goals').delete().eq('user_id', user.id).timeout(const Duration(seconds: 10));
-            await client.from('profiles').delete().eq('id', user.id).timeout(const Duration(seconds: 10));
+            await client
+                .from('transactions')
+                .delete()
+                .eq('user_id', user.id)
+                .timeout(const Duration(seconds: 10));
+            await client
+                .from('savings_goals')
+                .delete()
+                .eq('user_id', user.id)
+                .timeout(const Duration(seconds: 10));
+            await client
+                .from('profiles')
+                .delete()
+                .eq('id', user.id)
+                .timeout(const Duration(seconds: 10));
           }
         }
       }
@@ -863,3 +902,4 @@ class AuthService extends ChangeNotifier {
 // AIO-84: Local/demo mode session handling.
 
 // AIO-137: Database integrity constraints.
+// AIO-91: Password reset email flow.
