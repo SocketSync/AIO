@@ -12,6 +12,9 @@ import 'supabase_service.dart';
 /// `public.transactions`, relying on Supabase Row-Level Security (`auth.uid()`)
 /// for owner-scoped isolation and falling back to partitioned in-memory maps
 /// when Supabase credentials are not configured.
+///
+/// Provides transaction read, create, update, and delete operations through
+/// the configured backend or local cache.
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
@@ -110,8 +113,18 @@ class DatabaseService {
           date: now.subtract(const Duration(days: 5)),
           notes: 'Nike Sneakers and Colgate Toothpaste',
           receiptItems: const [
-            {'item_name': 'Nike Sneakers', 'price': 199.00, 'quantity': 1, 'category': 'Clothing'},
-            {'item_name': 'Colgate Toothpaste', 'price': 12.50, 'quantity': 2, 'category': 'Groceries'},
+            {
+              'item_name': 'Nike Sneakers',
+              'price': 199.00,
+              'quantity': 1,
+              'category': 'Clothing'
+            },
+            {
+              'item_name': 'Colgate Toothpaste',
+              'price': 12.50,
+              'quantity': 2,
+              'category': 'Groceries'
+            },
           ],
         ),
         TransactionRecord(
@@ -124,9 +137,24 @@ class DatabaseService {
           date: now.subtract(const Duration(days: 1)),
           notes: 'Fresh vegetables, milk, eggs, pantry staples',
           receiptItems: const [
-            {'item_name': 'Organic Bananas', 'price': 14.50, 'quantity': 1, 'category': 'Groceries'},
-            {'item_name': 'Farm Fresh Milk 2L', 'price': 18.90, 'quantity': 2, 'category': 'Groceries'},
-            {'item_name': 'Artisan Sourdough Loaf', 'price': 16.00, 'quantity': 1, 'category': 'Groceries'},
+            {
+              'item_name': 'Organic Bananas',
+              'price': 14.50,
+              'quantity': 1,
+              'category': 'Groceries'
+            },
+            {
+              'item_name': 'Farm Fresh Milk 2L',
+              'price': 18.90,
+              'quantity': 2,
+              'category': 'Groceries'
+            },
+            {
+              'item_name': 'Artisan Sourdough Loaf',
+              'price': 16.00,
+              'quantity': 1,
+              'category': 'Groceries'
+            },
           ],
         ),
         TransactionRecord(
@@ -139,8 +167,18 @@ class DatabaseService {
           date: now.subtract(const Duration(days: 2)),
           notes: 'Casual running shoes & socks',
           receiptItems: const [
-            {'item_name': 'Casual Running Shoes', 'price': 169.00, 'quantity': 1, 'category': 'Clothing'},
-            {'item_name': 'Athletic Crew Socks', 'price': 20.00, 'quantity': 1, 'category': 'Clothing'},
+            {
+              'item_name': 'Casual Running Shoes',
+              'price': 169.00,
+              'quantity': 1,
+              'category': 'Clothing'
+            },
+            {
+              'item_name': 'Athletic Crew Socks',
+              'price': 20.00,
+              'quantity': 1,
+              'category': 'Clothing'
+            },
           ],
         ),
         TransactionRecord(
@@ -153,8 +191,18 @@ class DatabaseService {
           date: now.subtract(const Duration(hours: 4)),
           notes: 'Americano & sourdough toast',
           receiptItems: const [
-            {'item_name': 'Americano Coffee', 'price': 12.00, 'quantity': 1, 'category': 'Food & Dining'},
-            {'item_name': 'Sourdough Toast', 'price': 16.00, 'quantity': 1, 'category': 'Food & Dining'},
+            {
+              'item_name': 'Americano Coffee',
+              'price': 12.00,
+              'quantity': 1,
+              'category': 'Food & Dining'
+            },
+            {
+              'item_name': 'Sourdough Toast',
+              'price': 16.00,
+              'quantity': 1,
+              'category': 'Food & Dining'
+            },
           ],
         ),
         TransactionRecord(
@@ -278,6 +326,11 @@ class DatabaseService {
     String? avatarUrl,
     String? currency,
     double? monthlyBudget,
+    String? username,
+    String? bio,
+    String? themePreference,
+    bool? aiInsightsEnabled,
+    bool? overspendingAlertsEnabled,
   }) async {
     final client = _supabaseService.client;
     if (client != null) {
@@ -288,11 +341,18 @@ class DatabaseService {
           if (avatarUrl != null) 'avatar_url': avatarUrl,
           if (currency != null) 'currency': currency,
           if (monthlyBudget != null) 'monthly_budget': monthlyBudget,
+          if (phone != null) 'phone': phone,
+          if (occupation != null) 'occupation': occupation,
+          if (username != null) 'username': username,
+          if (bio != null) 'bio': bio,
+          if (themePreference != null) 'theme_preference': themePreference,
+          if (aiInsightsEnabled != null)
+            'ai_insights_enabled': aiInsightsEnabled,
+          if (overspendingAlertsEnabled != null)
+            'overspending_alerts_enabled': overspendingAlertsEnabled,
         };
-        await client
-            .from('profiles')
-            .upsert({'id': userId, ...updateMap})
-            .timeout(const Duration(seconds: 10));
+        await client.from('profiles').upsert(
+            {'id': userId, ...updateMap}).timeout(const Duration(seconds: 10));
       } catch (e) {
         debugPrint('[DatabaseService] Supabase full profile update notice: $e');
       }
@@ -309,6 +369,12 @@ class DatabaseService {
             avatarUrl: avatarUrl ?? current.avatarUrl,
             currency: currency ?? current.currency,
             monthlyBudget: monthlyBudget ?? current.monthlyBudget,
+            username: username ?? current.username,
+            bio: bio ?? current.bio,
+            themePreference: themePreference ?? current.themePreference,
+            aiInsightsEnabled: aiInsightsEnabled ?? current.aiInsightsEnabled,
+            overspendingAlertsEnabled:
+                overspendingAlertsEnabled ?? current.overspendingAlertsEnabled,
           )
         : UserProfile(
             id: userId,
@@ -319,13 +385,19 @@ class DatabaseService {
             avatarUrl: avatarUrl,
             currency: currency ?? 'RM',
             monthlyBudget: monthlyBudget ?? 2500.00,
+            username: username ?? '',
+            bio: bio ?? '',
+            themePreference: themePreference ?? 'system',
+            aiInsightsEnabled: aiInsightsEnabled ?? true,
+            overspendingAlertsEnabled: overspendingAlertsEnabled ?? true,
           );
     _userProfiles[userId] = updated;
     return updated;
   }
 
   /// Update user monthly budget
-  Future<UserProfile> updateMonthlyBudget(String userId, double newBudget) async {
+  Future<UserProfile> updateMonthlyBudget(
+      String userId, double newBudget) async {
     final client = _supabaseService.client;
     if (client != null) {
       try {
@@ -363,7 +435,8 @@ class DatabaseService {
 
         if (response.isNotEmpty) {
           final items = response
-              .map((item) => TransactionRecord.fromJson(item as Map<String, dynamic>))
+              .map((item) =>
+                  TransactionRecord.fromJson(item as Map<String, dynamic>))
               .toList();
           _userTransactions[userId] = items;
           return items;
@@ -383,22 +456,31 @@ class DatabaseService {
 
   /// Validate and sanitize transaction inputs (Integrity: numeric amount, valid title)
   TransactionRecord _validateAndSanitizeTransaction(TransactionRecord tx) {
-    if (tx.amount.isNaN || tx.amount.isInfinite || tx.amount <= 0 || tx.amount > 1000000000) {
-      throw ArgumentError('Transaction amount must be a positive number greater than 0.');
+    if (tx.amount.isNaN ||
+        tx.amount.isInfinite ||
+        tx.amount <= 0 ||
+        tx.amount > 1000000000) {
+      throw ArgumentError(
+          'Transaction amount must be a positive number greater than 0.');
     }
-    final sanitizedTitle = tx.title.trim().replaceAll('<', '').replaceAll('>', '');
+    final sanitizedTitle =
+        tx.title.trim().replaceAll('<', '').replaceAll('>', '');
     if (sanitizedTitle.isEmpty) {
       throw ArgumentError('Transaction title cannot be empty.');
     }
-    final sanitizedNotes = tx.notes?.trim().replaceAll('<', '').replaceAll('>', '');
+    final sanitizedNotes =
+        tx.notes?.trim().replaceAll('<', '').replaceAll('>', '');
     return tx.copyWith(
-      title: sanitizedTitle.length > 150 ? sanitizedTitle.substring(0, 150) : sanitizedTitle,
+      title: sanitizedTitle.length > 150
+          ? sanitizedTitle.substring(0, 150)
+          : sanitizedTitle,
       notes: sanitizedNotes,
     );
   }
 
   /// CREATE: Insert transaction into Supabase (or local store)
-  Future<TransactionRecord> createTransaction(TransactionRecord rawTransaction) async {
+  Future<TransactionRecord> createTransaction(
+      TransactionRecord rawTransaction) async {
     final transaction = _validateAndSanitizeTransaction(rawTransaction);
     final client = _supabaseService.client;
     final userId = transaction.userId;
@@ -417,7 +499,8 @@ class DatabaseService {
               .single()
               .timeout(const Duration(seconds: 10));
         } catch (colErr) {
-          if (colErr.toString().contains('receipt_items') || colErr.toString().contains('PGRST204')) {
+          if (colErr.toString().contains('receipt_items') ||
+              colErr.toString().contains('PGRST204')) {
             payload.remove('receipt_items');
             inserted = await client
                 .from('transactions')
@@ -433,10 +516,12 @@ class DatabaseService {
         final created = TransactionRecord.fromJson(inserted);
         // Force Cloud Refresh immediately to confirm database state
         await getTransactions(userId);
-        debugPrint('[DatabaseService:Supabase] Created transaction: ${created.title} - RM ${created.amount}');
+        debugPrint(
+            '[DatabaseService:Supabase] Created transaction: ${created.title} - RM ${created.amount}');
         return created;
       } catch (e) {
-        debugPrint('[DatabaseService] Supabase create error: $e, using local storage.');
+        debugPrint(
+            '[DatabaseService] Supabase create error: $e, using local storage.');
       }
     }
 
@@ -450,12 +535,14 @@ class DatabaseService {
     }
 
     _userTransactions[userId]!.insert(0, newRecord);
-    debugPrint('[DatabaseService:Local] Created transaction: ${newRecord.title} - RM ${newRecord.amount}');
+    debugPrint(
+        '[DatabaseService:Local] Created transaction: ${newRecord.title} - RM ${newRecord.amount}');
     return newRecord;
   }
 
   /// UPDATE: Modify existing transaction
-  Future<TransactionRecord> updateTransaction(TransactionRecord rawUpdatedRecord) async {
+  Future<TransactionRecord> updateTransaction(
+      TransactionRecord rawUpdatedRecord) async {
     final updatedRecord = _validateAndSanitizeTransaction(rawUpdatedRecord);
     final client = _supabaseService.client;
     final userId = updatedRecord.userId;
@@ -472,7 +559,8 @@ class DatabaseService {
               .eq('user_id', userId)
               .timeout(const Duration(seconds: 10));
         } catch (colErr) {
-          if (colErr.toString().contains('receipt_items') || colErr.toString().contains('PGRST204')) {
+          if (colErr.toString().contains('receipt_items') ||
+              colErr.toString().contains('PGRST204')) {
             payload.remove('receipt_items');
             await client
                 .from('transactions')
@@ -484,7 +572,8 @@ class DatabaseService {
             rethrow;
           }
         }
-        debugPrint('[DatabaseService:Supabase] Updated transaction: ${updatedRecord.title}');
+        debugPrint(
+            '[DatabaseService:Supabase] Updated transaction: ${updatedRecord.title}');
         // Force Cloud Refresh immediately
         await getTransactions(userId);
       } catch (e) {
@@ -499,7 +588,8 @@ class DatabaseService {
       final index = list.indexWhere((t) => t.id == updatedRecord.id);
       if (index != -1) {
         list[index] = updatedRecord.copyWith(updatedAt: DateTime.now());
-        debugPrint('[DatabaseService:Local] Updated transaction: ${updatedRecord.title}');
+        debugPrint(
+            '[DatabaseService:Local] Updated transaction: ${updatedRecord.title}');
         return list[index];
       }
     }
@@ -517,7 +607,8 @@ class DatabaseService {
             .eq('id', transactionId)
             .eq('user_id', userId)
             .timeout(const Duration(seconds: 10));
-        debugPrint('[DatabaseService:Supabase] Deleted transaction: $transactionId');
+        debugPrint(
+            '[DatabaseService:Supabase] Deleted transaction: $transactionId');
         // Force Cloud Refresh immediately
         await getTransactions(userId);
       } catch (e) {
@@ -532,7 +623,8 @@ class DatabaseService {
       final initialCount = list.length;
       list.removeWhere((t) => t.id == transactionId);
       final removed = list.length < initialCount;
-      debugPrint('[DatabaseService:Local] Deleted transaction ($transactionId): $removed');
+      debugPrint(
+          '[DatabaseService:Local] Deleted transaction ($transactionId): $removed');
       return removed;
     }
     return false;
