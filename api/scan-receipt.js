@@ -48,6 +48,11 @@ function normalizeReceiptItems(rawReceiptItems, rawLegacyItems, fallbackCategory
   return normalized.slice(0, 40);
 }
 
+/**
+ * AIO-38: Vercel Serverless backend endpoint (`POST /api/scan-receipt`) that
+ * submits receipt images to the Gemini Vision API fallback chain with a 9s
+ * timeout, normalizes extracted items, and falls back to preset data if needed.
+ */
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Describes a transaction category's label, appearance, and income/expense type.
 class CategoryItem {
   final String id;
   final String name;
