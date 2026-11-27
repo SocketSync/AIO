@@ -939,15 +939,41 @@
       const model = computeForecastModel();
 
       if (lower.includes("habit") || lower.includes("purchase") || lower.includes("recent")) {
+        const recentKeyParts = allTransactions
+          .filter(t => t.type !== "income")
+          .slice(0, 15)
+          .map(t => `${t.id || ""}:${t.date || ""}:${t.amount || 0}:${(t.receipt_items || []).length}`)
+          .join("|");
+        const habitCacheKey = `finwise_habit_insight_${getActiveEmail() || "default"}`;
+        const fingerprint = `${curr}::${recentKeyParts}`;
+        try {
+          const cachedRaw = localStorage.getItem(habitCacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && cached.fingerprint === fingerprint && cached.insight) {
+              if (engineEl) engineEl.textContent = cached.engine || "Cached AI";
+              if (textEl) textEl.textContent = cached.insight;
+              return;
+            }
+          }
+        } catch (_) {}
+
         try {
           const res = await fetch("/api/ai-purchase-insights", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ recentTransactions: allTransactions.slice(0, 30), currency: curr })
+            body: JSON.stringify({ recentTransactions: allTransactions.slice(0, 15), currency: curr })
           });
           if (res.ok) {
             const data = await res.json();
             if (data && data.insight) {
+              try {
+                localStorage.setItem(habitCacheKey, JSON.stringify({
+                  fingerprint,
+                  engine: data.engine || "Gemini AI",
+                  insight: data.insight
+                }));
+              } catch (_) {}
               if (engineEl) engineEl.textContent = data.engine || "Gemini AI";
               if (textEl) textEl.textContent = data.insight;
               return;

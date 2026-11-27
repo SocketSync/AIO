@@ -1,3 +1,27 @@
+const crypto = require('crypto');
+
+const scanCache = new Map();
+const SCAN_CACHE_TTL_MS = 10 * 60 * 1000;
+const SCAN_CACHE_MAX = 50;
+
+function getCachedScan(key) {
+  const entry = scanCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > SCAN_CACHE_TTL_MS) {
+    scanCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCachedScan(key, value) {
+  if (scanCache.size >= SCAN_CACHE_MAX) {
+    const oldestKey = scanCache.keys().next().value;
+    if (oldestKey !== undefined) scanCache.delete(oldestKey);
+  }
+  scanCache.set(key, { value, ts: Date.now() });
+}
+
 function sanitizeText(str, maxLen = 100) {
   return String(str == null ? '' : str).replace(/[<>]/g, '').trim().slice(0, maxLen);
 }
@@ -48,10 +72,39 @@ function normalizeReceiptItems(rawReceiptItems, rawLegacyItems, fallbackCategory
   return normalized.slice(0, 40);
 }
 
+function buildScanResultPayload(parsed, engine, scanDuration) {
+  const parsedAmount = Math.abs(parseFloat(parsed.amount)) || 0.00;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const resolvedCategory = parsed.category || "Food & Dining";
+  const normalizedReceiptItems = normalizeReceiptItems(
+    parsed.receipt_items,
+    parsed.items,
+    resolvedCategory,
+    parsedAmount
+  );
+  const summaryItems = normalizedReceiptItems.length > 0
+    ? normalizedReceiptItems.slice(0, 6).map(i => i.item_name)
+    : (Array.isArray(parsed.items) ? parsed.items.slice(0, 6).map(i => sanitizeText(i, 80)) : []);
+
+  return {
+    success: true,
+    engine,
+    scanDuration,
+    merchant: sanitizeText(parsed.merchant || "Store Purchase", 120),
+    amount: parsedAmount,
+    currency: sanitizeText(parsed.currency || "MYR", 10),
+    category: sanitizeText(resolvedCategory, 60),
+    date: (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr,
+    receipt_items: normalizedReceiptItems,
+    items: summaryItems
+  };
+}
+
 /**
  * AIO-38: Vercel Serverless backend endpoint (`POST /api/scan-receipt`) that
- * submits receipt images to the Gemini Vision API fallback chain with a 9s
- * timeout, normalizes extracted items, and falls back to preset data if needed.
+ * submits receipt images to the Gemini Vision API fallback chain (with OpenAI
+ * Vision failover and SHA-256 deduplication cache), normalizes extracted items,
+ * and falls back to preset data if needed.
  */
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -71,6 +124,8 @@ module.exports = async (req, res) => {
 
     const geminiKey = (apiKey || process.env.GEMINI_API_KEY || '').trim();
     const hasValidKey = geminiKey && !geminiKey.includes('your-gemini') && geminiKey.length > 20;
+    const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+    const hasValidOpenAiKey = openaiKey && !openaiKey.includes('your-openai') && openaiKey.length > 20;
 
     // Validate payload size — reject images larger than 10MB base64 (~7.5MB raw)
     if (imageBase64 && imageBase64.length > 10 * 1024 * 1024) {
@@ -80,142 +135,173 @@ module.exports = async (req, res) => {
       });
     }
 
-    if (hasValidKey && imageBase64) {
+    if ((hasValidKey || hasValidOpenAiKey) && imageBase64) {
       try {
         const cleanBase64 = imageBase64.replace(/^data:[^;]+;base64,/, '');
-        const prompt = `You are a financial receipt parser for the FinWise personal finance app.
-Extract the merchant, total amount, date, and overall category from this receipt, invoice, or bill image/PDF.
-Crucially, extract every individual item purchased on the receipt into a \`receipt_items\` array. Each item must have \`item_name\`, \`price\`, \`quantity\`, and \`category\`. If it is not a receipt with items (e.g., a simple bank transfer screenshot), return an empty array \`[]\` for \`receipt_items\`.
+        const effectiveMimeType = (mimeType && mimeType.includes('pdf')) ? 'application/pdf' : (mimeType || 'image/jpeg');
+        const cacheKey = crypto.createHash('sha256').update(`${effectiveMimeType}:${cleanBase64}`).digest('hex');
+        const cached = getCachedScan(cacheKey);
+        if (cached) {
+          return res.status(200).json({ ...cached, cached: true });
+        }
 
-IMPORTANT RULES:
-1. Extract the EXACT merchant/store name as printed on the receipt.
-2. Extract the FINAL TOTAL amount paid (after tax, service charge, discounts, rounding).
-   - For Malaysian receipts: look for "TOTAL", "JUMLAH", "GRAND TOTAL", or "AMOUNT DUE" — NOT subtotal.
-   - Include SST (Sales & Service Tax), service charge, and rounding adjustments in the total.
-3. Determine the best overall category from: "Food & Dining", "Groceries", "Shopping", "Transportation", "Entertainment", "Bills & Utilities", "Health & Wellness", "Education & Self-Care", "Salary", "Freelance", "Investments", "Other Expenses".
-4. Extract the transaction date from the receipt. Use YYYY-MM-DD format.
-5. Extract EVERY line item into \`receipt_items\` as objects with keys:
-   - \`item_name\`: string (exact item description)
-   - \`price\`: number (unit or line price as a positive float, e.g. 12.50)
-   - \`quantity\`: integer (default 1 if omitted on receipt)
-   - \`category\`: string (e.g. "Clothing", "Groceries", "Food & Dining", "Electronics", "Home & Living", "Health & Wellness", "Transportation")
-6. Also provide \`items\`: an array of brief item name strings summarizing key items (up to 6).
+        const prompt = `Extract receipt/invoice JSON for FinWise:
+1. Exact merchant/store name.
+2. Final total amount paid (look for TOTAL/JUMLAH/GRAND TOTAL/AMOUNT DUE, including tax & rounding).
+3. Category from: "Food & Dining", "Groceries", "Shopping", "Transportation", "Entertainment", "Bills & Utilities", "Health & Wellness", "Education & Self-Care", "Salary", "Freelance", "Investments", "Other Expenses".
+4. Date in YYYY-MM-DD format.
+5. "receipt_items": array of { "item_name", "price", "quantity", "category" } (use [] for simple transfers).
+6. "items": up to 6 brief item strings.
+Return pure JSON only with keys: merchant, amount, currency, category, date, receipt_items, items.`;
 
-Return ONLY a valid JSON object with these EXACT keys:
-{
-  "merchant": "Exact merchant/store name",
-  "amount": 224.00,
-  "currency": "MYR",
-  "category": "Shopping",
-  "date": "YYYY-MM-DD",
-  "receipt_items": [
-    { "item_name": "Nike Sneakers", "price": 199.00, "quantity": 1, "category": "Clothing" },
-    { "item_name": "Colgate Toothpaste", "price": 12.50, "quantity": 2, "category": "Groceries" }
-  ],
-  "items": ["Nike Sneakers", "Colgate Toothpaste"]
-}
-Strictly return pure JSON only.`;
-
-        const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
+        const modelsToTry = ['gemini-2.5-flash-lite', 'gemini-2.0-flash-lite', 'gemini-2.5-flash', 'gemini-flash-latest'];
         let lastError = null;
         let lastErrorStatus = null;
+        let geminiInvalidKey = false;
+        let geminiRateLimitStatus = null;
 
-        for (const modelName of modelsToTry) {
+        if (hasValidKey) {
+          for (const modelName of modelsToTry) {
+            try {
+              const controller = new AbortController();
+              const fetchTimeout = setTimeout(() => controller.abort(), 9000);
+
+              const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
+
+              const geminiRes = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
+                body: JSON.stringify({
+                  contents: [{
+                    parts: [
+                      { text: prompt },
+                      {
+                        inlineData: {
+                          mimeType: effectiveMimeType,
+                          data: cleanBase64
+                        }
+                      }
+                    ]
+                  }],
+                  generationConfig: {
+                    temperature: 0.1,
+                    maxOutputTokens: 700,
+                    response_mime_type: "application/json"
+                  }
+                })
+              });
+
+              clearTimeout(fetchTimeout);
+
+              if (geminiRes.ok) {
+                const geminiData = await geminiRes.json();
+                let rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                  const parsed = JSON.parse(jsonMatch[0]);
+                  const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
+                  const payload = buildScanResultPayload(parsed, `gemini (${modelName})`, scanDuration);
+                  setCachedScan(cacheKey, payload);
+                  return res.status(200).json(payload);
+                }
+              } else {
+                const errBody = await geminiRes.text();
+                console.warn(`Gemini model ${modelName} error (${geminiRes.status}):`, errBody);
+                lastError = `${geminiRes.status}: ${errBody}`;
+                lastErrorStatus = geminiRes.status;
+
+                if (geminiRes.status === 400 && errBody.includes('API_KEY_INVALID')) {
+                  geminiInvalidKey = true;
+                  break;
+                }
+                if (geminiRes.status === 403 || geminiRes.status === 429) {
+                  geminiRateLimitStatus = geminiRes.status;
+                  break;
+                }
+              }
+            } catch (modelErr) {
+              console.warn(`Gemini fetch error on ${modelName}:`, modelErr.message);
+              lastError = modelErr.message;
+            }
+          }
+        }
+
+        // Failover to OpenAI Vision for image payloads when Gemini is unconfigured, rate-limited, or failed
+        if (hasValidOpenAiKey && effectiveMimeType.startsWith('image/')) {
           try {
             const controller = new AbortController();
-            const fetchTimeout = setTimeout(() => controller.abort(), 9000);
-
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
-            const effectiveMimeType = (mimeType && mimeType.includes('pdf')) ? 'application/pdf' : (mimeType || 'image/jpeg');
-
-            const geminiRes = await fetch(endpoint, {
+            const openAiTimeout = setTimeout(() => controller.abort(), 9000);
+            const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${openaiKey}`
+              },
               signal: controller.signal,
               body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: prompt },
+                model: 'gpt-4o-mini',
+                temperature: 0.1,
+                max_tokens: 700,
+                response_format: { type: 'json_object' },
+                messages: [{
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: prompt },
                     {
-                      inlineData: {
-                        mimeType: effectiveMimeType,
-                        data: cleanBase64
+                      type: 'image_url',
+                      image_url: {
+                        url: `data:${effectiveMimeType};base64,${cleanBase64}`,
+                        detail: 'auto'
                       }
                     }
                   ]
-                }],
-                generationConfig: {
-                  temperature: 0.1,
-                  response_mime_type: "application/json"
-                }
+                }]
               })
             });
+            clearTimeout(openAiTimeout);
 
-            clearTimeout(fetchTimeout);
-
-            if (geminiRes.ok) {
-              const geminiData = await geminiRes.json();
-              let rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (openAiRes.ok) {
+              const openAiData = await openAiRes.json();
+              let rawText = openAiData?.choices?.[0]?.message?.content || '';
               rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
               const jsonMatch = rawText.match(/\{[\s\S]*\}/);
               if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
-                const parsedAmount = Math.abs(parseFloat(parsed.amount)) || 0.00;
-                const todayStr = new Date().toISOString().slice(0, 10);
                 const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
-                const resolvedCategory = parsed.category || "Food & Dining";
-                const normalizedReceiptItems = normalizeReceiptItems(
-                  parsed.receipt_items,
-                  parsed.items,
-                  resolvedCategory,
-                  parsedAmount
-                );
-                const summaryItems = normalizedReceiptItems.length > 0
-                  ? normalizedReceiptItems.slice(0, 6).map(i => i.item_name)
-                  : (Array.isArray(parsed.items) ? parsed.items.slice(0, 6).map(i => sanitizeText(i, 80)) : []);
-
-                return res.status(200).json({
-                  success: true,
-                  engine: `gemini (${modelName})`,
-                  scanDuration: scanDuration,
-                  merchant: sanitizeText(parsed.merchant || "Store Purchase", 120),
-                  amount: parsedAmount,
-                  currency: sanitizeText(parsed.currency || "MYR", 10),
-                  category: sanitizeText(resolvedCategory, 60),
-                  date: (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) ? parsed.date : todayStr,
-                  receipt_items: normalizedReceiptItems,
-                  items: summaryItems
-                });
+                const payload = buildScanResultPayload(parsed, 'openai (gpt-4o-mini)', scanDuration);
+                setCachedScan(cacheKey, payload);
+                return res.status(200).json(payload);
               }
             } else {
-              const errBody = await geminiRes.text();
-              console.warn(`Gemini model ${modelName} error (${geminiRes.status}):`, errBody);
-              lastError = `${geminiRes.status}: ${errBody}`;
-              lastErrorStatus = geminiRes.status;
-
-              if (geminiRes.status === 400 && errBody.includes('API_KEY_INVALID')) {
-                return res.status(200).json({
-                  success: false,
-                  invalidApiKey: true,
-                  message: "The Gemini API Key provided is invalid. Please verify it in Google AI Studio."
-                });
-              }
-              if (geminiRes.status === 403 || geminiRes.status === 429) {
-                const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
-                return res.status(200).json({
-                  success: false,
-                  rateLimited: true,
-                  scanDuration: scanDuration,
-                  message: geminiRes.status === 429
-                    ? "Gemini API rate limit reached. Please wait a moment and try again."
-                    : "Gemini API quota exceeded. Please check your Google AI Studio billing."
-                });
-              }
+              const errBody = await openAiRes.text();
+              lastErrorStatus = openAiRes.status;
+              lastError = `OpenAI ${openAiRes.status}: ${errBody}`;
             }
-          } catch (modelErr) {
-            console.warn(`Gemini fetch error on ${modelName}:`, modelErr.message);
-            lastError = modelErr.message;
+          } catch (openAiErr) {
+            console.warn('OpenAI Vision failover error:', openAiErr.message);
+            lastError = openAiErr.message;
           }
+        }
+
+        if (geminiInvalidKey) {
+          return res.status(200).json({
+            success: false,
+            invalidApiKey: true,
+            message: "The Gemini API Key provided is invalid. Please verify it in Google AI Studio."
+          });
+        }
+        if (geminiRateLimitStatus) {
+          const scanDuration = ((Date.now() - scanStart) / 1000).toFixed(1);
+          return res.status(200).json({
+            success: false,
+            rateLimited: true,
+            scanDuration: scanDuration,
+            message: geminiRateLimitStatus === 429
+              ? "Gemini API rate limit reached. Please wait a moment and try again."
+              : "Gemini API quota exceeded. Please check your Google AI Studio billing."
+          });
         }
 
         if (lastError) {
@@ -224,11 +310,11 @@ Strictly return pure JSON only.`;
             success: false,
             allModelsFailed: true,
             scanDuration: scanDuration,
-            message: `All Gemini models are currently unavailable. The receipt was not processed. Last error: ${lastErrorStatus || 'timeout'}`
+            message: `All AI vision models are currently unavailable. The receipt was not processed. Last error: ${lastErrorStatus || 'timeout'}`
           });
         }
-      } catch (geminiErr) {
-        console.error("Gemini Vision processing error:", geminiErr);
+      } catch (visionErr) {
+        console.error("Vision processing error:", visionErr);
       }
     }
 
@@ -349,7 +435,7 @@ Strictly return pure JSON only.`;
       success: true,
       engine: 'smart-receipt-ai (demo mode)',
       scanDuration: scanDuration,
-      needsApiKey: !hasValidKey,
+      needsApiKey: !hasValidKey && !hasValidOpenAiKey,
       merchant: pick.merchant,
       amount: pick.amount,
       category: pick.category,
