@@ -13,6 +13,7 @@ import '../services/profile_export_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/profile/danger_zone_modal.dart';
 import '../widgets/profile/data_privacy_section.dart';
+import '../widgets/responsive_page_container.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -157,7 +158,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Profile & Settings'),
+              title: const Text(
+                'Profile & Settings',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               actions: [
                 TextButton(
                   onPressed: profile.isDirty && !profile.isSaving
@@ -181,174 +186,190 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             body: profile.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : Form(
-                    key: _formKey,
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        _ProfileHeader(
-                          initial: initial,
-                          avatarUrl: profile.avatarUrl,
-                          avatarBytes: profile.avatarBytes,
-                          displayName: profile.displayName,
-                          email: profile.email,
-                          onPickAvatar: () async {
-                            final error = await profile.pickAvatar();
-                            if (error != null && mounted) {
-                              _showMessage(error, isError: true);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _SectionCard(
-                          title: 'Personal Details',
-                          icon: Icons.person,
+                : SafeArea(
+                    child: ResponsivePageContainer(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            TextFormField(
-                              controller: _nameController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Display Name'),
-                              onChanged: profile.setDisplayName,
-                              validator: (value) =>
-                                  value == null || value.trim().isEmpty
-                                      ? 'Display name is required'
-                                      : null,
+                            _ProfileHeader(
+                              initial: initial,
+                              avatarUrl: profile.avatarUrl,
+                              avatarBytes: profile.avatarBytes,
+                              displayName: profile.displayName,
+                              email: profile.email,
+                              onPickAvatar: () async {
+                                final error = await profile.pickAvatar();
+                                if (error != null && mounted) {
+                                  _showMessage(error, isError: true);
+                                }
+                              },
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _usernameController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Username'),
-                              onChanged: profile.setUsername,
-                              validator: (value) =>
-                                  RegExp(r'^[A-Za-z0-9_]{3,30}$')
-                                          .hasMatch(value?.trim() ?? '')
-                                      ? null
-                                      : '3-30 letters, numbers, or underscores',
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _bioController,
-                              maxLength: 160,
-                              maxLines: 3,
-                              decoration: const InputDecoration(
-                                labelText: 'Bio',
-                                alignLabelWithHint: true,
-                              ),
-                              onChanged: profile.setBio,
-                              validator: (value) => (value?.length ?? 0) <= 160
-                                  ? null
-                                  : 'Bio must be 160 characters or fewer',
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                  labelText: 'Phone Number'),
-                              onChanged: profile.setPhone,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _SectionCard(
-                          title: 'Account',
-                          icon: Icons.mail,
-                          children: [
-                            TextFormField(
-                              initialValue: profile.email,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                suffixIcon: Icon(Icons.lock_outline),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _SectionCard(
-                          title: 'Appearance & Notifications',
-                          icon: Icons.tune,
-                          children: [
-                            DropdownButtonFormField<String>(
-                              initialValue: profile.themePreference,
-                              decoration:
-                                  const InputDecoration(labelText: 'Theme'),
-                              items: const [
-                                DropdownMenuItem(
-                                    value: 'light', child: Text('Light')),
-                                DropdownMenuItem(
-                                    value: 'dark', child: Text('Dark')),
-                                DropdownMenuItem(
-                                    value: 'system', child: Text('System')),
+                            const SizedBox(height: AppTheme.sectionSpacing),
+                            _SectionCard(
+                              title: 'Personal Details',
+                              icon: Icons.person,
+                              children: [
+                                TextFormField(
+                                  controller: _nameController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Display Name'),
+                                  onChanged: profile.setDisplayName,
+                                  validator: (value) =>
+                                      value == null || value.trim().isEmpty
+                                          ? 'Display name is required'
+                                          : null,
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _usernameController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Username'),
+                                  onChanged: profile.setUsername,
+                                  validator: (value) =>
+                                      RegExp(r'^[A-Za-z0-9_]{3,30}$')
+                                              .hasMatch(value?.trim() ?? '')
+                                          ? null
+                                          : '3-30 letters, numbers, or underscores',
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _bioController,
+                                  maxLength: 160,
+                                  maxLines: 3,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Bio',
+                                    alignLabelWithHint: true,
+                                  ),
+                                  onChanged: profile.setBio,
+                                  validator: (value) =>
+                                      (value?.length ?? 0) <= 160
+                                          ? null
+                                          : 'Bio must be 160 characters or fewer',
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Phone Number'),
+                                  onChanged: profile.setPhone,
+                                ),
                               ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  profile.setThemePreference(value);
-                                }
-                              },
                             ),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: const Text('AI Spending Insights'),
-                              value: profile.aiInsightsEnabled,
-                              onChanged: profile.setAiInsightsEnabled,
-                            ),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: const Text('Overspending Alerts'),
-                              value: profile.overspendingAlertsEnabled,
-                              onChanged: profile.setOverspendingAlertsEnabled,
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: profile.currency,
-                              decoration:
-                                  const InputDecoration(labelText: 'Currency'),
-                              items: const [
-                                DropdownMenuItem(
-                                    value: 'RM', child: Text('RM')),
-                                DropdownMenuItem(
-                                    value: 'USD', child: Text('USD')),
-                                DropdownMenuItem(
-                                    value: 'SGD', child: Text('SGD')),
-                                DropdownMenuItem(
-                                    value: 'EUR', child: Text('EUR')),
-                                DropdownMenuItem(
-                                    value: 'GBP', child: Text('GBP')),
+                            const SizedBox(height: AppTheme.sectionSpacing),
+                            _SectionCard(
+                              title: 'Account',
+                              icon: Icons.mail,
+                              children: [
+                                TextFormField(
+                                  initialValue: profile.email,
+                                  readOnly: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Email',
+                                    suffixIcon: Icon(Icons.lock_outline),
+                                  ),
+                                ),
                               ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  profile.setCurrency(value);
-                                }
-                              },
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _budgetController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              decoration: const InputDecoration(
-                                  labelText: 'Monthly Budget'),
-                              onChanged: (value) {
-                                final budget = double.tryParse(value);
-                                if (budget != null) {
-                                  profile.setMonthlyBudget(budget);
-                                }
-                              },
+                            const SizedBox(height: AppTheme.sectionSpacing),
+                            _SectionCard(
+                              title: 'Appearance & Notifications',
+                              icon: Icons.tune,
+                              children: [
+                                DropdownButtonFormField<String>(
+                                  initialValue: profile.themePreference,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Theme'),
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'light', child: Text('Light')),
+                                    DropdownMenuItem(
+                                        value: 'dark', child: Text('Dark')),
+                                    DropdownMenuItem(
+                                        value: 'system', child: Text('System')),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      profile.setThemePreference(value);
+                                    }
+                                  },
+                                ),
+                                SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text(
+                                    'AI Spending Insights',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  value: profile.aiInsightsEnabled,
+                                  onChanged: profile.setAiInsightsEnabled,
+                                ),
+                                SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text(
+                                    'Overspending Alerts',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  value: profile.overspendingAlertsEnabled,
+                                  onChanged:
+                                      profile.setOverspendingAlertsEnabled,
+                                ),
+                                const SizedBox(height: 8),
+                                DropdownButtonFormField<String>(
+                                  initialValue: profile.currency,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Currency'),
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'RM', child: Text('RM')),
+                                    DropdownMenuItem(
+                                        value: 'USD', child: Text('USD')),
+                                    DropdownMenuItem(
+                                        value: 'SGD', child: Text('SGD')),
+                                    DropdownMenuItem(
+                                        value: 'EUR', child: Text('EUR')),
+                                    DropdownMenuItem(
+                                        value: 'GBP', child: Text('GBP')),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      profile.setCurrency(value);
+                                    }
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _budgetController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  decoration: const InputDecoration(
+                                      labelText: 'Monthly Budget'),
+                                  onChanged: (value) {
+                                    final budget = double.tryParse(value);
+                                    if (budget != null) {
+                                      profile.setMonthlyBudget(budget);
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: AppTheme.sectionSpacing),
+                            DataPrivacySection(
+                              isExporting: _isExporting,
+                              onExport: () => _export(profile),
+                            ),
+                            const SizedBox(height: AppTheme.sectionSpacing),
+                            _DangerZone(onDelete: _deleteAccount),
+                            const SizedBox(height: 80),
                           ],
                         ),
-                        const SizedBox(height: 16),
-                        DataPrivacySection(
-                          isExporting: _isExporting,
-                          onExport: () => _export(profile),
-                        ),
-                        const SizedBox(height: 16),
-                        _DangerZone(onDelete: _deleteAccount),
-                        const SizedBox(height: 32),
-                      ],
+                      ),
                     ),
                   ),
           );
@@ -404,7 +425,7 @@ class _ProfileHeader extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.cardPadding),
         child: Column(
           children: [
             Stack(
@@ -422,10 +443,21 @@ class _ProfileHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(displayName,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(email, style: const TextStyle(color: AppColors.textMuted)),
+            Text(
+              displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              email,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textMuted),
+            ),
           ],
         ),
       ),
@@ -449,7 +481,7 @@ class _SectionCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -457,9 +489,15 @@ class _SectionCard extends StatelessWidget {
               children: [
                 Icon(icon, color: AppColors.primary),
                 const SizedBox(width: 8),
-                Text(title,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
             const Divider(),
@@ -481,22 +519,56 @@ class _DangerZone extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.alertCoralSubtle,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
         border: Border.all(color: AppColors.alertCoral),
       ),
-      child: ListTile(
-        leading: const Icon(Icons.delete_forever, color: AppColors.alertCoral),
-        title: const Text(
-          'Danger Zone',
-          style: TextStyle(
-              color: AppColors.alertCoral, fontWeight: FontWeight.bold),
-        ),
-        subtitle: const Text('Permanently delete your account and data'),
-        trailing: FilledButton(
-          onPressed: onDelete,
-          style: FilledButton.styleFrom(backgroundColor: AppColors.alertCoral),
-          child: const Text('Delete Account'),
-        ),
+      padding: const EdgeInsets.all(AppTheme.cardPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.delete_forever, color: AppColors.alertCoral),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Danger Zone',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.alertCoral,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Permanently delete your account and data',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: onDelete,
+            style: FilledButton.styleFrom(backgroundColor: AppColors.alertCoral),
+            child: const Text(
+              'Delete Account',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

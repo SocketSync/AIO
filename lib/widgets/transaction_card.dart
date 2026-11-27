@@ -41,7 +41,7 @@ class _TransactionCardState extends State<TransactionCard> {
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
         border: Border.all(color: AppColors.borderNeutral),
         boxShadow: [
           BoxShadow(
@@ -52,12 +52,12 @@ class _TransactionCardState extends State<TransactionCard> {
         ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
         onTap: hasReceiptItems
             ? () => setState(() => _isExpanded = !_isExpanded)
             : null,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(AppTheme.cardPadding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -123,6 +123,8 @@ class _TransactionCardState extends State<TransactionCard> {
                           padding: const EdgeInsets.only(bottom: 1),
                           child: Text(
                             '${qty}x $itemName',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.onSurfaceVariant,
@@ -177,12 +179,19 @@ class _TransactionCardState extends State<TransactionCard> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    '${isIncome ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isIncome ? AppColors.secondary : AppColors.onSurface,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 120),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '${isIncome ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isIncome ? AppColors.secondary : AppColors.onSurface,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -211,6 +220,7 @@ class _TransactionCardState extends State<TransactionCard> {
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 20, color: AppColors.outline),
                 padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 onSelected: (val) {
                   if (val == 'edit') {

@@ -20,6 +20,7 @@ class AppColors {
   static const Color surface = Color(0xFFFAF8FF);
   static const Color surfaceContainerLow = Color(0xFFF4F3FA);
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const Color surfaceContainer = Color(0xFFEEEDF4);
   static const Color surfaceContainerHigh = Color(0xFFE9E7EF);
   static const Color surfaceContainerHighest = Color(0xFFE3E1E9);
 
@@ -44,6 +45,36 @@ class AppColors {
 class AppTheme {
   /// Default border radius shared across FinWise text inputs (AIO-66).
   static const double inputBorderRadius = 12.0;
+
+  /// Unified layout width and design tokens matching the Web Portal CSS variables.
+  static const double maxContentWidth = 640.0;
+  static const double pageHorizontalPadding = 16.0;
+  static const double pageVerticalPadding = 12.0;
+  static const double sectionSpacing = 16.0;
+  static const double cardPadding = 16.0;
+  static const double cardBorderRadius = 16.0;
+  static const double pillBorderRadius = 20.0;
+
+  /// Builds a standardized FinWise card decoration matching Web Portal cards.
+  static BoxDecoration cardDecoration({
+    Color color = AppColors.surfaceContainerLowest,
+    Color borderColor = AppColors.borderNeutral,
+    double borderRadius = cardBorderRadius,
+    double borderWidth = 1.0,
+  }) {
+    return BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(color: borderColor, width: borderWidth),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.02),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
 
   /// Centralized [InputDecorationTheme] for consistent form field styling (AIO-66).
   static InputDecorationTheme get inputDecorationTheme {
@@ -115,6 +146,20 @@ class AppTheme {
         secondary: AppColors.secondary,
         surface: AppColors.surface,
       ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceContainerLowest,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardBorderRadius),
+          side: const BorderSide(color: AppColors.borderNeutral),
+        ),
+      ),
       // Inter typography scale applied app-wide via GoogleFonts
       textTheme: GoogleFonts.interTextTheme(),
       inputDecorationTheme: inputDecorationTheme,
@@ -131,6 +176,20 @@ class AppTheme {
         primary: AppColors.primaryFixedDim,
         secondary: AppColors.secondaryFixed,
         surface: const Color(0xFF0F172A),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1E293B),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(cardBorderRadius),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        ),
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData(brightness: Brightness.dark).textTheme,

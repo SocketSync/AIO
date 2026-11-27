@@ -9,7 +9,7 @@
   <link rel="icon" type="image/jpeg" href="FinwiseBigLogo.jpeg">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     rel="stylesheet">
@@ -25,6 +25,7 @@
             "primary": "#00236f",
             "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
+            "primary-fixed-dim": "#B6C4FF",
             "secondary": "#006c49",
             "secondary-container": "#6cf8bb",
             "secondary-fixed": "#6ffbbe",
@@ -35,6 +36,8 @@
             "surface-container": "#eeedf4",
             "surface-container-high": "#e9e7ef",
             "surface-container-highest": "#e3e1e9",
+            "on-surface": "#1A1B21",
+            "on-surface-variant": "#444651",
             "text-primary": "#0F172A",
             "text-muted": "#64748B",
             "outline": "#757682",
@@ -48,10 +51,99 @@
     };
   </script>
   <style>
+    :root {
+      --fw-primary: #00236f;
+      --fw-primary-container: #1e3a8a;
+      --fw-secondary: #006c49;
+      --fw-surface: #faf8ff;
+      --fw-surface-low: #f4f3fa;
+      --fw-card-bg: #ffffff;
+      --fw-border: #E2E8F0;
+      --fw-text-primary: #0F172A;
+      --fw-text-muted: #64748B;
+      --fw-alert-coral: #EF4444;
+      --fw-shell-max-width: 640px;
+      --fw-card-radius: 16px;
+      --fw-input-radius: 12px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .fw-shell {
+      width: 100%;
+      max-width: var(--fw-shell-max-width);
+      margin: 0 auto;
+    }
+
+    .fw-bottom-nav {
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: var(--fw-shell-max-width);
+    }
+
+    .fw-month-input {
+      width: auto;
+      min-width: 148px;
+      padding-right: 4px;
+      white-space: nowrap;
+    }
+
+    .fw-month-input::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      margin-left: 8px;
+      padding: 2px;
+      opacity: 0.75;
+      flex-shrink: 0;
+    }
+
+    .fw-quick-services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.625rem;
+    }
+
+    .fw-service-card-wide {
+      grid-column: span 2 / span 2;
+    }
+
+    @media (min-width: 520px) {
+      .fw-quick-services-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .fw-service-card-wide {
+        grid-column: span 1 / span 1;
+      }
+    }
+
+    .fw-service-card {
+      box-sizing: border-box;
+      min-width: 0;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.875rem;
+      border-radius: 14px;
+      text-align: left;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .pb-safe {
@@ -66,33 +158,33 @@
 
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
-  <!-- Desktop Mobile Frame Wrapper -->
+  <!-- Unified Responsive Shell Wrapper -->
   <div
-    class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+    class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
-    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
-      <span class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
-        FinWise AI Intelligence
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
+      <span class="flex items-center gap-1.5 min-w-0 truncate">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse shrink-0"></span>
+        <span class="truncate">FinWise AI Intelligence</span>
       </span>
-      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
         <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
     <!-- Header -->
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
-      <div class="h-16 px-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
+      <div class="h-16 px-4 sm:px-5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
           <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo"
-            class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5">
-          <span class="font-bold text-lg text-primary tracking-tight">FinWise</span>
-          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold">AI
+            class="w-9 h-9 rounded-xl object-contain shadow-sm border border-slate-200 bg-white p-0.5 shrink-0">
+          <span class="font-bold text-lg text-primary tracking-tight truncate">FinWise</span>
+          <span class="px-1.5 py-0.5 bg-growth-mint-subtle text-secondary text-[10px] rounded-full font-bold shrink-0 whitespace-nowrap">AI
             SMART</span>
         </div>
-        <div class="flex items-center gap-1 relative">
+        <div class="flex items-center gap-1 relative shrink-0">
           <!-- Notification Bell -->
           <button aria-label="Notifications" onclick="showNotifModal()"
             class="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
@@ -148,36 +240,35 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-4">
+    <main class="flex-1 flex flex-col w-full px-4 sm:px-5 pt-4 space-y-4">
 
       <!-- Greeting & Period Context Bar -->
-      <div class="flex items-center justify-between">
-        <div class="flex flex-col min-w-0">
-          <div class="flex items-center gap-1">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-col min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-lg font-bold text-text-primary truncate" id="greetingName">Hello, Google User!</span>
-            <span class="text-[18px]">👋</span>
+            <span class="text-[18px] shrink-0">👋</span>
           </div>
           <p class="text-xs text-text-muted truncate" id="userSubtitle">Personal Financial Snapshot</p>
         </div>
         <!-- Month Selector Pill -->
-        <div
-          class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface shadow-sm shrink-0">
-          <span class="material-symbols-outlined text-[16px] text-primary-container">calendar_month</span>
+        <label for="selectedMonth"
+          class="inline-flex items-center gap-2 pl-3 pr-3.5 py-2 rounded-full bg-surface-container-high border border-border-neutral text-text-primary shadow-sm shrink-0 whitespace-nowrap cursor-pointer">
+          <span class="material-symbols-outlined text-[16px] text-primary-container shrink-0">calendar_month</span>
           <input id="selectedMonth" aria-label="Select month" type="month"
-            class="w-28 bg-transparent text-xs font-bold text-text-primary outline-none" onchange="renderDashboard()">
-          <span class="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
-        </div>
+            class="fw-month-input bg-transparent text-xs font-bold text-text-primary outline-none whitespace-nowrap cursor-pointer" onchange="renderDashboard()">
+        </label>
       </div>
 
       <!-- Main Balance Bento Card -->
       <div
-        class="relative overflow-hidden rounded-xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md">
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md">
         <div class="relative z-10 flex flex-col gap-3">
           <!-- Card Top Row -->
-          <div class="flex items-center justify-between text-white/80">
-            <span class="text-[11px] font-bold tracking-wider uppercase">Total Available Balance</span>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white">Active</span>
+          <div class="flex items-center justify-between gap-2 text-white/80">
+            <span class="text-[11px] font-bold tracking-wider uppercase truncate min-w-0">Total Available Balance</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white whitespace-nowrap">Active</span>
               <button aria-label="Toggle Balance Visibility"
                 class="text-white/80 hover:text-white transition-colors flex items-center" id="toggleBalanceBtn"
                 onclick="toggleBalance()">
@@ -187,29 +278,29 @@
           </div>
 
           <!-- Balance Metric Display -->
-          <div class="flex items-baseline gap-1.5">
-            <span id="balanceCurrency" class="text-lg font-bold text-white/90">RM</span>
-            <span class="text-3xl font-extrabold tracking-tight text-white" id="balanceValue">0.00</span>
+          <div class="flex flex-wrap items-baseline gap-1.5 min-w-0">
+            <span id="balanceCurrency" class="text-lg font-bold text-white/90 shrink-0">RM</span>
+            <span class="text-3xl font-extrabold tracking-tight text-white break-all" id="balanceValue">0.00</span>
           </div>
 
           <!-- Income vs Expenses Badges -->
-          <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="grid grid-cols-2 gap-2.5 pt-1">
             <!-- Income Pill -->
-            <div class="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+            <div class="flex items-center gap-2 p-2.5 rounded-xl bg-white/10 backdrop-blur-sm min-w-0">
               <div class="w-7 h-7 rounded-full bg-growth-mint-subtle flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-secondary text-[16px]">arrow_outward</span>
               </div>
-              <div class="flex flex-col min-w-0">
+              <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-[10px] text-white/70 truncate">Total Income</span>
                 <span id="incomeValue" class="text-xs font-bold text-white truncate">+RM 0.00</span>
               </div>
             </div>
             <!-- Expenses Pill -->
-            <div class="flex items-center gap-2 p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+            <div class="flex items-center gap-2 p-2.5 rounded-xl bg-white/10 backdrop-blur-sm min-w-0">
               <div class="w-7 h-7 rounded-full bg-alert-coral-subtle flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-alert-coral text-[16px]">call_received</span>
               </div>
-              <div class="flex flex-col min-w-0">
+              <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-[10px] text-white/70 truncate">Total Expenses</span>
                 <span id="expenseValue" class="text-xs font-bold text-white truncate">-RM 0.00</span>
               </div>
@@ -218,38 +309,63 @@
         </div>
       </div>
 
-      <!-- Quick Services (Mobile parity, desktop-responsive grid) -->
-      <section class="rounded-xl border border-border-neutral bg-white p-3 shadow-sm">
-        <div class="mb-2.5 flex items-center justify-between">
-          <h2 class="text-sm font-bold text-text-primary">Quick Services</h2>
-          <span class="text-[10px] font-medium text-text-muted">5 Core Modules</span>
+      <!-- Quick Services (Responsive icon-above-text grid without overflow) -->
+      <section class="rounded-2xl border border-border-neutral bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <h2 class="text-sm font-bold text-text-primary truncate">Quick Services</h2>
+          <span class="text-[11px] font-medium text-text-muted shrink-0 whitespace-nowrap">5 Core Modules</span>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          <button type="button" onclick="window.location.href='summary.html'" class="group flex min-h-16 items-center gap-2.5 rounded-xl bg-growth-mint-subtle/70 p-2.5 text-left hover:bg-growth-mint-subtle transition-colors">
-            <span class="material-symbols-outlined text-secondary text-[20px]">tune</span>
-            <span><span class="block text-xs font-bold text-text-primary">Budgeting</span><span class="block text-[9px] text-text-muted">Spending limits</span></span>
+        <div class="fw-quick-services-grid">
+          <button type="button" onclick="window.location.href='summary.html'" class="fw-service-card bg-growth-mint-subtle/70 hover:bg-growth-mint-subtle border border-emerald-200/60 transition-colors">
+            <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
+              <span class="material-symbols-outlined text-secondary text-[20px]">tune</span>
+            </span>
+            <span class="w-full min-w-0">
+              <span class="block text-xs font-bold text-text-primary leading-snug break-words">Budgeting</span>
+              <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Spending limits</span>
+            </span>
           </button>
-          <button type="button" onclick="window.location.href='summary.html#goals'" class="group flex min-h-16 items-center gap-2.5 rounded-xl bg-primary/10 p-2.5 text-left hover:bg-primary/15 transition-colors">
-            <span class="material-symbols-outlined text-primary text-[20px]">savings</span>
-            <span><span class="block text-xs font-bold text-text-primary">Savings Goals</span><span class="block text-[9px] text-text-muted">Track your targets</span></span>
+          <button type="button" onclick="window.location.href='summary.html#goals'" class="fw-service-card bg-primary/10 hover:bg-primary/15 border border-primary/15 transition-colors">
+            <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
+              <span class="material-symbols-outlined text-primary text-[20px]">savings</span>
+            </span>
+            <span class="w-full min-w-0">
+              <span class="block text-xs font-bold text-text-primary leading-snug break-words">Savings Goals</span>
+              <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Track your targets</span>
+            </span>
           </button>
-          <button type="button" onclick="showAiModal()" class="group flex min-h-16 items-center gap-2.5 rounded-xl bg-primary/10 p-2.5 text-left hover:bg-primary/15 transition-colors">
-            <span class="material-symbols-outlined text-primary text-[20px]">auto_awesome</span>
-            <span><span class="block text-xs font-bold text-text-primary">AI Insights</span><span class="block text-[9px] text-text-muted">Smart advice</span></span>
+          <button type="button" onclick="showAiModal()" class="fw-service-card bg-primary/10 hover:bg-primary/15 border border-primary/15 transition-colors">
+            <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
+              <span class="material-symbols-outlined text-primary text-[20px]">auto_awesome</span>
+            </span>
+            <span class="w-full min-w-0">
+              <span class="block text-xs font-bold text-text-primary leading-snug break-words">AI Insights</span>
+              <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Smart advice</span>
+            </span>
           </button>
-          <button type="button" onclick="window.location.href='summary.html'" class="group flex min-h-16 items-center gap-2.5 rounded-xl bg-violet-50 p-2.5 text-left hover:bg-violet-100 transition-colors">
-            <span class="material-symbols-outlined text-violet-700 text-[20px]">trending_up</span>
-            <span><span class="block text-xs font-bold text-text-primary">Forecast</span><span class="block text-[9px] text-text-muted">Future cash flows</span></span>
+          <button type="button" onclick="window.location.href='summary.html'" class="fw-service-card bg-violet-50 hover:bg-violet-100 border border-violet-200/70 transition-colors">
+            <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
+              <span class="material-symbols-outlined text-violet-700 text-[20px]">trending_up</span>
+            </span>
+            <span class="w-full min-w-0">
+              <span class="block text-xs font-bold text-text-primary leading-snug break-words">Forecast</span>
+              <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Future cash flows</span>
+            </span>
           </button>
-          <button type="button" onclick="openSimulatorModal()" class="group col-span-2 sm:col-span-1 flex min-h-16 items-center gap-2.5 rounded-xl bg-orange-50 p-2.5 text-left hover:bg-orange-100 transition-colors">
-            <span class="material-symbols-outlined text-orange-700 text-[20px]">science</span>
-            <span><span class="block text-xs font-bold text-text-primary">Simulator</span><span class="block text-[9px] text-text-muted">What-if test</span></span>
+          <button type="button" onclick="openSimulatorModal()" class="fw-service-card fw-service-card-wide bg-orange-50 hover:bg-orange-100 border border-orange-200/70 transition-colors">
+            <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
+              <span class="material-symbols-outlined text-orange-700 text-[20px]">science</span>
+            </span>
+            <span class="w-full min-w-0">
+              <span class="block text-xs font-bold text-text-primary leading-snug break-words">Simulator</span>
+              <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">What-if test</span>
+            </span>
           </button>
         </div>
       </section>
 
       <!-- Search and category filters (Mobile dashboard parity) -->
-      <section class="rounded-xl border border-border-neutral bg-white p-3 shadow-sm">
+      <section class="rounded-2xl border border-border-neutral bg-white p-4 shadow-sm">
         <div class="relative">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-text-muted">search</span>
           <input id="dashboardTransactionSearch" type="search" autocomplete="off"
@@ -267,23 +383,23 @@
 
       <!-- AI Purchase Insights Card (14-Day Receipt Agent) -->
       <div id="aiPurchaseInsightCard"
-        class="rounded-xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-3.5 border border-indigo-200/70 shadow-sm">
-        <div class="flex items-start gap-2.5">
+        class="rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-emerald-50/60 p-4 border border-indigo-200/70 shadow-sm">
+        <div class="flex items-start gap-2.5 min-w-0">
           <div
             class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
             <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
           </div>
           <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-primary flex items-center gap-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-primary flex flex-wrap items-center gap-1 min-w-0">
                 <span>✨ FinWise Purchase Insights</span>
                 <span id="aiInsightBadge"
-                  class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold">14-Day Scan</span>
+                  class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-bold shrink-0 whitespace-nowrap">14-Day Scan</span>
               </span>
               <button type="button" onclick="showAiModal()"
-                class="text-[10px] font-bold text-primary hover:underline shrink-0">Details →</button>
+                class="text-[10px] font-bold text-primary hover:underline shrink-0 whitespace-nowrap">Details →</button>
             </div>
-            <p id="aiPurchaseInsightText" class="text-xs text-slate-700 mt-1 leading-relaxed font-medium">
+            <p id="aiPurchaseInsightText" class="text-xs text-slate-700 mt-1 leading-relaxed font-medium break-words">
               Analyzing your last 14 days of itemized receipts for smart savings tips...
             </p>
           </div>
@@ -292,9 +408,9 @@
 
       <!-- Recent Transactions Section -->
       <div class="flex flex-col gap-2">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-text-primary">Recent Transactions</h2>
-          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5"
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-bold text-text-primary truncate">Recent Transactions</h2>
+          <button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap"
             onclick="window.location.href='transactions.html'">
             <span>View all</span>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
@@ -302,34 +418,34 @@
         </div>
 
         <div id="recentRecords"
-          class="rounded-xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
+          class="rounded-2xl bg-white shadow-sm border border-border-neutral overflow-hidden divide-y divide-surface-container">
           <div class="p-4 text-center text-xs text-text-muted">Loading transactions from Supabase...</div>
         </div>
       </div>
 
       <!-- Monthly Summary & Category Breakdown -->
-      <section id="monthlySummary" class="rounded-xl bg-white p-4 shadow-sm border border-border-neutral">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold text-text-primary">Monthly Breakdown</h2>
-          <span id="monthlyTitle" class="text-xs text-text-muted font-medium"></span>
+      <section id="monthlySummary" class="rounded-2xl bg-white p-4 shadow-sm border border-border-neutral">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <h2 class="text-sm font-bold text-text-primary truncate">Monthly Breakdown</h2>
+          <span id="monthlyTitle" class="text-xs text-text-muted font-medium shrink-0 whitespace-nowrap"></span>
         </div>
         <div class="grid grid-cols-3 gap-2 pb-3 border-b border-slate-100">
-          <div>
-            <p class="text-[11px] text-text-muted">Income</p>
-            <p id="monthlyIncome" class="text-sm font-bold text-secondary">RM 0.00</p>
+          <div class="min-w-0">
+            <p class="text-[11px] text-text-muted truncate">Income</p>
+            <p id="monthlyIncome" class="text-sm font-bold text-secondary truncate">RM 0.00</p>
           </div>
-          <div>
-            <p class="text-[11px] text-text-muted">Expenses</p>
-            <p id="monthlyExpense" class="text-sm font-bold text-alert-coral">RM 0.00</p>
+          <div class="min-w-0">
+            <p class="text-[11px] text-text-muted truncate">Expenses</p>
+            <p id="monthlyExpense" class="text-sm font-bold text-alert-coral truncate">RM 0.00</p>
           </div>
-          <div>
-            <p class="text-[11px] text-text-muted">Net Cash Flow</p>
-            <p id="monthlyBalance" class="text-sm font-bold text-primary">RM 0.00</p>
+          <div class="min-w-0">
+            <p class="text-[11px] text-text-muted truncate">Net Cash Flow</p>
+            <p id="monthlyBalance" class="text-sm font-bold text-primary truncate">RM 0.00</p>
           </div>
         </div>
-        <div class="flex items-center justify-between mt-3 mb-1">
-          <p class="text-[11px] font-semibold text-text-muted">Expenses by Category</p>
-          <a href="summary.html" class="text-[11px] font-semibold text-primary hover:underline">Full Analytics →</a>
+        <div class="flex items-center justify-between gap-2 mt-3 mb-1">
+          <p class="text-[11px] font-semibold text-text-muted truncate">Expenses by Category</p>
+          <a href="summary.html" class="text-[11px] font-semibold text-primary hover:underline shrink-0 whitespace-nowrap">Full Analytics →</a>
         </div>
         <div id="categoryChart" class="mt-2 space-y-3">
           <p class="text-xs text-text-muted">No expenses recorded for this month.</p>
@@ -356,7 +472,7 @@
 
         <!-- Viewfinder View -->
         <div class="relative w-full bg-black flex items-center justify-center overflow-hidden"
-          style="min-height: 280px; max-height: 380px;">
+          style="min-height: min(45dvh, 24rem); max-height: 55dvh;">
           <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
 
           <!-- Viewfinder Reticle Overlay -->
@@ -733,36 +849,36 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+    <nav class="fw-bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
           onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="material-symbols-outlined text-[22px]">home</span>
-          <span class="text-[10px]">Home</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Home</span>
         </button>
         <button
-          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
           onclick="window.location.href='summary.html#goals'">
           <span class="material-symbols-outlined text-[22px]">savings</span>
-          <span class="text-[10px]">Goals</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Goals</span>
         </button>
-        <div class="flex-1 flex items-center justify-center">
-          <button onclick="showAddTransactionModal()"
+        <div class="flex-1 min-w-0 flex items-center justify-center">
+          <button onclick="showAddTransactionModal()" aria-label="Add Transaction"
             class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
         <button
-          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
           onclick="showAiModal()">
           <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
-          <span class="text-[10px]">Insights</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>
         <button
-          class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
+          class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
           onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
-          <span class="text-[10px]">Profile</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Profile</span>
         </button>
       </div>
     </nav>
@@ -782,7 +898,8 @@
 
   <!-- FAB: Floating Action Button -->
   <button id="aiAssistantFAB" onclick="toggleAiAssistant()" aria-label="Open AI Assistant"
-    class="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-blue-900 text-white flex items-center justify-center shadow-lg shadow-blue-900/40 hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200 group">
+    style="right: max(1rem, calc(50% - 320px + 1rem));"
+    class="fixed bottom-24 z-[60] w-14 h-14 rounded-full bg-blue-900 text-white flex items-center justify-center shadow-lg shadow-blue-900/40 hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200 group">
     <svg class="w-7 h-7 text-white group-hover:rotate-12 transition-transform" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"/>
     </svg>
@@ -792,7 +909,7 @@
 
   <!-- Chat Interface Overlay -->
   <div id="aiAssistantChat" class="hidden fixed inset-0 z-[80] flex flex-col items-center justify-end bg-black/40 backdrop-blur-[2px]" onclick="if(event.target===this)toggleAiAssistant()">
-    <div class="w-full max-w-md h-[92vh] bg-slate-100 rounded-t-2xl flex flex-col shadow-2xl overflow-hidden animate-slideUp" style="animation: slideUp 0.3s ease-out">
+    <div id="aiAssistantPanel" class="fw-chat-panel w-full max-w-[640px] h-[92vh] bg-slate-100 rounded-t-2xl flex flex-col shadow-2xl overflow-hidden animate-slideUp" style="animation: slideUp 0.3s ease-out">
 
       <!-- ─── HEADER ─── -->
       <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-200 shrink-0">
@@ -3080,10 +3197,10 @@
       const maxAmt = catEntries.length ? catEntries[0][1] : 0;
       const chart = document.getElementById("categoryChart");
       chart.innerHTML = catEntries.length ? catEntries.map(([cat, amt]) => `
-        <div>
-          <div class="mb-1 flex items-center justify-between text-xs">
-            <span class="font-medium text-text-primary">${escapeHtml(cat)}</span>
-            <span class="font-bold text-alert-coral">${curr} ${money(amt)}</span>
+        <div class="min-w-0">
+          <div class="mb-1 flex items-center justify-between gap-2 text-xs">
+            <span class="font-medium text-text-primary truncate min-w-0">${escapeHtml(cat)}</span>
+            <span class="font-bold text-alert-coral shrink-0 whitespace-nowrap">${curr} ${money(amt)}</span>
           </div>
           <div class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high">
             <div class="h-full rounded-full bg-alert-coral transition-all" style="width:${Math.max(4, (amt / maxAmt) * 100)}%"></div>
@@ -3102,23 +3219,23 @@
         const isOpen = expandedReceiptRows[rowKey] !== false;
         return `
         <div class="transition-colors">
-          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-start justify-between gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3 hover:bg-slate-50 transition-colors"'}>
+          <div ${hasItems ? `onclick="toggleReceiptAccordion('${escapeHtml(rowKey)}')" class="flex items-start justify-between gap-3 p-3.5 hover:bg-slate-50 cursor-pointer transition-colors"` : 'class="flex items-center justify-between gap-3 p-3.5 hover:bg-slate-50 transition-colors"'}>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
+                <p class="truncate min-w-0 text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
                 ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
               </div>
               ${hasItems ? `
                 <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} mt-1 text-[11px] text-slate-600 leading-snug">
                   <p class="font-semibold text-text-muted">Details:</p>
                   <div class="space-y-0.5">
-                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                    ${rItems.map(it => `<p class="break-words">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
                   </div>
                 </div>
               ` : ''}
-              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+              <p class="text-[11px] text-text-muted mt-1 truncate">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
             </div>
-            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+            <span class="shrink-0 whitespace-nowrap text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
               ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
             </span>
           </div>
@@ -3143,20 +3260,20 @@
           <div class="flex items-start justify-between gap-2 p-3 hover:bg-slate-50 transition-colors">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <p class="truncate text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
+                <p class="truncate min-w-0 text-xs font-bold text-text-primary">Description: ${escapeHtml(item.description)}</p>
                 ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
               </div>
               ${hasItems ? `
                 <div class="mt-1 text-[11px] text-slate-600 leading-snug">
                   <p class="font-semibold text-text-muted">Details:</p>
                   <div class="space-y-0.5">
-                    ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                    ${rItems.map(it => `<p class="break-words">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
                   </div>
                 </div>
               ` : ''}
-              <p class="text-[11px] text-text-muted mt-1">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
+              <p class="text-[11px] text-text-muted mt-1 truncate">${escapeHtml(item.category)} · ${escapeHtml(item.date)}</p>
             </div>
-            <span class="shrink-0 text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
+            <span class="shrink-0 whitespace-nowrap text-xs font-bold ${item.type === "income" ? "text-secondary" : "text-alert-coral"}">
               ${item.type === "income" ? "+" : "−"}${curr} ${money(item.amount)}
             </span>
             <div class="flex items-center gap-1 shrink-0">
@@ -3217,7 +3334,7 @@
     function toggleAiAssistant() {
       const chat = document.getElementById('aiAssistantChat');
       const fab = document.getElementById('aiAssistantFAB');
-      const panel = chat?.querySelector('.max-w-md');
+      const panel = document.getElementById('aiAssistantPanel') || chat?.querySelector('.fw-chat-panel');
 
       if (aiChatOpen) {
         // Close

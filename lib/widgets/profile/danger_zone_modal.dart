@@ -32,6 +32,9 @@ class _DangerZoneModalState extends State<DangerZoneModal> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+      ),
       icon: const Icon(Icons.warning_amber_rounded,
           color: AppColors.alertCoral, size: 40),
       title: const Text('Delete account permanently?'),

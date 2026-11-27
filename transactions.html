@@ -21,6 +21,7 @@
             "primary": "#00236f",
             "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
+            "primary-fixed-dim": "#B6C4FF",
             "secondary": "#006c49",
             "secondary-container": "#6cf8bb",
             "secondary-fixed": "#6ffbbe",
@@ -31,6 +32,8 @@
             "surface-container": "#eeedf4",
             "surface-container-high": "#e9e7ef",
             "surface-container-highest": "#e3e1e9",
+            "on-surface": "#1A1B21",
+            "on-surface-variant": "#444651",
             "text-primary": "#0F172A",
             "text-muted": "#64748B",
             "outline": "#757682",
@@ -44,43 +47,64 @@
     };
   </script>
   <style>
+    :root {
+      --fw-primary: #00236f;
+      --fw-primary-container: #1e3a8a;
+      --fw-secondary: #006c49;
+      --fw-surface: #faf8ff;
+      --fw-surface-low: #f4f3fa;
+      --fw-card-bg: #ffffff;
+      --fw-border: #E2E8F0;
+      --fw-text-primary: #0F172A;
+      --fw-text-muted: #64748B;
+      --fw-alert-coral: #EF4444;
+      --fw-shell-max-width: 640px;
+      --fw-card-radius: 16px;
+      --fw-input-radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
     body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
+    .fw-shell { width: 100%; max-width: var(--fw-shell-max-width); margin: 0 auto; }
+    .fw-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--fw-shell-max-width); }
+    .fw-month-input { width: auto; min-width: 120px; padding-right: 4px; white-space: nowrap; }
+    .fw-month-input::-webkit-calendar-picker-indicator { cursor: pointer; margin-left: 6px; padding: 2px; opacity: 0.75; flex-shrink: 0; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
   </style>
 </head>
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
-  <!-- Desktop Mobile Frame Wrapper -->
-  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+  <!-- Unified Responsive Shell Wrapper -->
+  <div class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
-    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
-      <span class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
-        FinWise Transactions
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
+      <span class="flex items-center gap-1.5 min-w-0 truncate">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse shrink-0"></span>
+        <span class="truncate">FinWise Transactions</span>
       </span>
-      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
         <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
     <!-- Header Navigation -->
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
-      <div class="h-16 px-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <button aria-label="Back to Dashboard" onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
+      <div class="h-16 px-4 sm:px-5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <button aria-label="Back to Dashboard" onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors shrink-0">
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
-          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5">
-          <div>
-            <h1 class="font-bold text-base text-text-primary tracking-tight">Transactions</h1>
-            <p id="tx-user-subtitle" class="text-[11px] text-text-muted">Personal Records</p>
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5 shrink-0">
+          <div class="min-w-0">
+            <h1 class="font-bold text-base text-text-primary tracking-tight truncate">Transactions</h1>
+            <p id="tx-user-subtitle" class="text-[11px] text-text-muted truncate">Personal Records</p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <button onclick="openTransactionModal()" class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-container shadow-sm flex items-center gap-1 transition-all active:scale-95">
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="openTransactionModal()" class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-container shadow-sm flex items-center gap-1 transition-all active:scale-95 whitespace-nowrap">
             <span class="material-symbols-outlined text-[16px]">add</span>
             <span>Record</span>
           </button>
@@ -89,10 +113,10 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-3">
+    <main class="flex-1 flex flex-col w-full px-4 sm:px-5 pt-4 space-y-4">
 
       <!-- SEARCH & FILTER TOOLBAR -->
-      <div class="bg-white rounded-2xl p-3 shadow-sm border border-border-neutral space-y-2.5">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-2.5">
         <!-- Search Input -->
         <div class="relative flex items-center">
           <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span>
@@ -103,21 +127,21 @@
         </div>
 
         <!-- Filter Chips: All, Expenses, Income -->
-        <div class="flex items-center justify-between gap-1 pt-0.5">
-          <div class="flex items-center gap-1">
-            <button id="filter-chip-all" onclick="setTypeFilter('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white shadow-xs transition-all">
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+          <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+            <button id="filter-chip-all" onclick="setTypeFilter('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white shadow-xs transition-all whitespace-nowrap">
               All
             </button>
-            <button id="filter-chip-expense" onclick="setTypeFilter('expense')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all">
+            <button id="filter-chip-expense" onclick="setTypeFilter('expense')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all whitespace-nowrap">
               Expenses
             </button>
-            <button id="filter-chip-income" onclick="setTypeFilter('income')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all">
+            <button id="filter-chip-income" onclick="setTypeFilter('income')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface-container text-text-muted hover:text-text-primary transition-all whitespace-nowrap">
               Income
             </button>
           </div>
 
           <!-- Sort Selector -->
-          <div class="relative flex items-center">
+          <div class="relative flex items-center shrink-0">
             <select id="tx-sort-select" onchange="filterAndRenderTransactions()" class="text-xs font-semibold text-text-muted bg-transparent outline-none pr-5 py-1 appearance-none cursor-pointer">
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
@@ -129,10 +153,10 @@
         </div>
 
         <!-- Secondary Filters Row: Category & Month -->
-        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-          <div class="relative flex items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+          <div class="relative flex items-center min-w-0">
             <span class="material-symbols-outlined absolute left-2 text-text-muted text-[16px]">category</span>
-            <select id="tx-category-filter" onchange="filterAndRenderTransactions()" class="w-full pl-7 pr-6 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200 appearance-none">
+            <select id="tx-category-filter" onchange="filterAndRenderTransactions()" class="w-full min-w-0 pl-7 pr-6 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200 appearance-none truncate">
               <option value="all">All Categories</option>
               <option value="Food & Dining">Food & Dining</option>
               <option value="Transportation">Transportation</option>
@@ -150,28 +174,28 @@
             <span class="material-symbols-outlined text-[14px] text-text-muted absolute right-2 pointer-events-none">expand_more</span>
           </div>
 
-          <div class="relative flex items-center">
-            <span class="material-symbols-outlined absolute left-2 text-text-muted text-[16px]">calendar_month</span>
-            <input id="tx-month-filter" type="month" onchange="filterAndRenderTransactions()" class="w-full pl-7 pr-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200">
+          <div class="relative flex items-center min-w-0">
+            <span class="material-symbols-outlined absolute left-2.5 text-text-muted text-[16px] pointer-events-none">calendar_month</span>
+            <input id="tx-month-filter" type="month" onchange="filterAndRenderTransactions()" class="fw-month-input w-full min-w-0 pl-8 pr-2.5 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-semibold text-text-primary outline-none border border-slate-200">
           </div>
         </div>
       </div>
 
       <!-- FILTERED SUMMARY STATS BAR -->
-      <div class="flex items-center justify-between px-1 text-xs">
-        <span id="filtered-count" class="font-bold text-text-muted">Loading records...</span>
-        <div class="flex items-center gap-2">
-          <span id="filtered-income" class="font-bold text-secondary text-[11px]">+RM 0.00</span>
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
+        <span id="filtered-count" class="font-bold text-text-muted whitespace-nowrap">Loading records...</span>
+        <div class="flex items-center gap-2 shrink-0 whitespace-nowrap">
+          <span id="filtered-income" class="font-bold text-secondary text-[11px] whitespace-nowrap">+RM 0.00</span>
           <span class="text-slate-300">|</span>
-          <span id="filtered-expense" class="font-bold text-alert-coral text-[11px]">-RM 0.00</span>
+          <span id="filtered-expense" class="font-bold text-alert-coral text-[11px] whitespace-nowrap">-RM 0.00</span>
         </div>
       </div>
 
       <!-- AI PURCHASE INSIGHT BANNER -->
-      <div id="txAiInsightBanner" class="hidden rounded-xl bg-gradient-to-r from-amber-50/90 via-indigo-50/60 to-purple-50/60 p-3 border border-amber-200/80 shadow-xs">
-        <div class="flex items-start gap-2">
+      <div id="txAiInsightBanner" class="hidden rounded-2xl bg-gradient-to-r from-amber-50/90 via-indigo-50/60 to-purple-50/60 p-3.5 border border-amber-200/80 shadow-xs">
+        <div class="flex items-start gap-2 min-w-0">
           <span class="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">auto_awesome</span>
-          <p id="txAiInsightText" class="text-[11px] text-slate-700 font-medium leading-relaxed"></p>
+          <p id="txAiInsightText" class="text-[11px] text-slate-700 font-medium leading-relaxed min-w-0 flex-1 break-words"></p>
         </div>
       </div>
 
@@ -195,28 +219,28 @@
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+    <nav class="fw-bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
           <span class="material-symbols-outlined text-[22px]">home</span>
-          <span class="text-[10px]">Home</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
           <span class="material-symbols-outlined text-[22px]">savings</span>
-          <span class="text-[10px]">Goals</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Goals</span>
         </button>
-        <div class="flex-1 flex items-center justify-center">
-          <button onclick="openTransactionModal()" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+        <div class="flex-1 min-w-0 flex items-center justify-center">
+          <button onclick="openTransactionModal()" aria-label="Add Transaction" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
         <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
-        <span class="text-[10px]">Insights</span>
+        <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
-          <span class="text-[10px]">Profile</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Profile</span>
         </button>
       </div>
     </nav>
@@ -1108,35 +1132,35 @@
         const isOpen = expandedReceiptRows[rowKey] !== false;
 
         return `
-          <div class="bg-white rounded-xl shadow-sm border border-border-neutral overflow-hidden hover:shadow-md transition-all">
-            <div ${hasItems ? `onclick="toggleTxReceiptAccordion('${escapeHtml(rowKey)}')"` : ''} class="p-3 flex items-start justify-between gap-3 ${hasItems ? 'cursor-pointer' : ''}">
+          <div class="bg-white rounded-2xl shadow-sm border border-border-neutral overflow-hidden hover:shadow-md transition-all">
+            <div ${hasItems ? `onclick="toggleTxReceiptAccordion('${escapeHtml(rowKey)}')"` : ''} class="p-3.5 flex items-start justify-between gap-3 ${hasItems ? 'cursor-pointer' : ''}">
               <div class="flex items-start gap-3 min-w-0 flex-1">
                 <div class="w-10 h-10 rounded-xl ${catConfig.bg} ${catConfig.color} flex items-center justify-center shrink-0 shadow-xs mt-0.5">
                   <span class="material-symbols-outlined text-[20px]">${catConfig.icon}</span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <p class="font-bold text-xs text-text-primary truncate">Description: ${escapeHtml(item.description)}</p>
+                    <p class="font-bold text-xs text-text-primary truncate min-w-0">Description: ${escapeHtml(item.description)}</p>
                     ${hasItems ? `<span class="text-[11px] shrink-0" title="Receipt contains ${rItems.length} items">🧾</span>` : ''}
                   </div>
                   ${hasItems ? `
                     <div id="acc-${escapeHtml(rowKey)}" class="${isOpen ? '' : 'hidden'} mt-1 text-[11px] text-slate-600 leading-snug">
                       <p class="font-semibold text-text-muted">Details:</p>
                       <div class="space-y-0.5">
-                        ${rItems.map(it => `<p>${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
+                        ${rItems.map(it => `<p class="break-words">${parseInt(it.quantity, 10) || 1}x ${escapeHtml(it.item_name)}</p>`).join('')}
                       </div>
                     </div>
                   ` : ''}
                   <div class="flex items-center gap-1.5 text-[10px] text-text-muted mt-1 flex-wrap">
-                    <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded">${escapeHtml(item.category)}</span>
+                    <span class="font-medium bg-surface-container px-1.5 py-0.5 rounded max-w-full truncate">${escapeHtml(item.category)}</span>
                     <span>·</span>
-                    <span>${escapeHtml(item.date)}</span>
+                    <span class="whitespace-nowrap">${escapeHtml(item.date)}</span>
                   </div>
                 </div>
               </div>
 
               <div class="flex flex-col items-end gap-1 shrink-0">
-                <span class="font-extrabold text-xs ${isIncome ? 'text-secondary' : 'text-alert-coral'}">
+                <span class="font-extrabold text-xs whitespace-nowrap ${isIncome ? 'text-secondary' : 'text-alert-coral'}">
                   ${isIncome ? '+' : '−'}${curr} ${money(item.amount)}
                 </span>
                 <div class="flex items-center gap-1" onclick="event.stopPropagation()">

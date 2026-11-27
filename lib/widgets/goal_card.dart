@@ -94,7 +94,7 @@ class GoalCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: _bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
         border: Border.all(color: _borderColor, width: 1.2),
         boxShadow: [
           BoxShadow(
@@ -105,7 +105,7 @@ class GoalCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -151,6 +151,8 @@ class GoalCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'Target: ${dateFmt.format(goal.targetDate)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
                           color: goal.isOverdue
@@ -165,6 +167,8 @@ class GoalCard extends StatelessWidget {
                   ),
                 ),
 
+                const SizedBox(width: 6),
+
                 // Status badge
                 _buildStatusBadge(),
 
@@ -173,6 +177,7 @@ class GoalCard extends StatelessWidget {
                   icon: Icon(Icons.more_vert,
                       size: 20, color: AppColors.textMuted),
                   padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   onSelected: (val) {
@@ -250,6 +255,8 @@ class GoalCard extends StatelessWidget {
                     children: [
                       const Text(
                         'SAVED',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 9,
                             letterSpacing: 0.6,
@@ -257,17 +264,24 @@ class GoalCard extends StatelessWidget {
                             fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        currencyFmt.format(goal.currentSavedAmount),
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: _accentColor,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          currencyFmt.format(goal.currentSavedAmount),
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: _accentColor,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                const SizedBox(width: 6),
 
                 // Target
                 Expanded(
@@ -276,6 +290,8 @@ class GoalCard extends StatelessWidget {
                     children: [
                       const Text(
                         'TARGET',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 9,
                             letterSpacing: 0.6,
@@ -283,17 +299,24 @@ class GoalCard extends StatelessWidget {
                             fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        currencyFmt.format(goal.targetAmount),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onSurface,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Text(
+                          currencyFmt.format(goal.targetAmount),
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.onSurface,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                const SizedBox(width: 6),
 
                 // Remaining / Overfunded
                 Expanded(
@@ -302,6 +325,8 @@ class GoalCard extends StatelessWidget {
                     children: [
                       Text(
                         isOverfunded ? 'OVERFUNDED' : 'REMAINING',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontSize: 9,
                             letterSpacing: 0.6,
@@ -309,18 +334,23 @@ class GoalCard extends StatelessWidget {
                             fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        isOverfunded
-                            ? '+${currencyFmt.format(goal.currentSavedAmount - goal.targetAmount)}'
-                            : currencyFmt.format(goal.remainingAmount),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isOverfunded
-                              ? AppColors.secondary
-                              : goal.isOverdue
-                                  ? AppColors.alertCoral
-                                  : AppColors.onSurfaceVariant,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          isOverfunded
+                              ? '+${currencyFmt.format(goal.currentSavedAmount - goal.targetAmount)}'
+                              : currencyFmt.format(goal.remainingAmount),
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isOverfunded
+                                ? AppColors.secondary
+                                : goal.isOverdue
+                                    ? AppColors.alertCoral
+                                    : AppColors.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
@@ -345,12 +375,16 @@ class GoalCard extends StatelessWidget {
                     Icon(Icons.check_circle,
                         size: 14, color: AppColors.secondary),
                     SizedBox(width: 6),
-                    Text(
-                      'Goal achieved! 🎉',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
+                    Flexible(
+                      child: Text(
+                        'Goal achieved! 🎉',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.secondary,
+                        ),
                       ),
                     ),
                   ],

@@ -21,6 +21,7 @@
             "primary": "#00236f",
             "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
+            "primary-fixed-dim": "#B6C4FF",
             "secondary": "#006c49",
             "secondary-container": "#6cf8bb",
             "secondary-fixed": "#6ffbbe",
@@ -31,6 +32,8 @@
             "surface-container": "#eeedf4",
             "surface-container-high": "#e9e7ef",
             "surface-container-highest": "#e3e1e9",
+            "on-surface": "#1A1B21",
+            "on-surface-variant": "#444651",
             "text-primary": "#0F172A",
             "text-muted": "#64748B",
             "outline": "#757682",
@@ -44,42 +47,63 @@
     };
   </script>
   <style>
+    :root {
+      --fw-primary: #00236f;
+      --fw-primary-container: #1e3a8a;
+      --fw-secondary: #006c49;
+      --fw-surface: #faf8ff;
+      --fw-surface-low: #f4f3fa;
+      --fw-card-bg: #ffffff;
+      --fw-border: #E2E8F0;
+      --fw-text-primary: #0F172A;
+      --fw-text-muted: #64748B;
+      --fw-alert-coral: #EF4444;
+      --fw-shell-max-width: 640px;
+      --fw-card-radius: 16px;
+      --fw-input-radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
     body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
+    .fw-shell { width: 100%; max-width: var(--fw-shell-max-width); margin: 0 auto; }
+    .fw-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--fw-shell-max-width); }
+    .fw-month-input { width: auto; min-width: 148px; padding-right: 4px; white-space: nowrap; }
+    .fw-month-input::-webkit-calendar-picker-indicator { cursor: pointer; margin-left: 8px; padding: 2px; opacity: 0.75; flex-shrink: 0; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
   </style>
 </head>
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
-  <!-- Desktop Mobile Frame Wrapper -->
-  <div class="w-full max-w-md sm:max-w-2xl lg:max-w-4xl bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+  <!-- Unified Responsive Shell Wrapper -->
+  <div class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
-    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
-      <span class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
-        FinWise Financial Analytics
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
+      <span class="flex items-center gap-1.5 min-w-0 truncate">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse shrink-0"></span>
+        <span class="truncate">FinWise Financial Analytics</span>
       </span>
-      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
         <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
     <!-- Header Navigation -->
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
-      <div class="h-16 px-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <button aria-label="Back to Dashboard" onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
+      <div class="h-16 px-4 sm:px-5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <button aria-label="Back to Dashboard" onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors shrink-0">
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
-          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5">
-          <div>
-            <h1 class="font-bold text-base text-text-primary tracking-tight">Financial Summary</h1>
-            <p id="summary-user-subtitle" class="text-[11px] text-text-muted">Monthly Insights</p>
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5 shrink-0">
+          <div class="min-w-0">
+            <h1 class="font-bold text-base text-text-primary tracking-tight truncate">Financial Summary</h1>
+            <p id="summary-user-subtitle" class="text-[11px] text-text-muted truncate">Monthly Insights</p>
           </div>
         </div>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1 shrink-0">
           <button onclick="exportMonthlyReport()" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-primary hover:bg-surface-container transition-colors" title="Export CSV Report">
             <span class="material-symbols-outlined text-[20px]">download</span>
           </button>
@@ -88,20 +112,20 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col w-full max-w-5xl mx-auto px-4 pt-3 space-y-4">
+    <main class="flex-1 flex flex-col w-full px-4 sm:px-5 pt-4 space-y-4">
 
       <!-- MONTH SELECTOR BAR -->
-      <div class="bg-white rounded-2xl p-3 shadow-sm border border-border-neutral flex items-center justify-between">
-        <button onclick="stepMonth(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors">
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-border-neutral flex items-center justify-between gap-2">
+        <button onclick="stepMonth(-1)" aria-label="Previous month" class="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors shrink-0">
           <span class="material-symbols-outlined text-[20px]">chevron_left</span>
         </button>
 
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
-          <input id="summary-month-input" type="month" onchange="renderSummaryPage()" class="bg-transparent text-xs font-bold text-text-primary outline-none cursor-pointer">
-        </div>
+        <label for="summary-month-input" class="flex items-center gap-2 min-w-0 cursor-pointer whitespace-nowrap">
+          <span class="material-symbols-outlined text-primary text-[18px] shrink-0">calendar_month</span>
+          <input id="summary-month-input" type="month" onchange="renderSummaryPage()" class="fw-month-input bg-transparent text-xs font-bold text-text-primary outline-none cursor-pointer whitespace-nowrap">
+        </label>
 
-        <button onclick="stepMonth(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors">
+        <button onclick="stepMonth(1)" aria-label="Next month" class="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors shrink-0">
           <span class="material-symbols-outlined text-[20px]">chevron_right</span>
         </button>
       </div>
@@ -109,25 +133,25 @@
       <!-- MONTHLY KPI BENTO CARD -->
       <div class="rounded-2xl bg-gradient-to-b from-primary-container to-primary text-white p-4 shadow-md relative overflow-hidden">
         <div class="relative z-10 space-y-3">
-          <div class="flex items-center justify-between text-white/80">
-            <span class="text-[11px] font-bold tracking-wider uppercase" id="kpi-month-title">Monthly Cash Flow</span>
-            <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white" id="kpi-savings-rate">0% Saved</span>
+          <div class="flex items-center justify-between gap-2 text-white/80">
+            <span class="text-[11px] font-bold tracking-wider uppercase truncate" id="kpi-month-title">Monthly Cash Flow</span>
+            <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold text-white shrink-0 whitespace-nowrap" id="kpi-savings-rate">0% Saved</span>
           </div>
 
-          <div class="flex items-baseline gap-1.5">
+          <div class="flex flex-wrap items-baseline gap-1.5">
             <span class="text-base font-bold text-white/90" id="kpi-currency">RM</span>
             <span class="text-3xl font-extrabold tracking-tight text-white" id="kpi-net-cashflow">0.00</span>
             <span class="text-xs text-white/70 ml-1">Net Savings</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2 pt-1 border-t border-white/10">
-            <div class="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-              <span class="text-[10px] text-white/70 block">Total Income</span>
-              <span id="kpi-total-income" class="text-xs font-bold text-secondary-fixed">+RM 0.00</span>
+            <div class="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm min-w-0">
+              <span class="text-[10px] text-white/70 block truncate">Total Income</span>
+              <span id="kpi-total-income" class="text-xs font-bold text-secondary-fixed block truncate">+RM 0.00</span>
             </div>
-            <div class="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-              <span class="text-[10px] text-white/70 block">Total Expenses</span>
-              <span id="kpi-total-expenses" class="text-xs font-bold text-rose-300">-RM 0.00</span>
+            <div class="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm min-w-0">
+              <span class="text-[10px] text-white/70 block truncate">Total Expenses</span>
+              <span id="kpi-total-expenses" class="text-xs font-bold text-rose-300 block truncate">-RM 0.00</span>
             </div>
           </div>
         </div>
@@ -137,33 +161,33 @@
 
       <!-- MONTHLY BUDGET PROGRESS TRACKER -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-2.5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
             </div>
-            <div>
-              <h3 class="text-xs font-bold text-text-primary">Monthly Budget Limit</h3>
-              <p class="text-[10px] text-text-muted" id="budget-desc-text">Comparing against target limit</p>
+            <div class="min-w-0">
+              <h3 class="text-xs font-bold text-text-primary truncate">Monthly Budget Limit</h3>
+              <p class="text-[10px] text-text-muted truncate" id="budget-desc-text">Comparing against target limit</p>
             </div>
           </div>
-          <span id="budget-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-growth-mint-subtle text-secondary">
+          <span id="budget-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-growth-mint-subtle text-secondary shrink-0 whitespace-nowrap">
             On Track
           </span>
         </div>
 
         <!-- Budget Progress Bar -->
         <div class="space-y-1.5 pt-1">
-          <div class="flex items-center justify-between text-xs">
-            <span id="budget-spent-text" class="font-bold text-text-primary">Spent: RM 0.00</span>
-            <span id="budget-total-text" class="font-semibold text-text-muted">Limit: RM 2,500.00</span>
+          <div class="flex flex-wrap items-center justify-between gap-1 text-xs">
+            <span id="budget-spent-text" class="font-bold text-text-primary min-w-0 truncate">Spent: RM 0.00</span>
+            <span id="budget-total-text" class="font-semibold text-text-muted shrink-0 whitespace-nowrap">Limit: RM 2,500.00</span>
           </div>
           <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
             <div id="budget-progress-bar" class="h-full rounded-full bg-secondary transition-all duration-500" style="width: 0%"></div>
           </div>
-          <div class="flex items-center justify-between text-[11px] text-text-muted">
-            <span id="budget-percent-text">0% of budget used</span>
-            <span id="budget-remaining-text" class="font-semibold text-primary">RM 2,500.00 remaining</span>
+          <div class="flex flex-wrap items-center justify-between gap-1 text-[11px] text-text-muted">
+            <span id="budget-percent-text" class="min-w-0 truncate">0% of budget used</span>
+            <span id="budget-remaining-text" class="font-semibold text-primary shrink-0 whitespace-nowrap">RM 2,500.00 remaining</span>
           </div>
         </div>
       </div>
@@ -171,35 +195,35 @@
       <!-- SAVINGS GOALS -->
       <section id="goals" class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral scroll-mt-24">
         <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-growth-mint-subtle flex items-center justify-center text-secondary">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="w-7 h-7 rounded-lg bg-growth-mint-subtle flex items-center justify-center text-secondary shrink-0">
               <span class="material-symbols-outlined text-[18px]">savings</span>
             </div>
-            <div>
-              <h3 class="text-xs font-bold text-text-primary">Savings Goals</h3>
-              <p id="active-goals-count" class="text-[10px] text-text-muted">Loading goals...</p>
+            <div class="min-w-0">
+              <h3 class="text-xs font-bold text-text-primary truncate">Savings Goals</h3>
+              <p id="active-goals-count" class="text-[10px] text-text-muted truncate">Loading goals...</p>
             </div>
           </div>
-          <button type="button" onclick="openGoalModal('create')" class="h-9 px-3 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-container transition-colors flex items-center gap-1.5">
+          <button type="button" onclick="openGoalModal('create')" class="h-9 px-3 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-container transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <span class="material-symbols-outlined text-[17px]">add</span>
             <span>Add Goal</span>
           </button>
         </div>
-        <div id="savings-goals-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
+        <div id="savings-goals-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
           <p class="col-span-full text-xs text-text-muted text-center py-6">Loading savings goals...</p>
         </div>
       </section>
 
       <!-- EXPENSES BY CATEGORY BREAKDOWN -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-alert-coral-subtle flex items-center justify-center text-alert-coral">
+        <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-lg bg-alert-coral-subtle flex items-center justify-center text-alert-coral shrink-0">
               <span class="material-symbols-outlined text-[18px]">pie_chart</span>
             </div>
-            <h3 class="text-xs font-bold text-text-primary">Expenses by Category</h3>
+            <h3 class="text-xs font-bold text-text-primary truncate">Expenses by Category</h3>
           </div>
-          <span id="category-expense-total" class="text-xs font-bold text-alert-coral">RM 0.00</span>
+          <span id="category-expense-total" class="text-xs font-bold text-alert-coral shrink-0 whitespace-nowrap">RM 0.00</span>
         </div>
 
         <div id="category-bars-container" class="space-y-3 pt-1">
@@ -209,14 +233,14 @@
 
       <!-- INCOME SOURCES BREAKDOWN -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-growth-mint-subtle flex items-center justify-center text-secondary">
+        <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-lg bg-growth-mint-subtle flex items-center justify-center text-secondary shrink-0">
               <span class="material-symbols-outlined text-[18px]">savings</span>
             </div>
-            <h3 class="text-xs font-bold text-text-primary">Income Sources</h3>
+            <h3 class="text-xs font-bold text-text-primary truncate">Income Sources</h3>
           </div>
-          <span id="category-income-total" class="text-xs font-bold text-secondary">+RM 0.00</span>
+          <span id="category-income-total" class="text-xs font-bold text-secondary shrink-0 whitespace-nowrap">+RM 0.00</span>
         </div>
 
         <div id="income-bars-container" class="space-y-3 pt-1">
@@ -227,12 +251,12 @@
       <!-- AI SMART FINANCIAL INSIGHTS -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral space-y-3">
         <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-          <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-secondary">
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-secondary shrink-0">
             <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
           </div>
-          <div>
-            <h3 class="text-xs font-bold text-text-primary">AI Financial Insights</h3>
-            <p class="text-[10px] text-text-muted">Proactive intelligence based on this month's data</p>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-xs font-bold text-text-primary truncate">AI Financial Insights</h3>
+            <p class="text-[10px] text-text-muted truncate">Proactive intelligence based on this month's data</p>
           </div>
         </div>
 
@@ -252,28 +276,28 @@
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 w-full max-w-md sm:max-w-2xl lg:max-w-4xl bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+    <nav class="fw-bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
           <span class="material-symbols-outlined text-[22px]">home</span>
-          <span class="text-[10px]">Home</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
           <span class="material-symbols-outlined text-[22px]">savings</span>
-          <span class="text-[10px]">Goals</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Goals</span>
         </button>
-        <div class="flex-1 flex items-center justify-center">
-          <button onclick="window.location.href='transactions.html?add=true'" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+        <div class="flex-1 min-w-0 flex items-center justify-center">
+          <button onclick="window.location.href='transactions.html?add=true'" aria-label="Add Transaction" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html#aiAssistant'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="window.location.href='dashboard.html#aiAssistant'">
           <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
-          <span class="text-[10px]">Insights</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='profile.html'">
           <span class="material-symbols-outlined text-[22px]">person</span>
-          <span class="text-[10px]">Profile</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Profile</span>
         </button>
       </div>
     </nav>
@@ -564,23 +588,23 @@
         const accentClass = status === 'completed' ? 'text-secondary' : status === 'overdue' ? 'text-alert-coral' : 'text-primary';
         const cardBg = status === 'completed' ? 'bg-growth-mint-subtle' : status === 'overdue' ? 'bg-alert-coral-subtle' : 'bg-white';
         const badge = status === 'completed'
-          ? '<span class="px-2 py-1 rounded-full bg-growth-mint-subtle text-secondary text-[10px] font-bold">✓ Completed</span>'
+          ? '<span class="px-2 py-1 rounded-full bg-growth-mint-subtle text-secondary text-[10px] font-bold shrink-0 whitespace-nowrap">✓ Completed</span>'
           : status === 'overdue'
-            ? '<span class="px-2 py-1 rounded-full bg-white/70 text-alert-coral text-[10px] font-bold">⚠ Overdue</span>'
-            : `<span class="px-2 py-1 rounded-full bg-primary/8 text-primary text-[10px] font-bold">${Math.round(completion)}%</span>`;
+            ? '<span class="px-2 py-1 rounded-full bg-white/70 text-alert-coral text-[10px] font-bold shrink-0 whitespace-nowrap">⚠ Overdue</span>'
+            : `<span class="px-2 py-1 rounded-full bg-primary/8 text-primary text-[10px] font-bold shrink-0 whitespace-nowrap">${Math.round(completion)}%</span>`;
 
         return `
-          <article class="rounded-xl border ${status === 'completed' ? 'border-secondary/40' : status === 'overdue' ? 'border-alert-coral/50' : 'border-border-neutral'} ${cardBg} p-3 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start gap-2.5">
+          <article class="rounded-2xl border ${status === 'completed' ? 'border-secondary/40' : status === 'overdue' ? 'border-alert-coral/50' : 'border-border-neutral'} ${cardBg} p-3.5 shadow-sm hover:shadow-md transition-shadow min-w-0">
+            <div class="flex items-start gap-2.5 min-w-0">
               <div class="w-9 h-9 rounded-lg ${status === 'completed' ? 'bg-secondary/10 text-secondary' : status === 'overdue' ? 'bg-alert-coral/10 text-alert-coral' : 'bg-primary/10 text-primary'} flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-[20px]">${status === 'completed' ? 'check_circle' : status === 'overdue' ? 'warning' : 'savings'}</span>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-bold text-text-primary truncate">${escapeHtml(goal.goal_name)}</p>
-                <p class="mt-0.5 text-[11px] ${status === 'overdue' ? 'text-alert-coral font-bold' : 'text-text-muted'}">Target: ${formatGoalDate(goal.target_date)}</p>
+                <p class="mt-0.5 text-[11px] truncate ${status === 'overdue' ? 'text-alert-coral font-bold' : 'text-text-muted'}">Target: ${formatGoalDate(goal.target_date)}</p>
               </div>
               ${badge}
-              <div class="relative">
+              <div class="relative shrink-0">
                 <button type="button" onclick="toggleGoalMenu('${goal.id}', event)" aria-label="Goal actions" class="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-container transition-colors">
                   <span class="material-symbols-outlined text-[20px]">more_vert</span>
                 </button>
@@ -595,17 +619,17 @@
               <div class="h-full rounded-full ${status === 'completed' ? 'bg-secondary' : status === 'overdue' ? 'bg-alert-coral' : 'bg-primary'} transition-all duration-500" style="width:${completion}%"></div>
             </div>
             <div class="grid grid-cols-3 gap-2 mt-2 text-center">
-              <div class="text-left">
-                <p class="text-[9px] font-semibold tracking-wide text-text-muted">SAVED</p>
-                <p class="text-sm font-bold ${accentClass}">${curr} ${money(saved)}</p>
+              <div class="text-left min-w-0">
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted truncate">SAVED</p>
+                <p class="text-sm font-bold truncate ${accentClass}">${curr} ${money(saved)}</p>
               </div>
-              <div>
-                <p class="text-[9px] font-semibold tracking-wide text-text-muted">TARGET</p>
-                <p class="text-xs font-bold text-text-primary">${curr} ${money(target)}</p>
+              <div class="min-w-0">
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted truncate">TARGET</p>
+                <p class="text-xs font-bold text-text-primary truncate">${curr} ${money(target)}</p>
               </div>
-              <div class="text-right">
-                <p class="text-[9px] font-semibold tracking-wide text-text-muted">${isOverfunded ? 'OVERFUNDED' : 'REMAINING'}</p>
-                <p class="text-xs font-semibold ${isOverfunded ? 'text-secondary' : status === 'overdue' ? 'text-alert-coral' : 'text-text-primary'}">${isOverfunded ? '+' : ''}${curr} ${money(isOverfunded ? saved - target : remaining)}</p>
+              <div class="text-right min-w-0">
+                <p class="text-[9px] font-semibold tracking-wide text-text-muted truncate">${isOverfunded ? 'OVERFUNDED' : 'REMAINING'}</p>
+                <p class="text-xs font-semibold truncate ${isOverfunded ? 'text-secondary' : status === 'overdue' ? 'text-alert-coral' : 'text-text-primary'}">${isOverfunded ? '+' : ''}${curr} ${money(isOverfunded ? saved - target : remaining)}</p>
               </div>
             </div>
             ${status === 'completed'
@@ -1049,10 +1073,10 @@
         expContainer.innerHTML = expEntries.map(([cat, amt]) => {
           const pct = totalExpenses > 0 ? Math.round((amt / totalExpenses) * 100) : 0;
           return `
-            <div>
-              <div class="flex items-center justify-between text-xs mb-1">
-                <span class="font-semibold text-text-primary">${escapeHtml(cat)}</span>
-                <span class="font-bold text-text-primary">${curr} ${money(amt)} <span class="text-[10px] font-normal text-text-muted">(${pct}%)</span></span>
+            <div class="min-w-0">
+              <div class="flex items-center justify-between gap-2 text-xs mb-1">
+                <span class="font-semibold text-text-primary truncate min-w-0">${escapeHtml(cat)}</span>
+                <span class="font-bold text-text-primary shrink-0 whitespace-nowrap">${curr} ${money(amt)} <span class="text-[10px] font-normal text-text-muted">(${pct}%)</span></span>
               </div>
               <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                 <div class="h-full rounded-full bg-alert-coral transition-all duration-500" style="width: ${Math.max(4, (amt / maxExp) * 100)}%"></div>
@@ -1078,10 +1102,10 @@
         incContainer.innerHTML = incEntries.map(([cat, amt]) => {
           const pct = totalIncome > 0 ? Math.round((amt / totalIncome) * 100) : 0;
           return `
-            <div>
-              <div class="flex items-center justify-between text-xs mb-1">
-                <span class="font-semibold text-text-primary">${escapeHtml(cat)}</span>
-                <span class="font-bold text-text-primary">+${curr} ${money(amt)} <span class="text-[10px] font-normal text-text-muted">(${pct}%)</span></span>
+            <div class="min-w-0">
+              <div class="flex items-center justify-between gap-2 text-xs mb-1">
+                <span class="font-semibold text-text-primary truncate min-w-0">${escapeHtml(cat)}</span>
+                <span class="font-bold text-text-primary shrink-0 whitespace-nowrap">+${curr} ${money(amt)} <span class="text-[10px] font-normal text-text-muted">(${pct}%)</span></span>
               </div>
               <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                 <div class="h-full rounded-full bg-secondary transition-all duration-500" style="width: ${Math.max(4, (amt / maxInc) * 100)}%"></div>
@@ -1236,13 +1260,13 @@
       }
 
       container.innerHTML = insights.map(item => `
-        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface-container-low border border-slate-100">
+        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface-container-low border border-slate-100 min-w-0">
           <div class="w-7 h-7 rounded-lg ${item.color} flex items-center justify-center shrink-0 mt-0.5">
             <span class="material-symbols-outlined text-[16px]">${item.icon}</span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold text-text-primary">${escapeHtml(item.title)}</p>
-            <p class="text-[11px] text-text-muted mt-0.5 leading-relaxed">${escapeHtml(item.desc)}</p>
+            <p class="text-xs font-bold text-text-primary break-words">${escapeHtml(item.title)}</p>
+            <p class="text-[11px] text-text-muted mt-0.5 leading-relaxed break-words">${escapeHtml(item.desc)}</p>
           </div>
         </div>
       `).join('');
