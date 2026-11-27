@@ -24,6 +24,11 @@ class ThemeProvider extends ChangeNotifier {
         'profile_theme_preference', _nameFromMode(mode));
   }
 
+  void reset() {
+    _themeMode = ThemeMode.system;
+    notifyListeners();
+  }
+
   static ThemeMode _modeFromName(String? name) {
     switch (name) {
       case 'light':

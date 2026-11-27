@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:finwise_app/main.dart';
 import 'package:finwise_app/models/transaction_record.dart';
@@ -20,6 +21,7 @@ import 'package:finwise_app/services/database_service.dart';
 
 void main() {
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     await AuthService().signOut();
   });
 

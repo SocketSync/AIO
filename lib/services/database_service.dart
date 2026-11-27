@@ -635,4 +635,10 @@ class DatabaseService {
     _userTransactions.remove(userId);
     _userProfiles.remove(userId);
   }
+
+  /// Remove every in-memory user cache when ending a local session.
+  void clearLocalCache() {
+    _userTransactions.clear();
+    _userProfiles.clear();
+  }
 }

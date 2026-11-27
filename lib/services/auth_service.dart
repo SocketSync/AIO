@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'database_service.dart';
+import 'session_scrubber_service.dart';
 import 'supabase_service.dart';
 
 enum AuthSessionEvent {
@@ -168,8 +169,7 @@ class AuthService extends ChangeNotifier {
               await _clearExpiredSupabaseSession(client);
             }
           } else if (_isSupabaseSession) {
-            _currentUser = null;
-            _isSupabaseSession = false;
+            handleSessionExpired();
           }
         }
       } catch (e) {
@@ -185,9 +185,13 @@ class AuthService extends ChangeNotifier {
   Future<void> _clearExpiredSupabaseSession(SupabaseClient client) async {
     _isSigningOut = true;
     try {
-      await client.auth.signOut().timeout(const Duration(seconds: 5));
+      await _sessionScrubber().scrubSession(
+        signOut: () => client.auth
+            .signOut(scope: SignOutScope.local)
+            .timeout(const Duration(seconds: 5)),
+      );
     } catch (e) {
-      debugPrint('[AuthService] Clear expired Supabase session notice: $e');
+      debugPrint('[AuthService] Expired session scrub error: $e');
     } finally {
       _isSigningOut = false;
       _currentUser = null;
@@ -290,10 +294,22 @@ class AuthService extends ChangeNotifier {
     _isSupabaseSession = false;
     _errorMessage = null;
     _isLoading = false;
-    _invokeSessionResetCallbacks();
+    unawaited(_scrubLocalSessionData());
     notifyListeners();
     if (hadSession) {
       _emitSessionEvent(AuthSessionEvent.sessionExpired);
+    }
+  }
+
+  SessionScrubberService _sessionScrubber() => SessionScrubberService(
+        resetInMemoryState: _invokeSessionResetCallbacks,
+      );
+
+  Future<void> _scrubLocalSessionData() async {
+    try {
+      await _sessionScrubber().scrubLocalData();
+    } catch (e) {
+      debugPrint('[AuthService] Local session scrub error: $e');
     }
   }
 
@@ -867,24 +883,25 @@ class AuthService extends ChangeNotifier {
     _isSigningOut = true;
 
     try {
-      if (SupabaseService.isConfigured) {
-        try {
-          final client = SupabaseService().client;
-          if (client != null) {
-            await client.auth.signOut().timeout(const Duration(seconds: 10));
-          }
-        } catch (e) {
-          debugPrint('[AuthService] Supabase sign out error: $e');
-        }
-      }
+      final client =
+          SupabaseService.isConfigured ? SupabaseService().client : null;
+      await _sessionScrubber().scrubSession(
+        signOut: client == null
+            ? null
+            : () => client.auth
+                .signOut(scope: SignOutScope.local)
+                .timeout(const Duration(seconds: 10)),
+      );
+    } catch (e) {
+      debugPrint('[AuthService] Local session scrub error: $e');
+    }
 
+    try {
       if (shouldSignOutGoogle) {
-        try {
-          await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
-        } catch (e) {
-          debugPrint('[AuthService] Google sign out error: $e');
-        }
+        await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
       }
+    } catch (e) {
+      debugPrint('[AuthService] Google sign out error: $e');
     } finally {
       _isSigningOut = false;
       _usedDeviceGoogleSignIn = false;
@@ -892,7 +909,6 @@ class AuthService extends ChangeNotifier {
       _isSupabaseSession = false;
       _errorMessage = null;
       _isLoading = false;
-      _invokeSessionResetCallbacks();
       notifyListeners();
       _emitSessionEvent(AuthSessionEvent.signedOut);
     }

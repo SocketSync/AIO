@@ -28,6 +28,10 @@ class ProfileProvider extends ChangeNotifier {
   Uint8List? _avatarBytes;
   String? _avatarFileName;
   Map<String, dynamic> _baseline = {};
+  AuthService? _sessionAuth;
+  late final VoidCallback _sessionResetCallback = clear;
+  int _loadEpoch = 0;
+  bool _disposed = false;
 
   bool get isLoading => _isLoading;
   bool get isSaving => _isSaving;
@@ -68,6 +72,9 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> load(AuthService auth) async {
     final user = auth.currentUser;
     if (user == null) return;
+    _sessionAuth ??= auth;
+    auth.registerSessionResetCallback(_sessionResetCallback);
+    final loadEpoch = ++_loadEpoch;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -80,6 +87,11 @@ class ProfileProvider extends ChangeNotifier {
         photoUrl: user.photoUrl,
       );
       final preferences = await SharedPreferences.getInstance();
+      if (_disposed ||
+          loadEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return;
+      }
       _displayName = profile.displayName;
       _username = profile.username.isNotEmpty
           ? profile.username
@@ -108,8 +120,10 @@ class ProfileProvider extends ChangeNotifier {
       _errorMessage = 'Could not load your profile. Please try again.';
       debugPrint('[ProfileProvider] load error: $e');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (!_disposed && loadEpoch == _loadEpoch) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -168,6 +182,7 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   Future<String?> pickAvatar() async {
+    final operationEpoch = _loadEpoch;
     try {
       final file = await ImagePicker().pickImage(
         source: ImageSource.gallery,
@@ -176,6 +191,7 @@ class ProfileProvider extends ChangeNotifier {
       );
       if (file == null) return null;
       final length = await file.length();
+      if (_disposed || operationEpoch != _loadEpoch) return null;
       if (length > 5 * 1024 * 1024) {
         return 'Avatar must be 5 MB or smaller.';
       }
@@ -188,7 +204,9 @@ class ProfileProvider extends ChangeNotifier {
           !name.endsWith('.webp')) {
         return 'Choose a JPG, PNG, or WebP image.';
       }
-      _avatarBytes = await file.readAsBytes();
+      final avatarBytes = await file.readAsBytes();
+      if (_disposed || operationEpoch != _loadEpoch) return null;
+      _avatarBytes = avatarBytes;
       _avatarFileName = file.name;
       notifyListeners();
       return null;
@@ -199,6 +217,8 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   Future<bool> save(AuthService auth) async {
+    final user = auth.currentUser;
+    if (user == null) return false;
     final validationError = validate();
     if (validationError != null) {
       _errorMessage = validationError;
@@ -206,14 +226,20 @@ class ProfileProvider extends ChangeNotifier {
       return false;
     }
 
+    final operationEpoch = _loadEpoch;
     _isSaving = true;
     _errorMessage = null;
     notifyListeners();
     try {
       var photoUrl = _avatarUrl;
       if (_avatarBytes != null) {
-        photoUrl = await _uploadAvatar(auth.currentUser!.id) ??
+        photoUrl = await _uploadAvatar(user.id) ??
             'data:image/png;base64,${base64Encode(_avatarBytes!)}';
+      }
+      if (_disposed ||
+          operationEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return false;
       }
 
       final success = await auth.updateUserProfile(
@@ -234,10 +260,30 @@ class ProfileProvider extends ChangeNotifier {
         _errorMessage = auth.errorMessage ?? 'Failed to save profile.';
         return false;
       }
+      if (_disposed ||
+          operationEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return false;
+      }
 
       final preferences = await SharedPreferences.getInstance();
+      if (_disposed ||
+          operationEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return false;
+      }
       await preferences.setString('profile_theme_preference', _themePreference);
+      if (_disposed ||
+          operationEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return false;
+      }
       await preferences.setBool('profile_ai_insights', _aiInsightsEnabled);
+      if (_disposed ||
+          operationEpoch != _loadEpoch ||
+          auth.currentUser?.id != user.id) {
+        return false;
+      }
       await preferences.setBool(
           'profile_overspending_alerts', _overspendingAlertsEnabled);
       _avatarUrl = photoUrl;
@@ -246,12 +292,18 @@ class ProfileProvider extends ChangeNotifier {
       _baseline = _snapshot();
       return true;
     } catch (e) {
-      _errorMessage = 'Failed to save profile. Please try again.';
+      if (!_disposed &&
+          operationEpoch == _loadEpoch &&
+          auth.currentUser?.id == user.id) {
+        _errorMessage = 'Failed to save profile. Please try again.';
+      }
       debugPrint('[ProfileProvider] save error: $e');
       return false;
     } finally {
-      _isSaving = false;
-      notifyListeners();
+      if (!_disposed && operationEpoch == _loadEpoch) {
+        _isSaving = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -285,5 +337,37 @@ class ProfileProvider extends ChangeNotifier {
     _avatarBytes = null;
     _avatarFileName = null;
     notifyListeners();
+  }
+
+  void clear() {
+    _loadEpoch++;
+    _isLoading = false;
+    _isSaving = false;
+    _hasLoaded = false;
+    _errorMessage = null;
+    _displayName = '';
+    _username = '';
+    _email = '';
+    _bio = '';
+    _phone = '';
+    _currency = 'RM';
+    _monthlyBudget = 2500;
+    _themePreference = 'system';
+    _aiInsightsEnabled = true;
+    _overspendingAlertsEnabled = true;
+    _avatarUrl = null;
+    _avatarBytes = null;
+    _avatarFileName = null;
+    _baseline = {};
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _sessionAuth?.unregisterSessionResetCallback(_sessionResetCallback);
+    super.dispose();
   }
 }

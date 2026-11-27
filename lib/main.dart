@@ -164,6 +164,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
   void _resetProviderCaches() {
     _transactionProvider.clear();
     _savingsGoalProvider.clear();
+    _themeProvider.reset();
   }
 
   void _handleSessionEvent(AuthSessionEvent event) {
