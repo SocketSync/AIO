@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../widgets/responsive_page_container.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -84,356 +85,393 @@ class _InsightsScreenState extends State<InsightsScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: ResponsivePageContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Top Context Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // 1. Top Context Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('SMART ADVISORY', style: TextStyle(fontSize: 10, letterSpacing: 1, color: AppColors.textMuted, fontWeight: FontWeight.bold)),
-                          Text('AI Financial Assistant', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                        ],
-                      ),
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryFixedDim.withValues(alpha: 0.35),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.psychology, color: AppColors.primary, size: 22),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.growthMintSubtle,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.circle, size: 8, color: AppColors.secondary),
-                        SizedBox(width: 6),
-                        Text(
-                          'Active Analysis • Synced with Dynamic Budget',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.secondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // 2. Cash Flow Forecasting Engine Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.borderNeutral),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.timeline, color: AppColors.primary, size: 18),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Cash Flow Forecast',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Text('Dec 24 – Feb 25', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          '3-Month dynamic trajectory model based on recurring expenses',
-                          style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Predicted Surplus Banner
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.growthMintSubtle.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 14,
-                                    backgroundColor: AppColors.secondary,
-                                    child: Icon(Icons.savings, size: 15, color: Colors.white),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Predicted End-of-Term Surplus', style: TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w500)),
-                                      Text('+RM 640.00', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Text('High Confidence', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Chart Visualization Graphic
-                        Container(
-                          height: 120,
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: CustomPaint(
-                            painter: _ForecastChartPainter(),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Months Legend
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Sep', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
-                            Text('Oct', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
-                            Text('Nov (Today)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                            Text('Dec', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                            Text('Jan \'25', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                            Text('Feb', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                          ],
-                        ),
+                        Text('SMART ADVISORY', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, letterSpacing: 1, color: AppColors.textMuted, fontWeight: FontWeight.bold)),
+                        Text('AI Financial Assistant', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 22),
-
-                  // 3. Behavioral Diagnostic Reports
-                  const Row(
-                    children: [
-                      Icon(Icons.insights, size: 18, color: AppColors.primary),
-                      SizedBox(width: 6),
-                      Text(
-                        'Behavioral Diagnostic',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Report 1: Spending Behavior Habit (+42% spike on weekends)
-                  _buildDiagnosticCard(
-                    title: 'Spending Behavior Habit',
-                    badgeText: '+42% Spike',
-                    badgeColor: AppColors.alertCoral,
-                    badgeBg: AppColors.alertCoralSubtle,
-                    icon: Icons.local_mall,
-                    iconColor: AppColors.alertCoral,
-                    description: 'You spend 42% more on weekends around shopping & dining. Setting a RM60 weekend cap could save you RM240/month.',
-                    actionLabel: 'Set RM60 Cap',
-                    onAction: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Weekend RM60 cap applied to your budget!'), backgroundColor: AppColors.secondary),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Report 2: Recurring Expense Alert
-                  _buildDiagnosticCard(
-                    title: 'Recurring Expense Alert',
-                    badgeText: 'In 3 Days',
-                    badgeColor: AppColors.textMuted,
-                    badgeBg: AppColors.surfaceContainerHigh,
-                    icon: Icons.wifi_tethering,
-                    iconColor: AppColors.primary,
-                    description: 'Broadband / WiFi bill due in 3 days (RM 49). Adequate balance detected in your primary account for auto-debit.',
-                    actionLabel: 'Auto-Debit Ready',
-                    onAction: () {},
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Report 3: Smart Optimization (-15% Food)
-                  _buildDiagnosticCard(
-                    title: 'Smart Optimization',
-                    badgeText: '-15% Food',
-                    badgeColor: AppColors.secondary,
-                    badgeBg: AppColors.growthMintSubtle,
-                    icon: Icons.laptop_mac,
-                    iconColor: AppColors.secondary,
-                    description: 'You cut food expenditure by 15% this week. If maintained, your MacBook Pro savings goal completes 18 days earlier!',
-                    actionLabel: 'View Goal Progress',
-                    onAction: () {},
-                  ),
-                  const SizedBox(height: 22),
-
-                  // 4. Interactive AI Chat Prompt Dock
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
-                          SizedBox(width: 6),
-                          Text('Ask FinWise Assistant', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text('Gemini Core', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Suggestion Chips
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildSuggestionChip('Can I afford dining out tonight?', Icons.restaurant, AppColors.primary),
-                        const SizedBox(width: 8),
-                        _buildSuggestionChip('Forecast my tuition payment', Icons.school, AppColors.secondary),
-                        const SizedBox(width: 8),
-                        _buildSuggestionChip('How to save RM100?', Icons.savings, const Color(0xFFE65100)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Input Pill
+                  const SizedBox(width: 12),
                   Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AppColors.borderNeutral),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      color: AppColors.primaryFixedDim.withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.bubble_chart, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: _promptController,
-                            style: const TextStyle(fontSize: 13),
-                            onSubmitted: (val) {
-                              if (val.trim().isNotEmpty) {
-                                _triggerAiEvaluation(val.trim());
-                              }
-                            },
-                            decoration: const InputDecoration(
-                              hintText: 'Ask FinWise AI about your spending...',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: _isAnalyzing
-                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-                              : const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-                          onPressed: () {
-                            if (_promptController.text.trim().isNotEmpty) {
-                              _triggerAiEvaluation(_promptController.text.trim());
-                            }
-                          },
-                        ),
-                      ],
-                    ),
+                    child: const Icon(Icons.psychology, color: AppColors.primary, size: 22),
                   ),
-
-                  // AI Response Box
-                  if (_aiResponse != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryFixedDim.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(Icons.smart_toy, size: 16, color: AppColors.primary),
-                                  SizedBox(width: 6),
-                                  Text('FinWise Live Response', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                                ],
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.close, size: 16, color: AppColors.textMuted),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () => setState(() => _aiResponse = null),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _aiResponse!,
-                            style: const TextStyle(fontSize: 13, color: AppColors.onSurface, height: 1.4),
-                          ),
-                        ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.growthMintSubtle,
+                  borderRadius: BorderRadius.circular(AppTheme.pillBorderRadius),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.circle, size: 8, color: AppColors.secondary),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Active Analysis • Synced with Dynamic Budget',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.secondary),
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 18),
 
-                  const SizedBox(height: 80), // Padding for bottom nav
+              // 2. Cash Flow Forecasting Engine Card
+              Container(
+                padding: const EdgeInsets.all(AppTheme.cardPadding),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+                  border: Border.all(color: AppColors.borderNeutral),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.timeline, color: AppColors.primary, size: 18),
+                              SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  'Cash Flow Forecast',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text('Dec 24 – Feb 25', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '3-Month dynamic trajectory model based on recurring expenses',
+                      style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Predicted Surplus Banner
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.growthMintSubtle.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: AppColors.secondary,
+                                  child: Icon(Icons.savings, size: 15, color: Colors.white),
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Predicted End-of-Term Surplus', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w500)),
+                                      Text('+RM 640.00', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.secondary)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text('High Confidence', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Chart Visualization Graphic
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: CustomPaint(
+                        painter: _ForecastChartPainter(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Months Legend
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Sep', style: TextStyle(fontSize: 10, color: AppColors.textMuted)))),
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Oct', style: TextStyle(fontSize: 10, color: AppColors.textMuted)))),
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Nov (Today)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)))),
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Dec', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)))),
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Jan \'25', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)))),
+                        Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text('Feb', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary)))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // 3. Behavioral Diagnostic Reports
+              const Row(
+                children: [
+                  Icon(Icons.insights, size: 18, color: AppColors.primary),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Behavioral Diagnostic',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 10),
+
+              // Report 1: Spending Behavior Habit (+42% spike on weekends)
+              _buildDiagnosticCard(
+                title: 'Spending Behavior Habit',
+                badgeText: '+42% Spike',
+                badgeColor: AppColors.alertCoral,
+                badgeBg: AppColors.alertCoralSubtle,
+                icon: Icons.local_mall,
+                iconColor: AppColors.alertCoral,
+                description: 'You spend 42% more on weekends around shopping & dining. Setting a RM60 weekend cap could save you RM240/month.',
+                actionLabel: 'Set RM60 Cap',
+                onAction: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Weekend RM60 cap applied to your budget!'), backgroundColor: AppColors.secondary),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+
+              // Report 2: Recurring Expense Alert
+              _buildDiagnosticCard(
+                title: 'Recurring Expense Alert',
+                badgeText: 'In 3 Days',
+                badgeColor: AppColors.textMuted,
+                badgeBg: AppColors.surfaceContainerHigh,
+                icon: Icons.wifi_tethering,
+                iconColor: AppColors.primary,
+                description: 'Broadband / WiFi bill due in 3 days (RM 49). Adequate balance detected in your primary account for auto-debit.',
+                actionLabel: 'Auto-Debit Ready',
+                onAction: () {},
+              ),
+              const SizedBox(height: 10),
+
+              // Report 3: Smart Optimization (-15% Food)
+              _buildDiagnosticCard(
+                title: 'Smart Optimization',
+                badgeText: '-15% Food',
+                badgeColor: AppColors.secondary,
+                badgeBg: AppColors.growthMintSubtle,
+                icon: Icons.laptop_mac,
+                iconColor: AppColors.secondary,
+                description: 'You cut food expenditure by 15% this week. If maintained, your MacBook Pro savings goal completes 18 days earlier!',
+                actionLabel: 'View Goal Progress',
+                onAction: () {},
+              ),
+              const SizedBox(height: 22),
+
+              // 4. Interactive AI Chat Prompt Dock
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Ask FinWise Assistant',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text('Gemini Core', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Suggestion Chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildSuggestionChip('Can I afford dining out tonight?', Icons.restaurant, AppColors.primary),
+                    const SizedBox(width: 8),
+                    _buildSuggestionChip('Forecast my tuition payment', Icons.school, AppColors.secondary),
+                    const SizedBox(width: 8),
+                    _buildSuggestionChip('How to save RM100?', Icons.savings, const Color(0xFFE65100)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Input Pill
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.borderNeutral),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.bubble_chart, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _promptController,
+                        style: const TextStyle(fontSize: 13),
+                        onSubmitted: (val) {
+                          if (val.trim().isNotEmpty) {
+                            _triggerAiEvaluation(val.trim());
+                          }
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'Ask FinWise AI about your spending...',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: _isAnalyzing
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                          : const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                      onPressed: () {
+                        if (_promptController.text.trim().isNotEmpty) {
+                          _triggerAiEvaluation(_promptController.text.trim());
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // AI Response Box
+              if (_aiResponse != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.cardPadding),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryFixedDim.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Expanded(
+                            child: Row(
+                              children: [
+                                Icon(Icons.smart_toy, size: 16, color: AppColors.primary),
+                                SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'FinWise Live Response',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 16, color: AppColors.textMuted),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => setState(() => _aiResponse = null),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _aiResponse!,
+                        style: const TextStyle(fontSize: 13, color: AppColors.onSurface, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 80), // Padding for bottom nav
+            ],
           ),
         ),
       ),
@@ -452,10 +490,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
     required VoidCallback onAction,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppTheme.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
         border: Border.all(color: AppColors.borderNeutral),
       ),
       child: Column(
@@ -480,7 +518,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(8)),

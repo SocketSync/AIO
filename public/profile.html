@@ -21,6 +21,7 @@
             "primary": "#00236f",
             "primary-container": "#1e3a8a",
             "on-primary": "#ffffff",
+            "primary-fixed-dim": "#B6C4FF",
             "secondary": "#006c49",
             "secondary-container": "#6cf8bb",
             "secondary-fixed": "#6ffbbe",
@@ -31,6 +32,8 @@
             "surface-container": "#eeedf4",
             "surface-container-high": "#e9e7ef",
             "surface-container-highest": "#e3e1e9",
+            "on-surface": "#1A1B21",
+            "on-surface-variant": "#444651",
             "text-primary": "#0F172A",
             "text-muted": "#64748B",
             "outline": "#757682",
@@ -44,39 +47,58 @@
     };
   </script>
   <style>
+    :root {
+      --fw-primary: #00236f;
+      --fw-primary-container: #1e3a8a;
+      --fw-secondary: #006c49;
+      --fw-surface: #faf8ff;
+      --fw-surface-low: #f4f3fa;
+      --fw-card-bg: #ffffff;
+      --fw-border: #E2E8F0;
+      --fw-text-primary: #0F172A;
+      --fw-text-muted: #64748B;
+      --fw-alert-coral: #EF4444;
+      --fw-shell-max-width: 640px;
+      --fw-card-radius: 16px;
+      --fw-input-radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
     body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); }
+    .fw-shell { width: 100%; max-width: var(--fw-shell-max-width); margin: 0 auto; }
+    .fw-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--fw-shell-max-width); }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
   </style>
 </head>
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
-  <!-- Mobile Frame Wrapper -->
-  <div class="w-full max-w-md bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-28">
+  <!-- Unified Responsive Shell Wrapper -->
+  <div class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
 
     <!-- Top Status Banner -->
-    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between font-medium z-50">
-      <span class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
-        FinWise Profile & Security
+    <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
+      <span class="flex items-center gap-1.5 min-w-0 truncate">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse shrink-0"></span>
+        <span class="truncate">FinWise Profile &amp; Security</span>
       </span>
-      <div class="flex items-center gap-1.5" id="cloudStatusBadge">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap" id="cloudStatusBadge">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
         <span class="text-[11px] text-white/90">Live Real-Time Sync</span>
       </div>
     </div>
 
     <!-- Header Navigation Bar -->
     <header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-surface-container">
-      <div class="h-14 px-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
+      <div class="h-16 px-4 sm:px-5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 shrink-0">
           <button aria-label="Go Back" onclick="window.location.href='dashboard.html'" class="w-9 h-9 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors">
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
-          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-7 h-7 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5">
+          <img src="FinwiseBigLogo.jpeg" alt="FinWise Logo" class="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white p-0.5">
         </div>
-        <h1 class="font-bold text-base text-text-primary tracking-tight text-center truncate px-2 flex-1">User Profile & Account</h1>
-        <button onclick="saveAllProfileChanges()" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container shadow-sm flex items-center gap-1 transition-all active:scale-95">
+        <h1 class="font-bold text-base text-text-primary tracking-tight text-center truncate px-2 min-w-0 flex-1">User Profile &amp; Account</h1>
+        <button onclick="saveAllProfileChanges()" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container shadow-sm flex items-center gap-1 transition-all active:scale-95 shrink-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[16px]">check</span>
           <span>Save</span>
         </button>
@@ -84,20 +106,20 @@
     </header>
 
     <!-- Notification / Alert Banner -->
-    <div id="status-alert" class="hidden mx-4 mt-3 p-3 rounded-xl border text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
+    <div id="status-alert" class="hidden mx-4 sm:mx-5 mt-3 p-3 rounded-xl border text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
       <span id="status-alert-icon" class="material-symbols-outlined text-[18px] shrink-0">info</span>
-      <span id="status-alert-text" class="flex-1"></span>
-      <button onclick="hideAlert()" class="text-slate-400 hover:text-slate-700">
+      <span id="status-alert-text" class="flex-1 min-w-0 break-words"></span>
+      <button onclick="hideAlert()" class="text-slate-400 hover:text-slate-700 shrink-0">
         <span class="material-symbols-outlined text-[16px]">close</span>
       </button>
     </div>
 
     <!-- Main Content Form -->
-    <main class="flex-1 flex flex-col w-full px-4 pt-3 space-y-4">
+    <main class="flex-1 flex flex-col w-full px-4 sm:px-5 pt-4 space-y-4">
 
       <!-- HERO PROFILE CARD: Avatar & Identity Overview -->
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-primary-container via-primary to-primary text-white p-5 shadow-lg border border-primary/20">
-        <div class="flex flex-col items-center text-center relative z-10">
+        <div class="flex flex-col items-center text-center relative z-10 min-w-0">
           
           <!-- Avatar Container with Edit Badge -->
           <div class="relative group cursor-pointer mb-3" onclick="openAvatarModal()">
@@ -109,8 +131,8 @@
             </button>
           </div>
 
-          <h2 id="hero-user-name" class="text-xl font-bold tracking-tight text-white">Google User</h2>
-          <p id="hero-user-email" class="text-xs text-white/80 font-medium mt-0.5">user@gmail.com</p>
+          <h2 id="hero-user-name" class="text-xl font-bold tracking-tight text-white max-w-full truncate">Google User</h2>
+          <p id="hero-user-email" class="text-xs text-white/80 font-medium mt-0.5 max-w-full break-all">user@gmail.com</p>
 
           <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 text-[11px] font-semibold text-white/95 backdrop-blur-sm">
@@ -207,17 +229,17 @@
 
       <!-- SECTION 3: Security & Password -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+        <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span class="material-symbols-outlined text-[18px]">lock_reset</span>
             </div>
-            <div>
-              <h3 class="text-sm font-bold text-text-primary">Security & Password</h3>
-              <p class="text-[11px] text-text-muted">Update your database access password</p>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-text-primary truncate">Security & Password</h3>
+              <p class="text-[11px] text-text-muted truncate">Update your database access password</p>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-md bg-surface-container-high text-[10px] font-bold text-text-muted">SHA-256</span>
+          <span class="px-2 py-0.5 rounded-md bg-surface-container-high text-[10px] font-bold text-text-muted shrink-0 whitespace-nowrap">SHA-256</span>
         </div>
 
         <div class="space-y-3">
@@ -327,23 +349,23 @@
         </div>
 
         <div class="space-y-3">
-          <div class="flex items-center justify-between py-1">
-            <div>
-              <p class="text-xs font-bold text-text-primary">AI Spending Insights</p>
-              <p class="text-[11px] text-text-muted">Get smart automated categorization and weekly tips</p>
+          <div class="flex items-center justify-between gap-3 py-1">
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-text-primary truncate">AI Spending Insights</p>
+              <p class="text-[11px] text-text-muted break-words">Get smart automated categorization and weekly tips</p>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
               <input type="checkbox" id="pref-ai-insights" checked class="sr-only peer">
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
             </label>
           </div>
 
-          <div class="flex items-center justify-between py-1 border-t border-slate-100">
-            <div>
-              <p class="text-xs font-bold text-text-primary">Overspending Alerts</p>
-              <p class="text-[11px] text-text-muted">Notify when budget reaches 85% threshold</p>
+          <div class="flex items-center justify-between gap-3 py-1 border-t border-slate-100">
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-text-primary truncate">Overspending Alerts</p>
+              <p class="text-[11px] text-text-muted break-words">Notify when budget reaches 85% threshold</p>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
               <input type="checkbox" id="pref-alerts" checked class="sr-only peer">
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
             </label>
@@ -354,32 +376,32 @@
       <!-- SECTION 6: Account Actions & Data -->
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-border-neutral">
         <div class="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
-          <div class="w-7 h-7 rounded-lg bg-alert-coral-subtle flex items-center justify-center text-alert-coral">
+          <div class="w-7 h-7 rounded-lg bg-alert-coral-subtle flex items-center justify-center text-alert-coral shrink-0">
             <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
           </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">Account Actions</h3>
-            <p class="text-[11px] text-text-muted">Manage your data export and active session</p>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-sm font-bold text-text-primary truncate">Account Actions</h3>
+            <p class="text-[11px] text-text-muted truncate">Manage your data export and active session</p>
           </div>
         </div>
 
         <div class="space-y-2">
           <!-- Export Data Button -->
-          <button type="button" onclick="exportUserData()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
-            <span class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px] text-primary">download</span>
-              <span>Export All Financial Data (JSON)</span>
+          <button type="button" onclick="exportUserData()" class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <span class="flex items-center gap-2 min-w-0 flex-1">
+              <span class="material-symbols-outlined text-[18px] text-primary shrink-0">download</span>
+              <span class="truncate">Export All Financial Data (JSON)</span>
             </span>
-            <span class="material-symbols-outlined text-[16px] text-slate-400">chevron_right</span>
+            <span class="material-symbols-outlined text-[16px] text-slate-400 shrink-0">chevron_right</span>
           </button>
 
           <!-- Sign Out Button -->
-          <button type="button" onclick="confirmSignOut()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-red-200 bg-red-50/50 text-xs font-semibold text-alert-coral hover:bg-red-50 transition-colors">
-            <span class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">logout</span>
-              <span>Sign Out of Account</span>
+          <button type="button" onclick="confirmSignOut()" class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border border-red-200 bg-red-50/50 text-xs font-semibold text-alert-coral hover:bg-red-50 transition-colors">
+            <span class="flex items-center gap-2 min-w-0 flex-1">
+              <span class="material-symbols-outlined text-[18px] shrink-0">logout</span>
+              <span class="truncate">Sign Out of Account</span>
             </span>
-            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            <span class="material-symbols-outlined text-[16px] shrink-0">chevron_right</span>
           </button>
         </div>
       </div>
@@ -417,28 +439,28 @@
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
+    <nav class="fw-bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='dashboard.html'">
           <span class="material-symbols-outlined text-[22px]">home</span>
-          <span class="text-[10px]">Home</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Home</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"         onclick="window.location.href='summary.html#goals'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html#goals'">
           <span class="material-symbols-outlined text-[22px]">savings</span>
-          <span class="text-[10px]">Goals</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Goals</span>
         </button>
-        <div class="flex-1 flex items-center justify-center">
-          <button onclick="window.location.href='transactions.html?add=true'" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
+        <div class="flex-1 min-w-0 flex items-center justify-center">
+          <button onclick="window.location.href='transactions.html?add=true'" aria-label="Add Transaction" class="w-12 h-12 -mt-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-container transition-all active:scale-95 border-2 border-white">
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
           <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
-          <span class="text-[10px]">Insights</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>
-        <button class="flex-1 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
           <span class="material-symbols-outlined text-[22px]">person</span>
-          <span class="text-[10px]">Profile</span>
+          <span class="text-[10px] truncate whitespace-nowrap">Profile</span>
         </button>
       </div>
     </nav>
@@ -498,9 +520,9 @@
       <!-- 3. Direct Image URL -->
       <div class="p-3 rounded-xl bg-surface-container-low border border-slate-200">
         <p class="text-xs font-bold text-text-primary mb-1">Option 3: Paste Image Web Link</p>
-        <div class="flex gap-2">
-          <input id="avatarUrlInput" type="url" placeholder="https://example.com/photo.jpg" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:border-primary">
-          <button type="button" onclick="applyAvatarUrl()" class="px-3 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container">Apply</button>
+        <div class="flex gap-2 min-w-0">
+          <input id="avatarUrlInput" type="url" placeholder="https://example.com/photo.jpg" class="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:border-primary">
+          <button type="button" onclick="applyAvatarUrl()" class="px-3 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container shrink-0">Apply</button>
         </div>
       </div>
 

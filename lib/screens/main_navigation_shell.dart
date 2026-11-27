@@ -43,7 +43,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         children: _pages,
       ),
       bottomNavigationBar: Container(
-        height: 68,
         decoration: BoxDecoration(
           color: AppColors.surface.withValues(alpha: 0.95),
           border: const Border(top: BorderSide(color: AppColors.borderNeutral, width: 0.8)),
@@ -57,60 +56,79 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         ),
         child: SafeArea(
           top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 1. Home Tab
-              _buildNavItem(
-                index: 0,
-                icon: Icons.home,
-                label: 'Home',
-              ),
-
-              // 2. Budgets Tab
-              _buildNavItem(
-                index: 1,
-                icon: Icons.savings_rounded,
-                label: 'Goals',
-              ),
-
-              // 3. Center Add Floating Button
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushNamed('/add-transaction');
-                },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryContainer.withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+          child: SizedBox(
+            height: 64,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: AppTheme.maxContentWidth),
+                child: Row(
+                  children: [
+                    // 1. Home Tab
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 0,
+                        icon: Icons.home,
+                        label: 'Home',
                       ),
-                    ],
-                  ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 26),
+                    ),
+
+                    // 2. Budgets Tab
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 1,
+                        icon: Icons.savings_rounded,
+                        label: 'Goals',
+                      ),
+                    ),
+
+                    // 3. Center Add Floating Button
+                    Expanded(
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/add-transaction');
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryContainer,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryContainer.withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.add, color: Colors.white, size: 26),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 4. Insights Tab
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 2,
+                        icon: Icons.auto_awesome,
+                        label: 'Insights',
+                      ),
+                    ),
+
+                    // 5. Profile Tab
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 4,
+                        icon: Icons.person,
+                        label: 'Profile',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              // 4. Insights Tab
-              _buildNavItem(
-                index: 2,
-                icon: Icons.auto_awesome,
-                label: 'Insights',
-              ),
-
-              // 5. Profile Tab
-              _buildNavItem(
-                index: 4,
-                icon: Icons.person,
-                label: 'Profile',
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -127,9 +145,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       onTap: () => setState(() => _currentIndex = index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
@@ -139,6 +158,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             const SizedBox(height: 3),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
