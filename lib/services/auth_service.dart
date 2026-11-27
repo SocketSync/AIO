@@ -901,4 +901,5 @@ class AuthService extends ChangeNotifier {
 
 // AIO-84: Local/demo mode session handling.
 
+// AIO-137: Database integrity constraints.
 // AIO-91: Password reset email flow.
