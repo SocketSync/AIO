@@ -10,7 +10,7 @@
     { "source": "/forgot-password", "destination": "/forgot_password.html" },
     { "source": "/budgets", "destination": "/summary.html" },
     { "source": "/goals", "destination": "/summary.html" },
-    { "source": "/insights", "destination": "/dashboard.html" },
+    { "source": "/insights", "destination": "/insights.html" },
     { "source": "/simulator", "destination": "/dashboard.html" },
     { "source": "/add-transaction", "destination": "/transactions.html?add=true" },
     { "source": "/scanner", "destination": "/transactions.html?add=true" },

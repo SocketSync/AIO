@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -660,6 +661,137 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Enter valid amount > 0'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '14. MainNavigationShell bottom nav routes Goals, Insights, Profile, Home and + correctly without swapping active tab',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    FontWeight? weightFor(Key key, String label) {
+      final finder = find.descendant(
+        of: find.byKey(key),
+        matching: find.text(label),
+      );
+      return tester.widget<Text>(finder).style?.fontWeight;
+    }
+
+    int currentShellTab() =>
+        tester
+            .widgetList<IndexedStack>(
+              find.descendant(
+                of: find.byType(MainNavigationShell),
+                matching: find.byType(IndexedStack),
+              ),
+            )
+            .first
+            .index ??
+        -1;
+
+    expect(currentShellTab(), 0);
+    expect(weightFor(const Key('nav_home'), 'Home'), FontWeight.bold);
+    expect(weightFor(const Key('nav_goals'), 'Goals'), FontWeight.normal);
+    expect(weightFor(const Key('nav_insights'), 'Insights'), FontWeight.normal);
+
+    // Tap Goals -> index 1, Goals active, Insights inactive
+    await tester.tap(find.byKey(const Key('nav_goals')));
+    await tester.pumpAndSettle();
+    expect(currentShellTab(), 1);
+    expect(weightFor(const Key('nav_goals'), 'Goals'), FontWeight.bold);
+    expect(weightFor(const Key('nav_insights'), 'Insights'), FontWeight.normal);
+
+    // Tap Insights -> index 2, Insights active, Goals inactive
+    await tester.tap(find.byKey(const Key('nav_insights')));
+    await tester.pumpAndSettle();
+    expect(currentShellTab(), 2);
+    expect(weightFor(const Key('nav_insights'), 'Insights'), FontWeight.bold);
+    expect(weightFor(const Key('nav_goals'), 'Goals'), FontWeight.normal);
+    expect(find.text('AI Financial Assistant'), findsOneWidget);
+
+    // Tap Profile -> index 4, Profile active
+    await tester.tap(find.byKey(const Key('nav_profile')));
+    await tester.pumpAndSettle();
+    expect(currentShellTab(), 4);
+    expect(weightFor(const Key('nav_profile'), 'Profile'), FontWeight.bold);
+
+    // Tap Home -> back to index 0
+    await tester.tap(find.byKey(const Key('nav_home')));
+    await tester.pumpAndSettle();
+    expect(currentShellTab(), 0);
+    expect(weightFor(const Key('nav_home'), 'Home'), FontWeight.bold);
+
+    // Tap center '+' button -> opens AddTransactionScreen
+    await tester.tap(find.byKey(const Key('nav_add')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AddTransactionScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '15. FinWiseScrollBehavior enables touch, mouse, and trackpad drag scrolling on MaterialApp',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final MaterialApp app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.scrollBehavior, isA<FinWiseScrollBehavior>());
+    final Set<PointerDeviceKind> devices = app.scrollBehavior!.dragDevices;
+    expect(devices.contains(PointerDeviceKind.touch), isTrue);
+    expect(devices.contains(PointerDeviceKind.mouse), isTrue);
+    expect(devices.contains(PointerDeviceKind.trackpad), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '16. Redesigned InsightsScreen renders all sections cleanly without overflow on mobile and desktop viewports',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp(initialRoute: '/insights'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SMART ADVISORY'), findsOneWidget);
+    expect(find.text('AI Financial Assistant'), findsOneWidget);
+    expect(find.text('Cash Flow Forecast'), findsOneWidget);
+    expect(find.text('Predicted Surplus'), findsOneWidget);
+    expect(find.text('High Confidence'), findsOneWidget);
+    expect(find.text('Behavioral Diagnostic'), findsOneWidget);
+    expect(find.text('Spending Behavior Habit'), findsOneWidget);
+    expect(find.text('Recurring Expense Alert'), findsOneWidget);
+    expect(find.text('Smart Optimization'), findsOneWidget);
+    expect(find.text('Ask FinWise Assistant'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // Resize to desktop viewport and verify interactive quick-prompt evaluation
+    tester.view.physicalSize = const Size(1280, 800);
+    await tester.pumpAndSettle();
+
+    final chipFinder = find.text('Can I afford dining out tonight?');
+    await tester.ensureVisible(chipFinder);
+    await tester.tap(chipFinder);
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    expect(find.text('FinWise Live Response'), findsOneWidget);
+    expect(find.textContaining('surplus'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }
