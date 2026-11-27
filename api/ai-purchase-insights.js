@@ -1,3 +1,27 @@
+const crypto = require('crypto');
+
+const insightCache = new Map();
+const INSIGHT_CACHE_TTL_MS = 15 * 60 * 1000;
+const INSIGHT_CACHE_MAX = 100;
+
+function getCachedInsight(key) {
+  const entry = insightCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > INSIGHT_CACHE_TTL_MS) {
+    insightCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCachedInsight(key, value) {
+  if (insightCache.size >= INSIGHT_CACHE_MAX) {
+    const oldestKey = insightCache.keys().next().value;
+    if (oldestKey !== undefined) insightCache.delete(oldestKey);
+  }
+  insightCache.set(key, { value, ts: Date.now() });
+}
+
 function getOrdinalDay(dateStr) {
   if (!dateStr) return 'recently';
   const parts = String(dateStr).slice(0, 10).split('-');
@@ -184,8 +208,10 @@ module.exports = async (req, res) => {
 
     const geminiKey = (apiKey || process.env.GEMINI_API_KEY || '').trim();
     const hasValidKey = geminiKey && !geminiKey.includes('your-gemini') && geminiKey.length > 20;
+    const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+    const hasValidOpenAiKey = openaiKey && !openaiKey.includes('your-openai') && openaiKey.length > 20;
 
-    // Collect compact 14-day receipt summary for LLM prompt if Gemini is configured
+    // Collect compact 14-day receipt summary for LLM prompt if AI is configured
     const now = Date.now();
     const last14Summary = (Array.isArray(recentTransactions) ? recentTransactions : [])
       .filter(tx => {
@@ -194,59 +220,138 @@ module.exports = async (req, res) => {
         const ts = new Date(dStr + 'T12:00:00Z').getTime();
         return Number.isFinite(ts) && ts >= now - 14 * 86400000;
       })
-      .slice(0, 25)
+      .slice(0, 15)
       .map(tx => ({
         date: String(tx.date || '').slice(0, 10),
-        merchant: tx.description || tx.title || '',
-        category: tx.category || '',
-        amount: tx.amount,
-        receipt_items: Array.isArray(tx.receipt_items) ? tx.receipt_items : []
+        merchant: String(tx.description || tx.title || '').slice(0, 60),
+        category: String(tx.category || '').slice(0, 32),
+        amount: Number(tx.amount) || 0,
+        items: (Array.isArray(tx.receipt_items) ? tx.receipt_items : [])
+          .slice(0, 8)
+          .map(it => ({
+            n: String(it.item_name || it.name || '').slice(0, 50),
+            p: Number(it.price) || 0,
+            q: parseInt(it.quantity, 10) || 1
+          }))
       }));
 
-    const hasAnyItemizedData = last14Summary.some(t => t.receipt_items.length > 0) ||
+    const hasAnyItemizedData = last14Summary.some(t => t.items.length > 0) ||
       (currentReceipt && Array.isArray(currentReceipt.receipt_items) && currentReceipt.receipt_items.length > 0);
 
-    if (hasValidKey && hasAnyItemizedData) {
-      try {
-        const prompt = `You are FinWise, a warm, friendly personal finance assistant.
+    if ((hasValidKey || hasValidOpenAiKey) && hasAnyItemizedData) {
+      const compactReceipt = currentReceipt
+        ? {
+            merchant: String(currentReceipt.merchant || '').slice(0, 60),
+            category: String(currentReceipt.category || '').slice(0, 32),
+            date: String(currentReceipt.date || '').slice(0, 10),
+            items: (Array.isArray(currentReceipt.receipt_items) ? currentReceipt.receipt_items : [])
+              .slice(0, 8)
+              .map(it => ({
+                n: String(it.item_name || it.name || '').slice(0, 50),
+                p: Number(it.price) || 0,
+                q: parseInt(it.quantity, 10) || 1
+              }))
+          }
+        : null;
+
+      const cacheKey = crypto
+        .createHash('sha256')
+        .update(JSON.stringify({ currency, last14Summary, compactReceipt }))
+        .digest('hex');
+      const cached = getCachedInsight(cacheKey);
+      if (cached) {
+        return res.status(200).json({ ...cached, cached: true });
+      }
+
+      const prompt = `You are FinWise, a warm, friendly personal finance assistant.
 Look at the user's itemized receipt purchases from the last 14 days and today's receipt.
-Look for duplicate purchases or unusual frequencies and provide a single, short, and friendly piece of financial advice.
-Start the sentence with "✨ FinWise noticed:" and keep it concise (1-2 sentences max, currency is ${currency}).
+Look for duplicate purchases or unusual frequencies and give one short, friendly financial insight.
+Start with "✨ FinWise noticed:" and keep it to 1-2 sentences (currency: ${currency}).
 
 Last 14 days receipts: ${JSON.stringify(last14Summary)}
-Today's receipt (if any): ${JSON.stringify(currentReceipt)}
+Today's receipt: ${JSON.stringify(compactReceipt)}
 
-Respond with plain text only (no markdown headings or bullet points).`;
+Respond with plain text only.`;
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 7000);
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
+      if (hasValidKey) {
+        const geminiModels = ['gemini-2.5-flash-lite', 'gemini-2.0-flash-lite', 'gemini-flash-latest'];
+        for (const modelName of geminiModels) {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 7000);
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
 
-        const geminiRes = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.4, maxOutputTokens: 160 }
-          })
-        });
-        clearTimeout(timeout);
-
-        if (geminiRes.ok) {
-          const data = await geminiRes.json();
-          const llmText = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-          if (llmText) {
-            return res.status(200).json({
-              success: true,
-              engine: 'gemini-insights',
-              ...deterministic,
-              insight: llmText.startsWith('✨') ? llmText : `✨ FinWise noticed: ${llmText}`
+            const geminiRes = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              signal: controller.signal,
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.35, maxOutputTokens: 140 }
+              })
             });
+            clearTimeout(timeout);
+
+            if (geminiRes.ok) {
+              const data = await geminiRes.json();
+              const llmText = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+              if (llmText) {
+                const responsePayload = {
+                  success: true,
+                  engine: 'gemini-insights',
+                  ...deterministic,
+                  insight: llmText.startsWith('✨') ? llmText : `✨ FinWise noticed: ${llmText}`
+                };
+                setCachedInsight(cacheKey, responsePayload);
+                return res.status(200).json(responsePayload);
+              }
+            } else if (geminiRes.status === 403 || geminiRes.status === 429) {
+              console.warn(`Gemini insight rate/quota limit (${geminiRes.status}) on ${modelName}`);
+              break;
+            }
+          } catch (e) {
+            console.warn(`Gemini purchase insight fallback (${modelName}):`, e.message);
           }
         }
-      } catch (e) {
-        console.warn('Gemini purchase insight fallback notice:', e.message);
+      }
+
+      if (hasValidOpenAiKey) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 7000);
+          const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${openaiKey}`
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [{ role: 'user', content: prompt }],
+              temperature: 0.3,
+              max_tokens: 140
+            })
+          });
+          clearTimeout(timeout);
+
+          if (openAiRes.ok) {
+            const openAiData = await openAiRes.json();
+            const llmText = (openAiData?.choices?.[0]?.message?.content || '').trim();
+            if (llmText) {
+              const responsePayload = {
+                success: true,
+                engine: 'openai-insights',
+                ...deterministic,
+                insight: llmText.startsWith('✨') ? llmText : `✨ FinWise noticed: ${llmText}`
+              };
+              setCachedInsight(cacheKey, responsePayload);
+              return res.status(200).json(responsePayload);
+            }
+          }
+        } catch (e) {
+          console.warn('OpenAI purchase insight fallback notice:', e.message);
+        }
       }
     }
 
