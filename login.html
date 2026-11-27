@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-full bg-surface-container-low" lang="en">
+<html class="bg-surface-container-low" lang="en">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
@@ -63,8 +63,8 @@
       --fw-input-radius: 12px;
     }
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { overflow-x: hidden; }
-    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    html { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+    body { height: auto; min-height: 100vh; overflow-x: clip; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     .fw-shell { width: 100%; max-width: var(--fw-shell-max-width); margin: 0 auto; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }

@@ -35,6 +35,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   }
 
   @override
+  void didUpdateWidget(covariant MainNavigationShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      _currentIndex = widget.initialTab;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -66,15 +74,17 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     // 1. Home Tab
                     Expanded(
                       child: _buildNavItem(
+                        key: const Key('nav_home'),
                         index: 0,
                         icon: Icons.home,
                         label: 'Home',
                       ),
                     ),
 
-                    // 2. Budgets Tab
+                    // 2. Goals Tab
                     Expanded(
                       child: _buildNavItem(
+                        key: const Key('nav_goals'),
                         index: 1,
                         icon: Icons.savings_rounded,
                         label: 'Goals',
@@ -84,25 +94,30 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     // 3. Center Add Floating Button
                     Expanded(
                       child: Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pushNamed('/add-transaction');
-                          },
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryContainer,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryContainer.withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                        child: Semantics(
+                          button: true,
+                          label: 'Add Transaction',
+                          child: GestureDetector(
+                            key: const Key('nav_add'),
+                            onTap: () {
+                              Navigator.of(context).pushNamed('/add-transaction');
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryContainer,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryContainer.withValues(alpha: 0.35),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.add, color: Colors.white, size: 26),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white, size: 26),
                           ),
                         ),
                       ),
@@ -111,6 +126,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     // 4. Insights Tab
                     Expanded(
                       child: _buildNavItem(
+                        key: const Key('nav_insights'),
                         index: 2,
                         icon: Icons.auto_awesome,
                         label: 'Insights',
@@ -120,6 +136,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     // 5. Profile Tab
                     Expanded(
                       child: _buildNavItem(
+                        key: const Key('nav_profile'),
                         index: 4,
                         icon: Icons.person,
                         label: 'Profile',
@@ -136,38 +153,45 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   }
 
   Widget _buildNavItem({
+    required Key key,
     required int index,
     required IconData icon,
     required String label,
   }) {
     final isSelected = _currentIndex == index;
-    return InkWell(
-      onTap: () => setState(() => _currentIndex = index),
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isSelected ? AppColors.primary : AppColors.textMuted,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: label,
+      child: InkWell(
+        key: key,
+        onTap: () => setState(() => _currentIndex = index),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 22,
                 color: isSelected ? AppColors.primary : AppColors.textMuted,
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppColors.primary : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

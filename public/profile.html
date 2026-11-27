@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-full bg-surface-container-low" lang="en">
+<html class="bg-surface-container-low" lang="en">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
@@ -63,10 +63,10 @@
       --fw-input-radius: 12px;
     }
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { overflow-x: hidden; }
-    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+    html { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+    body { height: auto; min-height: 100vh; overflow-x: clip; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     .fw-shell { width: 100%; max-width: var(--fw-shell-max-width); margin: 0 auto; }
-    .fw-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--fw-shell-max-width); }
+    .fw-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--fw-shell-max-width); touch-action: pan-y; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     .pt-safe { padding-top: env(safe-area-inset-top, 16px); }
   </style>
@@ -74,7 +74,7 @@
 <body class="bg-slate-100 flex flex-col items-center min-h-screen text-text-primary antialiased">
 
   <!-- Unified Responsive Shell Wrapper -->
-  <div class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+  <div class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-28">
 
     <!-- Top Status Banner -->
     <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
@@ -454,11 +454,11 @@
             <span class="material-symbols-outlined text-[26px]">add</span>
           </button>
         </div>
-        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='summary.html'">
+        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors" onclick="window.location.href='insights.html'">
           <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
           <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>
-        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold">
+        <button aria-current="page" class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="material-symbols-outlined text-[22px]">person</span>
           <span class="text-[10px] truncate whitespace-nowrap">Profile</span>
         </button>

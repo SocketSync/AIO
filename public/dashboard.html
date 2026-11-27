@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-full bg-surface-container-low" lang="en">
+<html class="bg-surface-container-low" lang="en">
 
 <head>
   <meta charset="utf-8">
@@ -71,13 +71,19 @@
       box-sizing: border-box;
     }
 
-    html, body {
+    html {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
       overflow-x: hidden;
+      scroll-behavior: smooth;
     }
 
     body {
+      height: auto;
+      min-height: 100vh;
+      overflow-x: clip;
       font-family: 'Inter', sans-serif;
-      overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -92,6 +98,7 @@
       transform: translateX(-50%);
       width: 100%;
       max-width: var(--fw-shell-max-width);
+      touch-action: pan-y;
     }
 
     .fw-month-input {
@@ -160,7 +167,7 @@
 
   <!-- Unified Responsive Shell Wrapper -->
   <div
-    class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-24">
+    class="fw-shell w-full max-w-[640px] mx-auto bg-surface min-h-screen flex flex-col shadow-2xl relative border-x border-border-neutral pb-28">
 
     <!-- Top Status Banner -->
     <div class="bg-primary text-white text-xs px-4 py-2 flex items-center justify-between gap-2 font-medium z-50">
@@ -334,7 +341,7 @@
               <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Track your targets</span>
             </span>
           </button>
-          <button type="button" onclick="showAiModal()" class="fw-service-card bg-primary/10 hover:bg-primary/15 border border-primary/15 transition-colors">
+          <button type="button" onclick="window.location.href='insights.html'" class="fw-service-card bg-primary/10 hover:bg-primary/15 border border-primary/15 transition-colors">
             <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
               <span class="material-symbols-outlined text-primary text-[20px]">auto_awesome</span>
             </span>
@@ -343,7 +350,7 @@
               <span class="block text-[11px] text-text-muted leading-snug mt-0.5 break-words">Smart advice</span>
             </span>
           </button>
-          <button type="button" onclick="window.location.href='summary.html'" class="fw-service-card bg-violet-50 hover:bg-violet-100 border border-violet-200/70 transition-colors">
+          <button type="button" onclick="window.location.href='insights.html#forecast'" class="fw-service-card bg-violet-50 hover:bg-violet-100 border border-violet-200/70 transition-colors">
             <span class="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0 shadow-2xs">
               <span class="material-symbols-outlined text-violet-700 text-[20px]">trending_up</span>
             </span>
@@ -851,7 +858,7 @@
     <!-- Bottom Navigation Bar -->
     <nav class="fw-bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] bg-white/95 backdrop-blur-xl border-t border-border-neutral z-50">
       <div class="h-16 px-3 flex items-center justify-between relative">
-        <button class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
+        <button aria-current="page" class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-primary font-bold"
           onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="material-symbols-outlined text-[22px]">home</span>
           <span class="text-[10px] truncate whitespace-nowrap">Home</span>
@@ -870,7 +877,7 @@
         </div>
         <button
           class="flex-1 min-w-0 h-11 flex flex-col items-center justify-center gap-0.5 text-text-muted hover:text-text-primary transition-colors"
-          onclick="showAiModal()">
+          onclick="window.location.href='insights.html'">
           <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
           <span class="text-[10px] truncate whitespace-nowrap">Insights</span>
         </button>

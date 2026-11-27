@@ -36,3 +36,18 @@
   to = "/profile.html"
   status = 200
 
+[[redirects]]
+  from = "/insights"
+  to = "/insights.html"
+  status = 200
+
+[[redirects]]
+  from = "/goals"
+  to = "/summary.html"
+  status = 200
+
+[[redirects]]
+  from = "/budgets"
+  to = "/summary.html"
+  status = 200
+

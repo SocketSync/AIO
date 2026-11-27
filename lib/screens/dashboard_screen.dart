@@ -563,12 +563,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: Icons.auto_awesome,
                             iconColor: AppColors.primary,
                             backgroundColor: AppColors.primaryFixedDim.withValues(alpha: 0.3),
-                            onTap: () => _showModuleInfo(
-                              'AI Spending Insights',
-                              'Powered by Google Gemini / OpenAI API to analyze historical transactions and generate personalized, actionable financial advice.',
-                              Icons.auto_awesome,
-                              AppColors.primary,
-                            ),
+                            onTap: () => Navigator.of(context).pushNamed('/insights'),
                           ),
                           _buildQuickActionButton(
                             title: 'Forecast',
@@ -576,12 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: Icons.trending_up,
                             iconColor: const Color(0xFF673AB7),
                             backgroundColor: const Color(0xFFEDE7F6),
-                            onTap: () => _showModuleInfo(
-                              'Forecasting Engine',
-                              'Predicts end-of-month and quarterly cash balances using time-series trend analysis of recurring income and expenditure.',
-                              Icons.trending_up,
-                              const Color(0xFF673AB7),
-                            ),
+                            onTap: () => Navigator.of(context).pushNamed('/insights'),
                           ),
                           _buildQuickActionButton(
                             title: 'Simulator',

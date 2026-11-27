@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-900">
+<html lang="en" class="bg-slate-900">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
@@ -28,8 +28,8 @@
       --fw-input-radius: 12px;
     }
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { overflow-x: hidden; }
-    body { font-family: 'Inter', sans-serif; overscroll-behavior: none; }
+    html { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+    body { height: auto; min-height: 100vh; overflow-x: clip; font-family: 'Inter', sans-serif; }
   </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">

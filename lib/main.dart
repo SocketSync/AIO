@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
@@ -299,6 +300,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
           builder: (context, theme, _) => MaterialApp(
             title: 'FinWise',
             debugShowCheckedModeBanner: false,
+            scrollBehavior: const FinWiseScrollBehavior(),
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: theme.themeMode,
@@ -314,6 +316,21 @@ class _FinWiseAppState extends State<FinWiseApp> {
       ),
     );
   }
+}
+
+/// Custom scroll behavior enabling mouse-wheel/drag, trackpad, touch, and
+/// stylus scrolling uniformly across desktop web and mobile targets.
+class FinWiseScrollBehavior extends MaterialScrollBehavior {
+  const FinWiseScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      };
 }
 
 class AuthGate extends StatefulWidget {
