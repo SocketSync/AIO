@@ -6,6 +6,7 @@ import 'services/auth_service.dart';
 import 'services/supabase_service.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/savings_goal_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
@@ -125,6 +126,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
   late final AuthService _authService;
   late final TransactionProvider _transactionProvider;
   late final SavingsGoalProvider _savingsGoalProvider;
+  late final ThemeProvider _themeProvider;
   late final bool _ownsTransactionProvider;
   late final bool _ownsSavingsGoalProvider;
   StreamSubscription<AuthSessionEvent>? _sessionSubscription;
@@ -137,6 +139,8 @@ class _FinWiseAppState extends State<FinWiseApp> {
     _transactionProvider = widget.transactionProvider ?? TransactionProvider();
     _ownsSavingsGoalProvider = widget.savingsGoalProvider == null;
     _savingsGoalProvider = widget.savingsGoalProvider ?? SavingsGoalProvider();
+    _themeProvider = ThemeProvider();
+    _themeProvider.load();
 
     _authService.registerSessionResetCallback(_resetProviderCaches);
     _sessionSubscription =
@@ -153,6 +157,7 @@ class _FinWiseAppState extends State<FinWiseApp> {
     if (_ownsSavingsGoalProvider) {
       _savingsGoalProvider.dispose();
     }
+    _themeProvider.dispose();
     super.dispose();
   }
 
@@ -288,17 +293,24 @@ class _FinWiseAppState extends State<FinWiseApp> {
         ChangeNotifierProvider.value(value: _transactionProvider),
         ChangeNotifierProvider.value(value: _savingsGoalProvider),
       ],
-      child: MaterialApp(
-        title: 'FinWise',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        navigatorKey: _navigatorKey,
-        navigatorObservers: [_routeObserver],
-        initialRoute: widget.initialRoute,
-        onGenerateInitialRoutes: (String initialRouteName) => [
-          _onGenerateRoute(RouteSettings(name: initialRouteName)),
-        ],
-        onGenerateRoute: _onGenerateRoute,
+      child: ChangeNotifierProvider.value(
+        value: _themeProvider,
+        child: Consumer<ThemeProvider>(
+          builder: (context, theme, _) => MaterialApp(
+            title: 'FinWise',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: theme.themeMode,
+            navigatorKey: _navigatorKey,
+            navigatorObservers: [_routeObserver],
+            initialRoute: widget.initialRoute,
+            onGenerateInitialRoutes: (String initialRouteName) => [
+              _onGenerateRoute(RouteSettings(name: initialRouteName)),
+            ],
+            onGenerateRoute: _onGenerateRoute,
+          ),
+        ),
       ),
     );
   }
