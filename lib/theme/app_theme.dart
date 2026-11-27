@@ -39,6 +39,8 @@ class AppColors {
 }
 
 /// Material 3 theme configuration for the FinWise application.
+///
+/// Centralizes reusable control styling and color/typography choices for screens.
 class AppTheme {
   /// Default border radius shared across FinWise text inputs (AIO-66).
   static const double inputBorderRadius = 12.0;
@@ -118,5 +120,22 @@ class AppTheme {
       inputDecorationTheme: inputDecorationTheme,
     );
   }
-}
 
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.dark,
+        primary: AppColors.primaryFixedDim,
+        secondary: AppColors.secondaryFixed,
+        surface: const Color(0xFF0F172A),
+      ),
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
+      inputDecorationTheme: inputDecorationTheme,
+    );
+  }
+}

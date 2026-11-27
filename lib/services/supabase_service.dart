@@ -78,7 +78,7 @@ class SupabaseService {
     }
   }
 
-  /// Test connectivity to Supabase backend
+  /// Tests Supabase connectivity by querying up to five category records.
   Future<Map<String, dynamic>> testConnection() async {
     if (!isConfigured) {
       return {

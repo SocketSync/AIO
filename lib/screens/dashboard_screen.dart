@@ -827,3 +827,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
+// AIO-105: Expandable transaction details card UI.
