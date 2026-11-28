@@ -680,11 +680,18 @@
           <option value="Bank">Bank</option>
           <option value="E-Wallet">TNG (Touch 'n Go eWallet)</option>
         </select>
-        <div id="dashboardBankPickerWrap" class="hidden mb-3">
-          <select id="transactionBankName"
-            class="w-full rounded-lg border border-slate-300 p-2.5 text-sm outline-none focus:border-primary">
-            <option value="">Select Malaysian Bank</option>
-          </select>
+        <div id="dashboardBankPickerWrap" class="hidden mb-3 relative">
+          <input type="hidden" id="transactionBankName" value="">
+          <button type="button" id="dashboardBankToggleBtn" onclick="toggleDashboardBankMenu()"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-left flex items-center justify-between gap-2 outline-none focus:border-primary">
+            <span id="dashboardBankSelectedDisplay" class="flex items-center gap-2.5 min-w-0 truncate text-slate-500">
+              <span>Select Malaysian Bank</span>
+            </span>
+            <span class="material-symbols-outlined text-slate-400 text-[18px] shrink-0">expand_more</span>
+          </button>
+          <div id="dashboardBankMenu"
+            class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg z-30 divide-y divide-slate-100">
+          </div>
         </div>
 
         <!-- Note (Single-line merchant / title) -->
@@ -2737,16 +2744,18 @@
       const accTypeEl = document.getElementById("transactionAccountType");
       const bankNameEl = document.getElementById("transactionBankName");
       const bankWrapEl = document.getElementById("dashboardBankPickerWrap");
+      const bankMenuEl = document.getElementById("dashboardBankMenu");
+      if (bankMenuEl) bankMenuEl.classList.add("hidden");
       if (accTypeEl) {
         accTypeEl.value = record && record.account_type ? record.account_type : "";
       }
       if (bankWrapEl) {
         if (record && record.account_type === "Bank") {
           bankWrapEl.classList.remove("hidden");
-          if (bankNameEl) bankNameEl.value = record.account_name || "";
+          selectDashboardBank(record.account_name || "");
         } else {
           bankWrapEl.classList.add("hidden");
-          if (bankNameEl) bankNameEl.value = "";
+          selectDashboardBank("");
         }
       }
 
@@ -2757,31 +2766,78 @@
     }
 
     const MALAYSIAN_BANKS = [
-      "Maybank", "CIMB Bank", "Public Bank", "RHB Bank", "Hong Leong Bank",
-      "AmBank", "UOB Malaysia", "OCBC Bank Malaysia", "HSBC Bank Malaysia",
-      "Standard Chartered Malaysia", "Bank Islam", "Bank Rakyat", "Bank Muamalat",
-      "Affin Bank", "Alliance Bank", "BSN (Bank Simpanan Nasional)", "Agrobank",
-      "GXBank", "Aeon Bank", "Boost Bank"
+      { name: "Maybank", code: "MBB", bg: "#FFC400", fg: "#111827" },
+      { name: "CIMB Bank", code: "CIMB", bg: "#DC2626", fg: "#FFFFFF" },
+      { name: "Public Bank", code: "PBB", bg: "#B91C1C", fg: "#FFFFFF" },
+      { name: "RHB Bank", code: "RHB", bg: "#0284C7", fg: "#FFFFFF" },
+      { name: "Hong Leong Bank", code: "HLB", bg: "#1D4ED8", fg: "#FFFFFF" },
+      { name: "AmBank", code: "AM", bg: "#E11D48", fg: "#FFFFFF" },
+      { name: "UOB Malaysia", code: "UOB", bg: "#1E3A8A", fg: "#FFFFFF" },
+      { name: "OCBC Bank Malaysia", code: "OCBC", bg: "#DC2626", fg: "#FFFFFF" },
+      { name: "HSBC Bank Malaysia", code: "HSBC", bg: "#DB0011", fg: "#FFFFFF" },
+      { name: "Standard Chartered Malaysia", code: "SCB", bg: "#059669", fg: "#FFFFFF" },
+      { name: "Bank Islam", code: "BIMB", bg: "#991B1B", fg: "#FFFFFF" },
+      { name: "Bank Rakyat", code: "BR", bg: "#0369A1", fg: "#FFFFFF" },
+      { name: "Bank Muamalat", code: "BMMB", bg: "#EA580C", fg: "#FFFFFF" },
+      { name: "Affin Bank", code: "AB", bg: "#1E40AF", fg: "#FFFFFF" },
+      { name: "Alliance Bank", code: "ALB", bg: "#0F766E", fg: "#FFFFFF" },
+      { name: "BSN (Bank Simpanan Nasional)", code: "BSN", bg: "#0284C7", fg: "#FFFFFF" },
+      { name: "Agrobank", code: "AGRO", bg: "#15803D", fg: "#FFFFFF" },
+      { name: "GXBank", code: "GX", bg: "#4F46E5", fg: "#FFFFFF" },
+      { name: "Aeon Bank", code: "AEON", bg: "#9333EA", fg: "#FFFFFF" },
+      { name: "Boost Bank", code: "BST", bg: "#EA580C", fg: "#FFFFFF" }
     ];
 
+    function renderBankLogoBadge(bank) {
+      return `<span class="inline-flex items-center justify-center w-7 h-5 rounded text-[9px] font-extrabold tracking-tight shrink-0 shadow-2xs" style="background:${bank.bg};color:${bank.fg};">${bank.code}</span>`;
+    }
+
     function populateDashboardBankOptions() {
-      const sel = document.getElementById("transactionBankName");
-      if (!sel) return;
-      const currentVal = sel.value;
-      sel.innerHTML = '<option value="">Select Malaysian Bank</option>' +
-        MALAYSIAN_BANKS.map(b => `<option value="${b}">${b}</option>`).join("");
-      if (currentVal && MALAYSIAN_BANKS.includes(currentVal)) sel.value = currentVal;
+      const menu = document.getElementById("dashboardBankMenu");
+      if (!menu) return;
+      menu.innerHTML = MALAYSIAN_BANKS.map(b => `
+        <button type="button" onclick="selectDashboardBank('${b.name.replace(/'/g, "\\'")}'); toggleDashboardBankMenu(false);"
+          class="w-full px-3 py-2 text-left text-xs font-medium text-slate-800 hover:bg-indigo-50/70 flex items-center gap-2.5 transition-colors">
+          ${renderBankLogoBadge(b)}
+          <span class="truncate">${b.name}</span>
+        </button>
+      `).join("");
+    }
+
+    function selectDashboardBank(bankName) {
+      const hidden = document.getElementById("transactionBankName");
+      const display = document.getElementById("dashboardBankSelectedDisplay");
+      if (hidden) hidden.value = bankName || "";
+      if (!display) return;
+      const bank = MALAYSIAN_BANKS.find(b => b.name === bankName);
+      if (bank) {
+        display.className = "flex items-center gap-2.5 min-w-0 truncate text-slate-900 font-medium";
+        display.innerHTML = `${renderBankLogoBadge(bank)}<span class="truncate">${bank.name}</span>`;
+      } else {
+        display.className = "flex items-center gap-2.5 min-w-0 truncate text-slate-500";
+        display.innerHTML = `<span>Select Malaysian Bank</span>`;
+      }
+    }
+
+    function toggleDashboardBankMenu(forceState) {
+      const menu = document.getElementById("dashboardBankMenu");
+      if (!menu) return;
+      const show = typeof forceState === "boolean" ? forceState : menu.classList.contains("hidden");
+      menu.classList.toggle("hidden", !show);
     }
 
     function handleDashboardAccountTypeChange() {
       const type = document.getElementById("transactionAccountType")?.value || "";
       const wrap = document.getElementById("dashboardBankPickerWrap");
+      const menu = document.getElementById("dashboardBankMenu");
+      if (menu) menu.classList.add("hidden");
       if (!wrap) return;
       if (type === "Bank") {
         wrap.classList.remove("hidden");
         populateDashboardBankOptions();
       } else {
         wrap.classList.add("hidden");
+        selectDashboardBank("");
       }
     }
 

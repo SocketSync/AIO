@@ -455,12 +455,19 @@
             </select>
             <span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
           </div>
-          <div id="modalBankPickerWrap" class="hidden mt-2 relative flex items-center">
-            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">account_balance</span>
-            <select id="modal-bank-name" class="w-full pl-10 pr-8 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-text-primary outline-none focus:border-primary appearance-none bg-white">
-              <option value="">Select Malaysian Bank</option>
-            </select>
-            <span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
+          <div id="modalBankPickerWrap" class="hidden mt-2 relative">
+            <input type="hidden" id="modal-bank-name" value="">
+            <button type="button" id="modalBankToggleBtn" onclick="toggleModalBankMenu()"
+              class="w-full pl-3 pr-3 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-left bg-white flex items-center justify-between gap-2 outline-none focus:border-primary">
+              <span id="modalBankSelectedDisplay" class="flex items-center gap-2.5 min-w-0 truncate text-slate-500 font-medium">
+                <span class="material-symbols-outlined text-text-muted text-[18px]">account_balance</span>
+                <span>Select Malaysian Bank</span>
+              </span>
+              <span class="material-symbols-outlined text-text-muted text-[18px] shrink-0">expand_more</span>
+            </button>
+            <div id="modalBankMenu"
+              class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg z-30 divide-y divide-slate-100">
+            </div>
           </div>
         </div>
 
@@ -1285,16 +1292,17 @@
 
       populateModalBankOptions();
       const modalAccType = document.getElementById('modal-account-type');
-      const modalBankName = document.getElementById('modal-bank-name');
       const modalBankWrap = document.getElementById('modalBankPickerWrap');
+      const modalBankMenu = document.getElementById('modalBankMenu');
+      if (modalBankMenu) modalBankMenu.classList.add('hidden');
       if (modalAccType) modalAccType.value = (record && record.account_type) ? record.account_type : '';
       if (modalBankWrap) {
         if (record && record.account_type === 'Bank') {
           modalBankWrap.classList.remove('hidden');
-          if (modalBankName) modalBankName.value = record.account_name || '';
+          selectModalBank(record.account_name || '');
         } else {
           modalBankWrap.classList.add('hidden');
-          if (modalBankName) modalBankName.value = '';
+          selectModalBank('');
         }
       }
 
@@ -1305,31 +1313,78 @@
     }
 
     const MALAYSIAN_BANKS = [
-      "Maybank", "CIMB Bank", "Public Bank", "RHB Bank", "Hong Leong Bank",
-      "AmBank", "UOB Malaysia", "OCBC Bank Malaysia", "HSBC Bank Malaysia",
-      "Standard Chartered Malaysia", "Bank Islam", "Bank Rakyat", "Bank Muamalat",
-      "Affin Bank", "Alliance Bank", "BSN (Bank Simpanan Nasional)", "Agrobank",
-      "GXBank", "Aeon Bank", "Boost Bank"
+      { name: "Maybank", code: "MBB", bg: "#FFC400", fg: "#111827" },
+      { name: "CIMB Bank", code: "CIMB", bg: "#DC2626", fg: "#FFFFFF" },
+      { name: "Public Bank", code: "PBB", bg: "#B91C1C", fg: "#FFFFFF" },
+      { name: "RHB Bank", code: "RHB", bg: "#0284C7", fg: "#FFFFFF" },
+      { name: "Hong Leong Bank", code: "HLB", bg: "#1D4ED8", fg: "#FFFFFF" },
+      { name: "AmBank", code: "AM", bg: "#E11D48", fg: "#FFFFFF" },
+      { name: "UOB Malaysia", code: "UOB", bg: "#1E3A8A", fg: "#FFFFFF" },
+      { name: "OCBC Bank Malaysia", code: "OCBC", bg: "#DC2626", fg: "#FFFFFF" },
+      { name: "HSBC Bank Malaysia", code: "HSBC", bg: "#DB0011", fg: "#FFFFFF" },
+      { name: "Standard Chartered Malaysia", code: "SCB", bg: "#059669", fg: "#FFFFFF" },
+      { name: "Bank Islam", code: "BIMB", bg: "#991B1B", fg: "#FFFFFF" },
+      { name: "Bank Rakyat", code: "BR", bg: "#0369A1", fg: "#FFFFFF" },
+      { name: "Bank Muamalat", code: "BMMB", bg: "#EA580C", fg: "#FFFFFF" },
+      { name: "Affin Bank", code: "AB", bg: "#1E40AF", fg: "#FFFFFF" },
+      { name: "Alliance Bank", code: "ALB", bg: "#0F766E", fg: "#FFFFFF" },
+      { name: "BSN (Bank Simpanan Nasional)", code: "BSN", bg: "#0284C7", fg: "#FFFFFF" },
+      { name: "Agrobank", code: "AGRO", bg: "#15803D", fg: "#FFFFFF" },
+      { name: "GXBank", code: "GX", bg: "#4F46E5", fg: "#FFFFFF" },
+      { name: "Aeon Bank", code: "AEON", bg: "#9333EA", fg: "#FFFFFF" },
+      { name: "Boost Bank", code: "BST", bg: "#EA580C", fg: "#FFFFFF" }
     ];
 
+    function renderModalBankLogoBadge(bank) {
+      return `<span class="inline-flex items-center justify-center w-7 h-5 rounded text-[9px] font-extrabold tracking-tight shrink-0 shadow-2xs" style="background:${bank.bg};color:${bank.fg};">${bank.code}</span>`;
+    }
+
     function populateModalBankOptions() {
-      const sel = document.getElementById('modal-bank-name');
-      if (!sel) return;
-      const currentVal = sel.value;
-      sel.innerHTML = '<option value="">Select Malaysian Bank</option>' +
-        MALAYSIAN_BANKS.map(b => `<option value="${b}">${b}</option>`).join('');
-      if (currentVal && MALAYSIAN_BANKS.includes(currentVal)) sel.value = currentVal;
+      const menu = document.getElementById('modalBankMenu');
+      if (!menu) return;
+      menu.innerHTML = MALAYSIAN_BANKS.map(b => `
+        <button type="button" onclick="selectModalBank('${b.name.replace(/'/g, "\\'")}'); toggleModalBankMenu(false);"
+          class="w-full px-3 py-2 text-left text-xs font-medium text-slate-800 hover:bg-indigo-50/70 flex items-center gap-2.5 transition-colors">
+          ${renderModalBankLogoBadge(b)}
+          <span class="truncate">${b.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function selectModalBank(bankName) {
+      const hidden = document.getElementById('modal-bank-name');
+      const display = document.getElementById('modalBankSelectedDisplay');
+      if (hidden) hidden.value = bankName || '';
+      if (!display) return;
+      const bank = MALAYSIAN_BANKS.find(b => b.name === bankName);
+      if (bank) {
+        display.className = 'flex items-center gap-2.5 min-w-0 truncate text-text-primary font-semibold';
+        display.innerHTML = `${renderModalBankLogoBadge(bank)}<span class="truncate">${bank.name}</span>`;
+      } else {
+        display.className = 'flex items-center gap-2.5 min-w-0 truncate text-slate-500 font-medium';
+        display.innerHTML = `<span class="material-symbols-outlined text-text-muted text-[18px]">account_balance</span><span>Select Malaysian Bank</span>`;
+      }
+    }
+
+    function toggleModalBankMenu(forceState) {
+      const menu = document.getElementById('modalBankMenu');
+      if (!menu) return;
+      const show = typeof forceState === 'boolean' ? forceState : menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !show);
     }
 
     function handleModalAccountTypeChange() {
       const type = document.getElementById('modal-account-type')?.value || '';
       const wrap = document.getElementById('modalBankPickerWrap');
+      const menu = document.getElementById('modalBankMenu');
+      if (menu) menu.classList.add('hidden');
       if (!wrap) return;
       if (type === 'Bank') {
         wrap.classList.remove('hidden');
         populateModalBankOptions();
       } else {
         wrap.classList.add('hidden');
+        selectModalBank('');
       }
     }
 

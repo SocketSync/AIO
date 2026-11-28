@@ -1,6 +1,78 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// Brand badge metadata for a Malaysian bank.
+class BankLogoStyle {
+  final String code;
+  final Color bgColor;
+  final Color fgColor;
+
+  const BankLogoStyle({
+    required this.code,
+    required this.bgColor,
+    this.fgColor = Colors.white,
+  });
+}
+
+/// Lookup table mapping Malaysian bank names to their brand monogram badge.
+const Map<String, BankLogoStyle> malaysianBankLogos = {
+  'Maybank': BankLogoStyle(code: 'MBB', bgColor: Color(0xFFFFC400), fgColor: Color(0xFF111827)),
+  'CIMB Bank': BankLogoStyle(code: 'CIMB', bgColor: Color(0xFFDC2626)),
+  'Public Bank': BankLogoStyle(code: 'PBB', bgColor: Color(0xFFB91C1C)),
+  'RHB Bank': BankLogoStyle(code: 'RHB', bgColor: Color(0xFF0284C7)),
+  'Hong Leong Bank': BankLogoStyle(code: 'HLB', bgColor: Color(0xFF1D4ED8)),
+  'AmBank': BankLogoStyle(code: 'AM', bgColor: Color(0xFFE11D48)),
+  'Bank Islam Malaysia': BankLogoStyle(code: 'BIMB', bgColor: Color(0xFF991B1B)),
+  'Bank Muamalat': BankLogoStyle(code: 'BMMB', bgColor: Color(0xFFEA580C)),
+  'Bank Rakyat': BankLogoStyle(code: 'BR', bgColor: Color(0xFF0369A1)),
+  'BSN (Bank Simpanan Nasional)': BankLogoStyle(code: 'BSN', bgColor: Color(0xFF0284C7)),
+  'OCBC Bank Malaysia': BankLogoStyle(code: 'OCBC', bgColor: Color(0xFFDC2626)),
+  'UOB Malaysia': BankLogoStyle(code: 'UOB', bgColor: Color(0xFF1E3A8A)),
+  'HSBC Malaysia': BankLogoStyle(code: 'HSBC', bgColor: Color(0xFFDB0011)),
+  'Standard Chartered Malaysia': BankLogoStyle(code: 'SCB', bgColor: Color(0xFF059669)),
+  'Alliance Bank': BankLogoStyle(code: 'ALB', bgColor: Color(0xFF0F766E)),
+  'Affin Bank': BankLogoStyle(code: 'AB', bgColor: Color(0xFF1E40AF)),
+  'MBSB Bank': BankLogoStyle(code: 'MBSB', bgColor: Color(0xFF0E7490)),
+  'Agrobank': BankLogoStyle(code: 'AGRO', bgColor: Color(0xFF15803D)),
+  'Kuwait Finance House Malaysia': BankLogoStyle(code: 'KFH', bgColor: Color(0xFF047857)),
+  'Citibank Malaysia': BankLogoStyle(code: 'CITI', bgColor: Color(0xFF1D4ED8)),
+  'GXBank': BankLogoStyle(code: 'GX', bgColor: Color(0xFF4F46E5)),
+  'AEON Bank': BankLogoStyle(code: 'AEON', bgColor: Color(0xFF9333EA)),
+  'Boost Bank': BankLogoStyle(code: 'BST', bgColor: Color(0xFFEA580C)),
+  'Al Rajhi Bank Malaysia': BankLogoStyle(code: 'ARB', bgColor: Color(0xFF1E3A8A)),
+  'Bank of China Malaysia': BankLogoStyle(code: 'BOC', bgColor: Color(0xFFB91C1C)),
+};
+
+Widget buildBankLogoBadge(String bankName) {
+  final style = malaysianBankLogos[bankName] ??
+      BankLogoStyle(
+        code: bankName.length >= 3
+            ? bankName.substring(0, 3).toUpperCase()
+            : bankName.toUpperCase(),
+        bgColor: AppColors.primary,
+      );
+  return Container(
+    width: 34,
+    height: 24,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: style.bgColor,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      style.code,
+      style: TextStyle(
+        fontSize: 9,
+        fontWeight: FontWeight.w800,
+        color: style.fgColor,
+        letterSpacing: -0.2,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+    ),
+  );
+}
+
 /// Expandable catalog of licensed Malaysian commercial, Islamic, and digital banks.
 const List<String> malaysianBanks = [
   'Maybank',
@@ -110,11 +182,14 @@ class AccountSelectorField extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  _leadingIcon(),
-                  size: 20,
-                  color: _hasSelection ? AppColors.primary : AppColors.textMuted,
-                ),
+                if (accountType == 'Bank' && _hasSelection)
+                  buildBankLogoBadge(accountName!)
+                else
+                  Icon(
+                    _leadingIcon(),
+                    size: 20,
+                    color: _hasSelection ? AppColors.primary : AppColors.textMuted,
+                  ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -353,13 +428,7 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                             dense: true,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
-                            leading: Icon(
-                              Icons.account_balance_outlined,
-                              size: 20,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textMuted,
-                            ),
+                            leading: buildBankLogoBadge(bank),
                             title: Text(
                               bank,
                               style: TextStyle(
