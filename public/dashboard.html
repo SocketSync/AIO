@@ -648,6 +648,12 @@
           <option value="income">Income</option>
         </select>
 
+        <!-- Date (MM/DD/YYYY) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date <span class="font-normal text-slate-400">(MM/DD/YYYY)</span></label>
+        <input id="transactionDate"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          type="date" required>
+
         <!-- Amount -->
         <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAmount">Amount (<span
             id="formAmountCurrencyLabel">RM</span>)</label>
@@ -664,23 +670,37 @@
           class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
           required></select>
 
-        <!-- Description -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Description</label>
+        <!-- Account (Cash / Bank / TNG) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionAccountType">Account</label>
+        <select id="transactionAccountType"
+          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
+          onchange="handleDashboardAccountTypeChange()" required>
+          <option value="">Select Account</option>
+          <option value="Cash">Cash</option>
+          <option value="Bank">Bank</option>
+          <option value="E-Wallet">TNG (Touch 'n Go eWallet)</option>
+        </select>
+        <div id="dashboardBankPickerWrap" class="hidden mb-3 rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 space-y-2">
+          <input id="dashboardBankSearch" type="text" oninput="filterDashboardBanks()"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-primary"
+            placeholder="Search Malaysian bank (e.g. Maybank, CIMB, GXBank)...">
+          <select id="transactionBankName"
+            class="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-medium outline-none focus:border-primary">
+            <option value="">Select Malaysian Bank</option>
+          </select>
+        </div>
+
+        <!-- Note (Single-line merchant / title) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDescription">Note</label>
         <input id="transactionDescription"
           class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
-          maxlength="140" required placeholder="e.g. Aeon, Village Grocer, Starbucks">
+          maxlength="140" placeholder="e.g. Aeon, Village Grocer, Starbucks">
 
-        <!-- Details (Line Items) -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDetails">Details (Line Items)</label>
+        <!-- Description (Multi-line details / receipt items) -->
+        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDetails">Description</label>
         <textarea id="transactionDetails" rows="3" oninput="syncDetailsTextareaToPendingItems()"
           class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary resize-y"
-          placeholder="1x Rice 1kg&#10;1x Soya milk x6"></textarea>
-
-        <!-- Date -->
-        <label class="block text-xs font-semibold text-text-muted mb-1" for="transactionDate">Date</label>
-        <input id="transactionDate"
-          class="w-full rounded-lg border border-slate-300 p-2.5 text-sm mb-3 outline-none focus:border-primary"
-          type="date" required>
+          placeholder="Enter transaction details or receipt items..."></textarea>
 
         <!-- Extracted Itemized Receipt Items Preview -->
         <div id="modalReceiptItemsPreview" class="hidden mb-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3">
@@ -2713,14 +2733,68 @@
       document.getElementById("transactionDialogTitle").textContent = record ? "Edit Transaction" : "Add Transaction";
       document.getElementById("transactionType").value = record ? record.type : "expense";
       updateCategoryOptions(record ? record.category : "");
+      document.getElementById("transactionDate").value = record ? record.date : localDateString();
       document.getElementById("transactionAmount").value = record ? record.amount : "";
       document.getElementById("transactionDescription").value = record ? record.description : "";
-      document.getElementById("transactionDate").value = record ? record.date : localDateString();
+      populateDashboardBankOptions("");
+      const accTypeEl = document.getElementById("transactionAccountType");
+      const bankNameEl = document.getElementById("transactionBankName");
+      const bankWrapEl = document.getElementById("dashboardBankPickerWrap");
+      const bankSearchEl = document.getElementById("dashboardBankSearch");
+      if (bankSearchEl) bankSearchEl.value = "";
+      if (accTypeEl) {
+        accTypeEl.value = record && record.account_type ? record.account_type : "";
+      }
+      if (bankWrapEl) {
+        if (record && record.account_type === "Bank") {
+          bankWrapEl.classList.remove("hidden");
+          if (bankNameEl) bankNameEl.value = record.account_name || "";
+        } else {
+          bankWrapEl.classList.add("hidden");
+          if (bankNameEl) bankNameEl.value = "";
+        }
+      }
 
       const dialog = document.getElementById("transactionDialog");
       dialog.classList.remove("hidden");
       dialog.classList.add("flex");
-      document.getElementById("transactionDescription").focus();
+      document.getElementById("transactionAmount").focus();
+    }
+
+    const MALAYSIAN_BANKS = [
+      "Maybank", "CIMB Bank", "Public Bank", "RHB Bank", "Hong Leong Bank",
+      "AmBank", "UOB Malaysia", "OCBC Bank Malaysia", "HSBC Bank Malaysia",
+      "Standard Chartered Malaysia", "Bank Islam", "Bank Rakyat", "Bank Muamalat",
+      "Affin Bank", "Alliance Bank", "BSN (Bank Simpanan Nasional)", "Agrobank",
+      "GXBank", "Aeon Bank", "Boost Bank"
+    ];
+
+    function populateDashboardBankOptions(query) {
+      const sel = document.getElementById("transactionBankName");
+      if (!sel) return;
+      const currentVal = sel.value;
+      const q = (query || "").toLowerCase().trim();
+      const filtered = MALAYSIAN_BANKS.filter(b => !q || b.toLowerCase().includes(q));
+      sel.innerHTML = '<option value="">Select Malaysian Bank</option>' +
+        filtered.map(b => `<option value="${b}">${b}</option>`).join("");
+      if (currentVal && filtered.includes(currentVal)) sel.value = currentVal;
+    }
+
+    function filterDashboardBanks() {
+      const q = document.getElementById("dashboardBankSearch")?.value || "";
+      populateDashboardBankOptions(q);
+    }
+
+    function handleDashboardAccountTypeChange() {
+      const type = document.getElementById("transactionAccountType")?.value || "";
+      const wrap = document.getElementById("dashboardBankPickerWrap");
+      if (!wrap) return;
+      if (type === "Bank") {
+        wrap.classList.remove("hidden");
+        populateDashboardBankOptions(document.getElementById("dashboardBankSearch")?.value || "");
+      } else {
+        wrap.classList.add("hidden");
+      }
     }
 
     // --- SMART RECEIPT AI SCANNER ---
@@ -3219,11 +3293,23 @@
       const rawType = (document.getElementById("transactionType").value || "").toLowerCase().trim();
       const type = (rawType === "income" || rawType === "expense") ? rawType : "expense";
       const category = (document.getElementById("transactionCategory").value || "Other Expenses").replace(/[<>]/g, "").trim();
-      const description = (document.getElementById("transactionDescription").value || "").replace(/[<>]/g, "").trim().slice(0, 150);
-      if (!description) {
-        alert("Please enter a valid transaction description.");
+      const accountType = (document.getElementById("transactionAccountType")?.value || "").trim();
+      if (!accountType) {
+        alert("Please select an Account (Cash, Bank, or TNG).");
         return;
       }
+      let accountName = accountType;
+      if (accountType === "Bank") {
+        accountName = (document.getElementById("transactionBankName")?.value || "").trim();
+        if (!accountName) {
+          alert("Please select a Malaysian bank.");
+          return;
+        }
+      } else if (accountType === "E-Wallet") {
+        accountName = "Touch 'n Go eWallet";
+      }
+      const rawNote = (document.getElementById("transactionDescription").value || "").replace(/[<>]/g, "").trim().slice(0, 150);
+      const description = rawNote || category;
       const dateStr = document.getElementById("transactionDate").value || localDateString();
       const detailsEl = document.getElementById("transactionDetails");
       const detailsRaw = detailsEl ? detailsEl.value.replace(/[<>]/g, "").trim() : "";
@@ -3253,6 +3339,8 @@
             type: type,
             category_id: categoryId,
             category: category,
+            account_type: accountType,
+            account_name: accountName,
             transaction_date: isoDate,
             date: isoDate,
             notes: detailsText || null,
@@ -3772,6 +3860,8 @@
             type: 'expense',
             category_id: categoryId,
             category: category,
+            account_type: accountType,
+            account_name: accountName,
             transaction_date: isoDate,
             date: isoDate,
             notes: detailsText || null,
