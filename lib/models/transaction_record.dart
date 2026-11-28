@@ -13,6 +13,8 @@ class TransactionRecord {
   final double amount;
   final TransactionType type;
   final String categoryId;
+  final String? accountType;
+  final String? accountName;
   final DateTime date;
   final String? notes;
   final List<Map<String, dynamic>> receiptItems;
@@ -26,6 +28,8 @@ class TransactionRecord {
     required this.amount,
     required this.type,
     required this.categoryId,
+    this.accountType,
+    this.accountName,
     required this.date,
     this.notes,
     this.receiptItems = const [],
@@ -45,6 +49,8 @@ class TransactionRecord {
     double? amount,
     TransactionType? type,
     String? categoryId,
+    String? accountType,
+    String? accountName,
     DateTime? date,
     String? notes,
     List<Map<String, dynamic>>? receiptItems,
@@ -58,6 +64,8 @@ class TransactionRecord {
       amount: amount ?? this.amount,
       type: type ?? this.type,
       categoryId: categoryId ?? this.categoryId,
+      accountType: accountType ?? this.accountType,
+      accountName: accountName ?? this.accountName,
       date: date ?? this.date,
       notes: notes ?? this.notes,
       receiptItems: receiptItems ?? this.receiptItems,
@@ -74,6 +82,8 @@ class TransactionRecord {
       'amount': amount,
       'type': type == TransactionType.income ? 'income' : 'expense',
       'category_id': categoryId,
+      'account_type': accountType,
+      'account_name': accountName,
       'date': date.toIso8601String(),
       'notes': notes,
       'receipt_items': receiptItems,
@@ -89,6 +99,8 @@ class TransactionRecord {
       'amount': amount,
       'type': type == TransactionType.income ? 'income' : 'expense',
       'category_id': categoryId,
+      if (accountType != null) 'account_type': accountType,
+      if (accountName != null) 'account_name': accountName,
       'transaction_date': date.toIso8601String(),
       'notes': notes,
       'receipt_items': receiptItems,
@@ -198,6 +210,8 @@ class TransactionRecord {
           ? TransactionType.income
           : TransactionType.expense,
       categoryId: (json['category_id'] ?? 'other').toString(),
+      accountType: json['account_type'] as String?,
+      accountName: json['account_name'] as String?,
       date: json['transaction_date'] != null
           ? DateTime.parse(json['transaction_date'] as String)
           : (json['date'] != null

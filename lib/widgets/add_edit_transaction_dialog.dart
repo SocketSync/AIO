@@ -3,12 +3,13 @@ import 'package:intl/intl.dart';
 import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../theme/app_theme.dart';
+import 'account_selector_field.dart';
 
 /// Modal dialog UI for creating or editing a transaction record.
 ///
-/// Captures type toggle (Expense/Income), RM amount, description/title,
-/// category chips, date picker selection, and optional line-item details,
-/// invoking [onSave] with the validated values upon submission.
+/// Captures type toggle (Expense/Income), RM amount, category chips,
+/// account selection, note/title, multiline description, and date picker
+/// selection, invoking [onSave] with the validated values upon submission.
 class AddEditTransactionDialog extends StatefulWidget {
   final TransactionRecord? transactionToEdit;
   final Function({
@@ -16,6 +17,8 @@ class AddEditTransactionDialog extends StatefulWidget {
     required double amount,
     required TransactionType type,
     required String categoryId,
+    String? accountType,
+    String? accountName,
     required DateTime date,
     String? notes,
     List<Map<String, dynamic>> receiptItems,
@@ -39,6 +42,9 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
 
   late TransactionType _selectedType;
   late String _selectedCategoryId;
+  String? _selectedAccountType;
+  String? _selectedAccountName;
+  String? _accountError;
   late DateTime _selectedDate;
 
   @override
@@ -47,6 +53,8 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
     final item = widget.transactionToEdit;
     _selectedType = item?.type ?? TransactionType.expense;
     _selectedCategoryId = item?.categoryId ?? (_selectedType == TransactionType.income ? 'salary' : 'food_dining');
+    _selectedAccountType = item?.accountType;
+    _selectedAccountName = item?.accountName;
     _selectedDate = item?.date ?? DateTime.now();
 
     _titleController = TextEditingController(text: item?.title ?? '');
@@ -91,10 +99,18 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
     }
   }
 
-  /// Validates form fields (`amount > 0`, non-empty title, and selected
+  /// Validates form fields (`amount > 0`, non-empty note/title, and selected
   /// category) prior to invoking `widget.onSave` and closing the dialog.
   void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
+    final isEditing = widget.transactionToEdit != null;
+    final isFormValid = _formKey.currentState?.validate() ?? false;
+    final hasAccount =
+        _selectedAccountType != null && _selectedAccountName != null;
+    if (!isEditing && !hasAccount) {
+      setState(() => _accountError = 'Please select an account');
+      return;
+    }
+    if (isFormValid) {
       if (_selectedCategoryId.trim().isEmpty) return;
       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
       final rawDetails = _notesController.text.trim();
@@ -107,6 +123,8 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
         amount: amount,
         type: _selectedType,
         categoryId: _selectedCategoryId,
+        accountType: _selectedAccountType,
+        accountName: _selectedAccountName,
         date: _selectedDate,
         notes: rawDetails.isEmpty ? null : rawDetails,
         receiptItems: parsedItems,
@@ -319,36 +337,6 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // Title Input
-                const Text(
-                  'Description / Title',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderNeutral),
-                  ),
-                  child: TextFormField(
-                    controller: _titleController,
-                    style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Weekly Groceries, Fuel, Coffee',
-                      prefixIcon: Icon(Icons.description_outlined, size: 20, color: AppColors.textMuted),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    ),
-                    // Inline validation: require a non-empty transaction title.
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Please enter a description';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(height: 14),
-
                 // Category Chips Selector
                 const Text(
                   'Category',
@@ -394,6 +382,83 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                 ),
                 const SizedBox(height: 14),
 
+                // Account Selection
+                const Text(
+                  'Account',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 6),
+                AccountSelectorField(
+                  accountType: _selectedAccountType,
+                  accountName: _selectedAccountName,
+                  errorText: _accountError,
+                  borderRadius: 12,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  onSelected: (type, name) {
+                    setState(() {
+                      _selectedAccountType = type;
+                      _selectedAccountName = name;
+                      _accountError = null;
+                    });
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // Note Input
+                const Text(
+                  'Note',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderNeutral),
+                  ),
+                  child: TextFormField(
+                    controller: _titleController,
+                    style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. Monthly groceries, Lunch with friends, Salary',
+                      prefixIcon: Icon(Icons.edit_note, size: 20, color: AppColors.textMuted),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    // Inline validation: require a non-empty transaction note.
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Please provide a note';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Description Field (multiline)
+                const Text(
+                  'Description',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderNeutral),
+                  ),
+                  child: TextFormField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
+                    decoration: const InputDecoration(
+                      hintText: 'Additional transaction details (optional)',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
                 // Date Picker Row
                 const Text(
                   'Date',
@@ -425,31 +490,6 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                         ),
                         const Icon(Icons.edit_calendar, size: 16, color: AppColors.primary),
                       ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Details (Line Items) Field
-                const Text(
-                  'Details (Line Items)',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderNeutral),
-                  ),
-                  child: TextFormField(
-                    controller: _notesController,
-                    maxLines: 3,
-                    style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
-                    decoration: const InputDecoration(
-                      hintText: '1x Rice 1kg\n1x Soya milk x6',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(12),
                     ),
                   ),
                 ),

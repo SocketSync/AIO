@@ -188,8 +188,11 @@ void main() {
     expect(find.text('Add Transaction'), findsOneWidget);
     expect(find.text('Amount'), findsOneWidget);
     expect(find.text('RM'), findsOneWidget);
-    expect(find.text('Description'), findsOneWidget);
     expect(find.text('Category'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
+    expect(find.text('Note'), findsOneWidget);
+    expect(find.text('Description'), findsOneWidget);
+    expect(find.text('Date'), findsOneWidget);
     expect(find.text('Save Transaction'), findsOneWidget);
   });
 
@@ -653,7 +656,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Enter amount'), findsOneWidget);
-    expect(find.text('Please provide a description'), findsOneWidget);
+    expect(find.text('Please select an account'), findsOneWidget);
+    expect(find.text('Please provide a note'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '0');
     await tester.ensureVisible(saveButton);
@@ -792,6 +796,69 @@ void main() {
 
     expect(find.text('FinWise Live Response'), findsOneWidget);
     expect(find.textContaining('surplus'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      '17. AddTransactionScreen preserves field order and supports Cash, searchable Malaysian Bank, and TNG eWallet Account selection',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await AuthService().signInWithPassword(
+      email: 'demo@finwise-app.xyz',
+      password: 'FinWise2026!',
+    );
+
+    await tester.pumpWidget(const FinWiseApp());
+    await tester.pumpAndSettle();
+
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    navigator.pushNamed('/add-transaction');
+    await tester.pumpAndSettle();
+
+    // Verify top-to-bottom vertical field ordering:
+    // Type -> Amount -> Category -> Account -> Note -> Description -> Date -> Save Transaction
+    final double typeY = tester.getTopLeft(find.text('Expense')).dy;
+    final double amountY = tester.getTopLeft(find.text('Amount')).dy;
+    final double categoryY = tester.getTopLeft(find.text('Category')).dy;
+    final double accountY = tester.getTopLeft(find.text('Account')).dy;
+    final double noteY = tester.getTopLeft(find.text('Note')).dy;
+    final double descriptionY = tester.getTopLeft(find.text('Description')).dy;
+    final double dateY = tester.getTopLeft(find.text('Date')).dy;
+    final double saveY = tester.getTopLeft(find.text('Save Transaction')).dy;
+
+    expect(typeY < amountY, isTrue);
+    expect(amountY < categoryY, isTrue);
+    expect(categoryY < accountY, isTrue);
+    expect(accountY < noteY, isTrue);
+    expect(noteY < descriptionY, isTrue);
+    expect(descriptionY < dateY, isTrue);
+    expect(dateY < saveY, isTrue);
+
+    // Open Account picker and verify Cash, Bank, and E-Wallet options
+    final accountFinder = find.text('Select Account');
+    await tester.ensureVisible(accountFinder);
+    await tester.tap(accountFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cash'), findsOneWidget);
+    expect(find.text('Bank'), findsOneWidget);
+    expect(find.text('E-Wallet'), findsOneWidget);
+
+    // Select Bank -> searchable Malaysian banks list
+    await tester.tap(find.text('Bank'));
+    await tester.pumpAndSettle();
+    expect(find.text('Select Malaysian Bank'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, 'Maybank');
+    await tester.pumpAndSettle();
+    expect(find.text('Maybank'), findsOneWidget);
+
+    await tester.tap(find.text('Maybank'));
+    await tester.pumpAndSettle();
+    expect(find.text('Maybank'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

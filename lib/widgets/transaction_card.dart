@@ -154,6 +154,18 @@ class _TransactionCardState extends State<TransactionCard> {
                             color: AppColors.textMuted,
                           ),
                         ),
+                        if (transaction.accountName != null &&
+                            transaction.accountName!.trim().isNotEmpty) ...[
+                          const Text(' • ', style: TextStyle(fontSize: 11, color: AppColors.outlineVariant)),
+                          Text(
+                            transaction.accountName!,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     if (!hasReceiptItems && transaction.notes != null && transaction.notes!.isNotEmpty) ...[

@@ -499,9 +499,14 @@ class DatabaseService {
               .single()
               .timeout(const Duration(seconds: 10));
         } catch (colErr) {
-          if (colErr.toString().contains('receipt_items') ||
-              colErr.toString().contains('PGRST204')) {
+          final errStr = colErr.toString();
+          if (errStr.contains('receipt_items') ||
+              errStr.contains('account_type') ||
+              errStr.contains('account_name') ||
+              errStr.contains('PGRST204')) {
             payload.remove('receipt_items');
+            payload.remove('account_type');
+            payload.remove('account_name');
             inserted = await client
                 .from('transactions')
                 .insert(payload)
@@ -559,9 +564,14 @@ class DatabaseService {
               .eq('user_id', userId)
               .timeout(const Duration(seconds: 10));
         } catch (colErr) {
-          if (colErr.toString().contains('receipt_items') ||
-              colErr.toString().contains('PGRST204')) {
+          final errStr = colErr.toString();
+          if (errStr.contains('receipt_items') ||
+              errStr.contains('account_type') ||
+              errStr.contains('account_name') ||
+              errStr.contains('PGRST204')) {
             payload.remove('receipt_items');
+            payload.remove('account_type');
+            payload.remove('account_name');
             await client
                 .from('transactions')
                 .update(payload)

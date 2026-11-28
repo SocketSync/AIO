@@ -5,6 +5,7 @@ import '../models/category_item.dart';
 import '../models/transaction_record.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/account_selector_field.dart';
 import '../widgets/responsive_page_container.dart';
 
 /// Full-screen transaction entry UI for recording a new income or expense.
@@ -24,19 +25,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   // Form controllers and transaction entry state fields
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
 
   TransactionType _selectedType = TransactionType.expense;
   String _selectedCategoryId = 'food_dining';
+  String? _selectedAccountType;
+  String? _selectedAccountName;
+  String? _accountError;
   DateTime _selectedDate = DateTime.now();
   bool _isSubmitting = false;
 
   @override
   void dispose() {
     _amountController.dispose();
+    _noteController.dispose();
     _descriptionController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -68,7 +72,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   /// description, and selected category) and surfaces inline `Form` errors or
   /// SnackBar error messages before persisting via `TransactionProvider`.
   Future<void> _handleSave() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final isFormValid = _formKey.currentState?.validate() ?? false;
+    final hasAccount =
+        _selectedAccountType != null && _selectedAccountName != null;
+    if (!hasAccount) {
+      setState(() => _accountError = 'Please select an account');
+    }
+    if (!isFormValid || !hasAccount) return;
 
     final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
     if (amount <= 0) {
@@ -94,16 +104,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() => _isSubmitting = true);
 
     final provider = Provider.of<TransactionProvider>(context, listen: false);
-    final rawDetails = _notesController.text.trim();
+    final rawNote = _noteController.text.trim();
+    final rawDetails = _descriptionController.text.trim();
     final categoryName = CategoryItem.getById(_selectedCategoryId).name;
     final parsedItems = rawDetails.isEmpty
         ? const <Map<String, dynamic>>[]
         : TransactionRecord.parseDetailsText(rawDetails, category: categoryName);
     final success = await provider.addTransaction(
-      title: _descriptionController.text.trim(),
+      title: rawNote,
       amount: amount,
       type: _selectedType,
       categoryId: _selectedCategoryId,
+      accountType: _selectedAccountType,
+      accountName: _selectedAccountName,
       date: _selectedDate,
       notes: rawDetails.isEmpty ? null : rawDetails,
       receiptItems: parsedItems,
@@ -114,7 +127,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (mounted && success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Transaction "${_descriptionController.text.trim()}" saved!'),
+          content: Text('Transaction "$rawNote" saved!'),
           backgroundColor: AppColors.secondary,
           duration: const Duration(seconds: 2),
         ),
@@ -420,37 +433,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 3. Description / Title Field
-                const Text(
-                  'Description',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
-                    border: Border.all(color: AppColors.borderNeutral),
-                  ),
-                  child: TextFormField(
-                    controller: _descriptionController,
-                    style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Grocery shopping, Electricity bill, Coffee',
-                      prefixIcon: Icon(Icons.edit_note, color: AppColors.textMuted),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
-                    // Inline validation: require a non-empty transaction description.
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Please provide a description';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // 4. Category Selector Chips
+                // 3. Category Selector Chips
                 const Text(
                   'Category',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -495,7 +478,82 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 5. Date Selection
+                // 4. Account Selection (Cash / Malaysian Bank / TNG eWallet)
+                const Text(
+                  'Account',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 8),
+                AccountSelectorField(
+                  accountType: _selectedAccountType,
+                  accountName: _selectedAccountName,
+                  errorText: _accountError,
+                  onSelected: (type, name) {
+                    setState(() {
+                      _selectedAccountType = type;
+                      _selectedAccountName = name;
+                      _accountError = null;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // 5. Note Field (short text input)
+                const Text(
+                  'Note',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                    border: Border.all(color: AppColors.borderNeutral),
+                  ),
+                  child: TextFormField(
+                    controller: _noteController,
+                    style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. Monthly groceries, Lunch with friends, Salary',
+                      prefixIcon: Icon(Icons.edit_note, color: AppColors.textMuted),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    // Inline validation: require a non-empty transaction note.
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Please provide a note';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // 6. Description Field (multiline text area)
+                const Text(
+                  'Description',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                    border: Border.all(color: AppColors.borderNeutral),
+                  ),
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
+                    decoration: const InputDecoration(
+                      hintText: 'Additional transaction details (optional)',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(14),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // 7. Date Selection
                 const Text(
                   'Date',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -530,31 +588,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         const SizedBox(width: 8),
                         const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
                       ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // 6. Details (Line Items)
-                const Text(
-                  'Details (Line Items)',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
-                    border: Border.all(color: AppColors.borderNeutral),
-                  ),
-                  child: TextFormField(
-                    controller: _notesController,
-                    maxLines: 3,
-                    style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
-                    decoration: const InputDecoration(
-                      hintText: '1x Rice 1kg\n1x Soya milk x6',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(14),
                     ),
                   ),
                 ),
