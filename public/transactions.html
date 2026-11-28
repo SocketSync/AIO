@@ -455,11 +455,12 @@
             </select>
             <span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
           </div>
-          <div id="modalBankPickerWrap" class="hidden mt-2 rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 space-y-2">
-            <input id="modalBankSearch" type="text" oninput="filterModalBanks()" placeholder="Search Malaysian bank (e.g. Maybank, CIMB, GXBank)..." class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs text-text-primary outline-none focus:border-primary">
-            <select id="modal-bank-name" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-text-primary outline-none focus:border-primary">
+          <div id="modalBankPickerWrap" class="hidden mt-2 relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">account_balance</span>
+            <select id="modal-bank-name" class="w-full pl-10 pr-8 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-text-primary outline-none focus:border-primary appearance-none bg-white">
               <option value="">Select Malaysian Bank</option>
             </select>
+            <span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
           </div>
         </div>
 
@@ -1282,12 +1283,10 @@
         document.getElementById('modal-category').value = record.category;
       }
 
-      populateModalBankOptions('');
+      populateModalBankOptions();
       const modalAccType = document.getElementById('modal-account-type');
       const modalBankName = document.getElementById('modal-bank-name');
       const modalBankWrap = document.getElementById('modalBankPickerWrap');
-      const modalBankSearch = document.getElementById('modalBankSearch');
-      if (modalBankSearch) modalBankSearch.value = '';
       if (modalAccType) modalAccType.value = (record && record.account_type) ? record.account_type : '';
       if (modalBankWrap) {
         if (record && record.account_type === 'Bank') {
@@ -1313,20 +1312,13 @@
       "GXBank", "Aeon Bank", "Boost Bank"
     ];
 
-    function populateModalBankOptions(query) {
+    function populateModalBankOptions() {
       const sel = document.getElementById('modal-bank-name');
       if (!sel) return;
       const currentVal = sel.value;
-      const q = (query || '').toLowerCase().trim();
-      const filtered = MALAYSIAN_BANKS.filter(b => !q || b.toLowerCase().includes(q));
       sel.innerHTML = '<option value="">Select Malaysian Bank</option>' +
-        filtered.map(b => `<option value="${b}">${b}</option>`).join('');
-      if (currentVal && filtered.includes(currentVal)) sel.value = currentVal;
-    }
-
-    function filterModalBanks() {
-      const q = document.getElementById('modalBankSearch')?.value || '';
-      populateModalBankOptions(q);
+        MALAYSIAN_BANKS.map(b => `<option value="${b}">${b}</option>`).join('');
+      if (currentVal && MALAYSIAN_BANKS.includes(currentVal)) sel.value = currentVal;
     }
 
     function handleModalAccountTypeChange() {
@@ -1335,7 +1327,7 @@
       if (!wrap) return;
       if (type === 'Bank') {
         wrap.classList.remove('hidden');
-        populateModalBankOptions(document.getElementById('modalBankSearch')?.value || '');
+        populateModalBankOptions();
       } else {
         wrap.classList.add('hidden');
       }

@@ -680,12 +680,9 @@
           <option value="Bank">Bank</option>
           <option value="E-Wallet">TNG (Touch 'n Go eWallet)</option>
         </select>
-        <div id="dashboardBankPickerWrap" class="hidden mb-3 rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 space-y-2">
-          <input id="dashboardBankSearch" type="text" oninput="filterDashboardBanks()"
-            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs outline-none focus:border-primary"
-            placeholder="Search Malaysian bank (e.g. Maybank, CIMB, GXBank)...">
+        <div id="dashboardBankPickerWrap" class="hidden mb-3">
           <select id="transactionBankName"
-            class="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-medium outline-none focus:border-primary">
+            class="w-full rounded-lg border border-slate-300 p-2.5 text-sm outline-none focus:border-primary">
             <option value="">Select Malaysian Bank</option>
           </select>
         </div>
@@ -2736,12 +2733,10 @@
       document.getElementById("transactionDate").value = record ? record.date : localDateString();
       document.getElementById("transactionAmount").value = record ? record.amount : "";
       document.getElementById("transactionDescription").value = record ? record.description : "";
-      populateDashboardBankOptions("");
+      populateDashboardBankOptions();
       const accTypeEl = document.getElementById("transactionAccountType");
       const bankNameEl = document.getElementById("transactionBankName");
       const bankWrapEl = document.getElementById("dashboardBankPickerWrap");
-      const bankSearchEl = document.getElementById("dashboardBankSearch");
-      if (bankSearchEl) bankSearchEl.value = "";
       if (accTypeEl) {
         accTypeEl.value = record && record.account_type ? record.account_type : "";
       }
@@ -2769,20 +2764,13 @@
       "GXBank", "Aeon Bank", "Boost Bank"
     ];
 
-    function populateDashboardBankOptions(query) {
+    function populateDashboardBankOptions() {
       const sel = document.getElementById("transactionBankName");
       if (!sel) return;
       const currentVal = sel.value;
-      const q = (query || "").toLowerCase().trim();
-      const filtered = MALAYSIAN_BANKS.filter(b => !q || b.toLowerCase().includes(q));
       sel.innerHTML = '<option value="">Select Malaysian Bank</option>' +
-        filtered.map(b => `<option value="${b}">${b}</option>`).join("");
-      if (currentVal && filtered.includes(currentVal)) sel.value = currentVal;
-    }
-
-    function filterDashboardBanks() {
-      const q = document.getElementById("dashboardBankSearch")?.value || "";
-      populateDashboardBankOptions(q);
+        MALAYSIAN_BANKS.map(b => `<option value="${b}">${b}</option>`).join("");
+      if (currentVal && MALAYSIAN_BANKS.includes(currentVal)) sel.value = currentVal;
     }
 
     function handleDashboardAccountTypeChange() {
@@ -2791,7 +2779,7 @@
       if (!wrap) return;
       if (type === "Bank") {
         wrap.classList.remove("hidden");
-        populateDashboardBankOptions(document.getElementById("dashboardBankSearch")?.value || "");
+        populateDashboardBankOptions();
       } else {
         wrap.classList.add("hidden");
       }
