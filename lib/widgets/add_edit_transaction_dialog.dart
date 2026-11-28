@@ -113,13 +113,15 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
     if (isFormValid) {
       if (_selectedCategoryId.trim().isEmpty) return;
       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
+      final rawNote = _titleController.text.trim();
       final rawDetails = _notesController.text.trim();
       final categoryName = CategoryItem.getById(_selectedCategoryId).name;
+      final effectiveTitle = rawNote.isNotEmpty ? rawNote : categoryName;
       final parsedItems = rawDetails.isEmpty
           ? const <Map<String, dynamic>>[]
           : TransactionRecord.parseDetailsText(rawDetails, category: categoryName);
       widget.onSave(
-        title: _titleController.text.trim(),
+        title: effectiveTitle,
         amount: amount,
         type: _selectedType,
         categoryId: _selectedCategoryId,
@@ -297,6 +299,42 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                 ),
                 const SizedBox(height: 16),
 
+                // Date Picker Row (MM/DD/YYYY)
+                const Text(
+                  'Date',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderNeutral),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.textMuted),
+                            const SizedBox(width: 10),
+                            Text(
+                              DateFormat('MM/dd/yyyy').format(_selectedDate),
+                              style: const TextStyle(fontSize: 13, color: AppColors.onSurface, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.edit_calendar, size: 16, color: AppColors.primary),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
                 // Amount Input
                 const Text(
                   'Amount',
@@ -404,7 +442,7 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // Note Input
+                // Note Input (optional)
                 const Text(
                   'Note',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -420,16 +458,11 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                     controller: _titleController,
                     style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
                     decoration: const InputDecoration(
-                      hintText: 'e.g. Monthly groceries, Lunch with friends, Salary',
+                      hintText: 'e.g. Aeon, Village Grocer, Starbucks',
                       prefixIcon: Icon(Icons.edit_note, size: 20, color: AppColors.textMuted),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
-                    // Inline validation: require a non-empty transaction note.
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Please provide a note';
-                      return null;
-                    },
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -451,45 +484,9 @@ class _AddEditTransactionDialogState extends State<AddEditTransactionDialog> {
                     maxLines: 3,
                     style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
                     decoration: const InputDecoration(
-                      hintText: 'Additional transaction details (optional)',
+                      hintText: 'Enter transaction details or receipt items...',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Date Picker Row
-                const Text(
-                  'Date',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderNeutral),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.textMuted),
-                            const SizedBox(width: 10),
-                            Text(
-                              DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
-                              style: const TextStyle(fontSize: 13, color: AppColors.onSurface, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                        const Icon(Icons.edit_calendar, size: 16, color: AppColors.primary),
-                      ],
                     ),
                   ),
                 ),

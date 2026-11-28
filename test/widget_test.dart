@@ -657,7 +657,6 @@ void main() {
 
     expect(find.text('Enter amount'), findsOneWidget);
     expect(find.text('Please select an account'), findsOneWidget);
-    expect(find.text('Please provide a note'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '0');
     await tester.ensureVisible(saveButton);
@@ -819,25 +818,25 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify top-to-bottom vertical field ordering:
-    // Type -> Amount -> Category -> Account -> Note -> Description -> Date -> Save Transaction
+    // Type -> Date -> Amount -> Category -> Account -> Note -> Description -> Save Transaction
     final double typeY = tester.getTopLeft(find.text('Expense')).dy;
+    final double dateY = tester.getTopLeft(find.text('Date')).dy;
     final double amountY = tester.getTopLeft(find.text('Amount')).dy;
     final double categoryY = tester.getTopLeft(find.text('Category')).dy;
     final double accountY = tester.getTopLeft(find.text('Account')).dy;
     final double noteY = tester.getTopLeft(find.text('Note')).dy;
     final double descriptionY = tester.getTopLeft(find.text('Description')).dy;
-    final double dateY = tester.getTopLeft(find.text('Date')).dy;
     final double saveY = tester.getTopLeft(find.text('Save Transaction')).dy;
 
-    expect(typeY < amountY, isTrue);
+    expect(typeY < dateY, isTrue);
+    expect(dateY < amountY, isTrue);
     expect(amountY < categoryY, isTrue);
     expect(categoryY < accountY, isTrue);
     expect(accountY < noteY, isTrue);
     expect(noteY < descriptionY, isTrue);
-    expect(descriptionY < dateY, isTrue);
-    expect(dateY < saveY, isTrue);
+    expect(descriptionY < saveY, isTrue);
 
-    // Open Account picker and verify Cash, Bank, and E-Wallet options
+    // Open Account picker and verify Cash, Bank, and TNG options
     final accountFinder = find.text('Select Account');
     await tester.ensureVisible(accountFinder);
     await tester.tap(accountFinder);
@@ -845,7 +844,7 @@ void main() {
 
     expect(find.text('Cash'), findsOneWidget);
     expect(find.text('Bank'), findsOneWidget);
-    expect(find.text('E-Wallet'), findsOneWidget);
+    expect(find.text('TNG'), findsOneWidget);
 
     // Select Bank -> searchable Malaysian banks list
     await tester.tap(find.text('Bank'));
