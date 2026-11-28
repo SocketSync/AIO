@@ -291,8 +291,8 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
               const SizedBox(height: 8),
               _buildAccountTypeTile(
                 icon: Icons.smartphone_outlined,
-                title: 'E-Wallet',
-                subtitle: "Touch 'n Go eWallet (TNG)",
+                title: 'TNG',
+                subtitle: "TNG (Touch 'n Go eWallet)",
                 isSelected: widget.initialAccountType == 'E-Wallet',
                 showChevron: true,
                 onTap: () => setState(() => _step = _PickerStep.eWallet),
@@ -384,8 +384,8 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
             ] else if (_step == _PickerStep.eWallet) ...[
               _buildAccountTypeTile(
                 icon: Icons.account_balance_wallet_outlined,
-                title: "Touch 'n Go eWallet",
-                subtitle: 'TNG eWallet',
+                title: "TNG (Touch 'n Go eWallet)",
+                subtitle: 'E-Wallet',
                 isSelected: widget.initialAccountType == 'E-Wallet' &&
                     widget.initialAccountName == "Touch 'n Go eWallet",
                 onTap: () =>

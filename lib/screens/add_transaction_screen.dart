@@ -7,6 +7,7 @@ import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/account_selector_field.dart';
 import '../widgets/responsive_page_container.dart';
+import 'receipt_scanner_screen.dart';
 
 /// Full-screen transaction entry UI for recording a new income or expense.
 ///
@@ -107,11 +108,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final rawNote = _noteController.text.trim();
     final rawDetails = _descriptionController.text.trim();
     final categoryName = CategoryItem.getById(_selectedCategoryId).name;
+    final effectiveTitle = rawNote.isNotEmpty ? rawNote : categoryName;
     final parsedItems = rawDetails.isEmpty
         ? const <Map<String, dynamic>>[]
         : TransactionRecord.parseDetailsText(rawDetails, category: categoryName);
     final success = await provider.addTransaction(
-      title: rawNote,
+      title: effectiveTitle,
       amount: amount,
       type: _selectedType,
       categoryId: _selectedCategoryId,
@@ -127,13 +129,59 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (mounted && success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Transaction "$rawNote" saved!'),
+          content: Text('Transaction "$effectiveTitle" saved!'),
           backgroundColor: AppColors.secondary,
           duration: const Duration(seconds: 2),
         ),
       );
       Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _openReceiptScanner() async {
+    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (_) => const ReceiptScannerScreen(returnExtractedToForm: true),
+      ),
+    );
+    if (!mounted || result == null) return;
+
+    setState(() {
+      final merchant = (result['merchant'] ?? '').toString().trim();
+      if (merchant.isNotEmpty) {
+        _noteController.text = merchant;
+      }
+
+      final extractedAmount = (result['amount'] as num?)?.toDouble();
+      if (extractedAmount != null && extractedAmount > 0) {
+        _amountController.text = extractedAmount.toStringAsFixed(2);
+      }
+
+      final extractedDate = result['date'];
+      if (extractedDate is DateTime) {
+        _selectedDate = extractedDate;
+      }
+
+      final suggestedCategory = (result['categoryId'] ?? '').toString().trim();
+      if (suggestedCategory.isNotEmpty &&
+          CategoryItem.defaultCategories.any((c) => c.id == suggestedCategory)) {
+        _selectedCategoryId = suggestedCategory;
+      }
+
+      final rawItems = result['items'];
+      if (rawItems is List) {
+        final typedItems = rawItems
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+        final formatted =
+            TransactionRecord.formatReceiptItemsToDetails(typedItems);
+        if (formatted.isNotEmpty) {
+          _descriptionController.text = formatted;
+        }
+      }
+      // Account intentionally left untouched for manual user selection.
+    });
   }
 
   @override
@@ -175,7 +223,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               children: [
                 // Top Smart Receipt AI Scan Banner
                 InkWell(
-                  onTap: () => Navigator.of(context).pushNamed('/scanner'),
+                  onTap: _openReceiptScanner,
                   borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
                   child: Container(
                     padding: const EdgeInsets.all(AppTheme.cardPadding),
@@ -231,7 +279,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.of(context).pushNamed('/scanner'),
+                          onPressed: _openReceiptScanner,
                           icon: const Icon(Icons.photo_camera, size: 14),
                           label: const Text('Scan', style: TextStyle(fontSize: 12)),
                           style: ElevatedButton.styleFrom(
@@ -373,9 +421,49 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // 2. Amount Input Field (RM)
+                // 2. Date Selection (MM/DD/YYYY)
+                const Text(
+                  'Date',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
+                      border: Border.all(color: AppColors.borderNeutral),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_month_outlined, size: 20, color: AppColors.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            DateFormat('MM/dd/yyyy').format(_selectedDate),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.onSurface,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // 3. Amount Input Field (RM)
                 const Text(
                   'Amount',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -433,7 +521,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 3. Category Selector Chips
+                // 4. Category Selector Chips
                 const Text(
                   'Category',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -478,7 +566,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 4. Account Selection (Cash / Malaysian Bank / TNG eWallet)
+                // 5. Account Selection (Cash / Malaysian Bank / TNG eWallet)
                 const Text(
                   'Account',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -498,7 +586,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 5. Note Field (short text input)
+                // 6. Note Field (single-line optional merchant/title)
                 const Text(
                   'Note',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -514,21 +602,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     controller: _noteController,
                     style: const TextStyle(fontSize: 14, color: AppColors.onSurface),
                     decoration: const InputDecoration(
-                      hintText: 'e.g. Monthly groceries, Lunch with friends, Salary',
+                      hintText: 'e.g. Aeon, Village Grocer, Starbucks',
                       prefixIcon: Icon(Icons.edit_note, color: AppColors.textMuted),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    // Inline validation: require a non-empty transaction note.
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Please provide a note';
-                      return null;
-                    },
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // 6. Description Field (multiline text area)
+                // 7. Description Field (multiline textarea for details/items)
                 const Text(
                   'Description',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
@@ -545,49 +628,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     maxLines: 3,
                     style: const TextStyle(fontSize: 13, color: AppColors.onSurface),
                     decoration: const InputDecoration(
-                      hintText: 'Additional transaction details (optional)',
+                      hintText: 'Enter transaction details or receipt items...',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.all(14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // 7. Date Selection
-                const Text(
-                  'Date',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(AppTheme.inputBorderRadius),
-                      border: Border.all(color: AppColors.borderNeutral),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.calendar_month_outlined, size: 20, color: AppColors.primary),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
-                      ],
                     ),
                   ),
                 ),

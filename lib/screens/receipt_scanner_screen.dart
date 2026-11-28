@@ -5,7 +5,12 @@ import '../providers/transaction_provider.dart';
 import '../theme/app_theme.dart';
 
 class ReceiptScannerScreen extends StatefulWidget {
-  const ReceiptScannerScreen({super.key});
+  final bool returnExtractedToForm;
+
+  const ReceiptScannerScreen({
+    super.key,
+    this.returnExtractedToForm = false,
+  });
 
   @override
   State<ReceiptScannerScreen> createState() => _ReceiptScannerScreenState();
@@ -17,6 +22,32 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   bool _isConfirming = false;
 
   void _confirmAndLogExpense() async {
+    const extractedItems = [
+      {
+        'item_name': 'Nasi Campur + Ayam Berempah',
+        'price': 7.50,
+        'quantity': 1,
+        'category': 'Food & Dining'
+      },
+      {
+        'item_name': 'Teh O Ais Limau',
+        'price': 2.00,
+        'quantity': 1,
+        'category': 'Food & Dining'
+      },
+    ];
+
+    if (widget.returnExtractedToForm) {
+      Navigator.of(context).pop(<String, dynamic>{
+        'merchant': 'Campus Bistro Cafeteria',
+        'amount': 9.50,
+        'date': DateTime.now(),
+        'categoryId': 'food_dining',
+        'items': extractedItems,
+      });
+      return;
+    }
+
     setState(() => _isConfirming = true);
     final provider = Provider.of<TransactionProvider>(context, listen: false);
 
@@ -27,10 +58,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
       categoryId: 'food_dining',
       date: DateTime.now(),
       notes: 'AI Receipt Scanner OCR Auto-Extraction',
-      receiptItems: const [
-        {'item_name': 'Nasi Campur + Ayam Berempah', 'price': 7.50, 'quantity': 1, 'category': 'Food & Dining'},
-        {'item_name': 'Teh O Ais Limau', 'price': 2.00, 'quantity': 1, 'category': 'Food & Dining'},
-      ],
+      receiptItems: extractedItems,
     );
 
     setState(() => _isConfirming = false);
